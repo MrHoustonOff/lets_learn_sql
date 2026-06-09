@@ -1,5 +1,5 @@
 import React from 'react';
-import { Handle, Position } from '@xyflow/react';
+import { Handle, Position, useUpdateNodeInternals, useNodeId } from '@xyflow/react';
 import type { TableSchema } from '../types';
 import { Database } from 'lucide-react';
 import { ColumnRow } from './ColumnRow';
@@ -7,14 +7,28 @@ import { ColumnRow } from './ColumnRow';
 interface TableNodeProps {
   data: {
     table: TableSchema;
+    highlightedColumns?: Set<string>;
   };
 }
 
 export const TableNode: React.FC<TableNodeProps> = ({ data }) => {
-  const { table } = data;
+  const { table, highlightedColumns } = data;
+  const nodeId = useNodeId();
+  const updateNodeInternals = useUpdateNodeInternals();
+
+  // Проверяем, есть ли в таблице искомые столбцы
+  const hasHighlightedColumns = React.useMemo(() => {
+    if (!highlightedColumns || highlightedColumns.size === 0) return true; // Если нет фильтра - всё ок
+    return table.columns.some(col => highlightedColumns.has(col.name));
+  }, [table, highlightedColumns]);
+
+  // Если фильтр активен, но в таблице нет нужных столбцов - уводим в инвиз
+  const isFaded = highlightedColumns && highlightedColumns.size > 0 && !hasHighlightedColumns;
 
   return (
-    <div className="relative group rounded-xl bg-glass border border-glass-border backdrop-blur-xl shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] hover:shadow-[0_8px_32px_0_rgba(0,0,0,0.6)] hover:border-primary/50 transition-all duration-300 min-w-[300px]">
+    <div className={`relative group rounded-xl bg-glass border border-glass-border backdrop-blur-xl shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] hover:shadow-[0_8px_32px_0_rgba(0,0,0,0.6)] hover:border-primary/50 hover:scale-[1.02] transition-all duration-300 min-w-[300px] ${
+      isFaded ? 'opacity-40 grayscale-[0.5]' : ''
+    }`}>
       
       {/* Header */}
       <div className="px-4 py-3 border-b border-glass-border flex items-center gap-3 rounded-t-xl bg-black/10 dark:bg-white/5">
@@ -28,7 +42,12 @@ export const TableNode: React.FC<TableNodeProps> = ({ data }) => {
       </div>
 
       {/* Columns List */}
-      <div className="flex flex-col relative">
+      <div 
+        className="flex flex-col relative max-h-[300px] overflow-y-auto custom-scrollbar nowheel"
+        onScroll={() => {
+          if (nodeId) updateNodeInternals(nodeId);
+        }}
+      >
         {table.columns.map(col => (
           <div key={col.name} className="relative">
             {/* Target Handle (Left) */}
@@ -39,7 +58,10 @@ export const TableNode: React.FC<TableNodeProps> = ({ data }) => {
               className="w-1 h-1 opacity-0 pointer-events-none" 
             />
             
-            <ColumnRow column={col} />
+            <ColumnRow 
+              column={col} 
+              isHighlighted={highlightedColumns?.has(col.name)}
+            />
             
             {/* Source Handle (Right) */}
             <Handle 

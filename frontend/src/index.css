@@ -132,5 +132,36 @@
 }
 
 .custom-controls .react-flow__controls-button svg {
-  @apply fill-foreground opacity-80;
+  @apply opacity-80;
+}
+
+/* Закрашиваем дефолтные иконки ReactFlow, но не трогаем иконки Lucide (которые рисуются через stroke) */
+.custom-controls .react-flow__controls-button svg:not(.lucide) {
+  @apply fill-foreground;
+}
+
+.react-flow__edgelabel-renderer {
+  z-index: 1000 !important;
+}
+
+/* Custom Scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  @apply bg-black/20 dark:bg-white/20 rounded-full;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  @apply bg-black/40 dark:bg-white/40;
+}
+
+/* Left-sided scrollbar trick */
+.scroll-left {
+  direction: rtl;
+}
+.scroll-left > * {
+  direction: ltr;
 }

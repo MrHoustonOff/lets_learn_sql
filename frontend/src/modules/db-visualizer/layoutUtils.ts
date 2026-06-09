@@ -22,8 +22,9 @@ export const getLayoutedElements = (schema: DatabaseSchema, direction = 'LR') =>
   schema.tables.forEach((table) => {
     const tableId = `${table.schema}.${table.name}`;
     
-    // Calculate approximate height based on columns and indexes
-    const approxHeight = 50 + (table.columns.length * 36) + (table.indexes.length > 0 ? 50 + table.indexes.length * 20 : 0);
+    // Calculate approximate height based on columns and indexes (max 300px for columns due to scroll)
+    const columnsHeight = Math.min(table.columns.length * 36, 300);
+    const approxHeight = 50 + columnsHeight + (table.indexes.length > 0 ? 50 + table.indexes.length * 20 : 0);
     
     dagreGraph.setNode(tableId, { width: nodeWidth, height: approxHeight });
 

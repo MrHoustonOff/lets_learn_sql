@@ -4,11 +4,16 @@ import { Key, Link, AlertCircle } from 'lucide-react';
 
 interface ColumnRowProps {
   column: ColumnSchema;
+  isHighlighted?: boolean;
 }
 
-export const ColumnRow: React.FC<ColumnRowProps> = ({ column }) => {
+export const ColumnRow: React.FC<ColumnRowProps> = ({ column, isHighlighted }) => {
   return (
-    <div className="flex items-center gap-3 py-2 px-3 text-sm hover:bg-black/5 dark:hover:bg-white/5 transition-colors group border-b border-glass-border last:border-0 cursor-default">
+    <div className={`flex items-center gap-3 py-2 px-3 text-sm transition-colors group border-b border-glass-border last:border-0 cursor-default ${
+      isHighlighted 
+        ? 'bg-primary/20 hover:bg-primary/30 outline outline-2 outline-primary -outline-offset-2 z-10 relative' 
+        : 'hover:bg-black/5 dark:hover:bg-white/5'
+    }`}>
       <div className="w-5 flex justify-center text-muted-foreground group-hover:text-amber-500 dark:group-hover:text-amber-400 transition-colors">
         {column.isPrimaryKey && <Key size={14} className="text-amber-500 dark:text-amber-400" />}
         {!column.isPrimaryKey && column.isForeignKey && <Link size={14} className="text-blue-500 dark:text-blue-400" />}

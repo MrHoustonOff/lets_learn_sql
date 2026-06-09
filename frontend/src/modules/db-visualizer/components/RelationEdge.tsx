@@ -1,3 +1,4 @@
+import React from 'react';
 import { BaseEdge, getSmoothStepPath, getBezierPath } from '@xyflow/react';
 import type { EdgeProps } from '@xyflow/react';
 
@@ -13,15 +14,22 @@ export const RelationEdge: React.FC<EdgeProps> = ({
   markerEnd,
 }) => {
   const edgeStyleType = data?.edgeStyle as 'bezier' | 'smoothstep' | undefined;
+  const edgeIndex = (data?.edgeIndex as number) || 0;
   
+  // Стабильный "веерный" сдвиг на основе индекса (от -2 до +2)
+  const shift = (edgeIndex % 5) - 2;
+
   const pathParams = {
     sourceX, sourceY, sourcePosition,
     targetX, targetY, targetPosition,
   };
 
+  // Сдвигаем центр излома для ломаных линий, чтобы они не сливались
+  const centerX = (sourceX + targetX) / 2 + shift * 20;
+
   const [edgePath] = edgeStyleType === 'smoothstep' 
-    ? getSmoothStepPath({ ...pathParams, borderRadius: 20 })
-    : getBezierPath(pathParams);
+    ? getSmoothStepPath({ ...pathParams, borderRadius: 20, centerX })
+    : getBezierPath({ ...pathParams, curvature: 0.25 + shift * 0.08 });
 
   const relationType = data?.relationType as '1:1' | '1:M' | undefined;
   
@@ -70,8 +78,10 @@ export const RelationEdge: React.FC<EdgeProps> = ({
 
   const showMarkers = data?.showMarkers !== false; // По умолчанию true
 
+  const opacity = style.opacity !== undefined ? style.opacity : 0.8;
+
   return (
-    <>
+    <g opacity={opacity} className="transition-opacity duration-300">
       <BaseEdge path={edgePath} markerEnd={markerEnd} style={{ ...style, stroke, strokeWidth }} />
       {/* Рисуем SVG маркеры вручную поверх линии для идеального позиционирования */}
       
@@ -81,6 +91,6 @@ export const RelationEdge: React.FC<EdgeProps> = ({
 
       {/* Target Marker (Always One in our DB schema context) */}
       {showMarkers && renderTargetOneMarker(targetX, targetY)}
-    </>
+    </g>
   );
 };
