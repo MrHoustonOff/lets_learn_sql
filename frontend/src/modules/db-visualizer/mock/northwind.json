@@ -1,0 +1,118 @@
+{
+  "tables": [
+    {
+      "name": "customers",
+      "schema": "public",
+      "columns": [
+        {
+          "name": "customer_id",
+          "type": "varchar(5)",
+          "nullable": false,
+          "default": null,
+          "isPrimaryKey": true,
+          "isForeignKey": false,
+          "isUnique": true
+        },
+        {
+          "name": "company_name",
+          "type": "varchar(40)",
+          "nullable": false,
+          "default": null,
+          "isPrimaryKey": false,
+          "isForeignKey": false,
+          "isUnique": false
+        },
+        {
+          "name": "contact_name",
+          "type": "varchar(30)",
+          "nullable": true,
+          "default": null,
+          "isPrimaryKey": false,
+          "isForeignKey": false,
+          "isUnique": false
+        }
+      ],
+      "indexes": [
+        {
+          "name": "pk_customers",
+          "definition": "PRIMARY KEY btree (customer_id)",
+          "isPrimary": true,
+          "isUnique": true
+        }
+      ],
+      "foreignKeys": [],
+      "referencedBy": [
+        {
+          "table": "orders",
+          "column": "customer_id",
+          "constraint": "fk_orders_customers"
+        }
+      ],
+      "sequences": []
+    },
+    {
+      "name": "orders",
+      "schema": "public",
+      "columns": [
+        {
+          "name": "order_id",
+          "type": "integer",
+          "nullable": false,
+          "default": "nextval('orders_order_id_seq')",
+          "isPrimaryKey": true,
+          "isForeignKey": false,
+          "isUnique": true
+        },
+        {
+          "name": "customer_id",
+          "type": "varchar(5)",
+          "nullable": true,
+          "default": null,
+          "isPrimaryKey": false,
+          "isForeignKey": true,
+          "isUnique": false
+        },
+        {
+          "name": "order_date",
+          "type": "date",
+          "nullable": true,
+          "default": null,
+          "isPrimaryKey": false,
+          "isForeignKey": false,
+          "isUnique": false
+        }
+      ],
+      "indexes": [
+        {
+          "name": "pk_orders",
+          "definition": "PRIMARY KEY btree (order_id)",
+          "isPrimary": true,
+          "isUnique": true
+        },
+        {
+          "name": "idx_orders_customer",
+          "definition": "btree (customer_id)",
+          "isPrimary": false,
+          "isUnique": false
+        }
+      ],
+      "foreignKeys": [
+        {
+          "name": "fk_orders_customers",
+          "column": "customer_id",
+          "targetTable": "customers",
+          "targetColumn": "customer_id",
+          "onDelete": "NO ACTION",
+          "onUpdate": "NO ACTION"
+        }
+      ],
+      "referencedBy": [],
+      "sequences": [
+        {
+          "name": "orders_order_id_seq",
+          "current": 10248
+        }
+      ]
+    }
+  ]
+}
