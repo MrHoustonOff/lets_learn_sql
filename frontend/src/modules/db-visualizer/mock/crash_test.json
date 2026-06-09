@@ -1,0 +1,878 @@
+{
+  "tables": [
+    {
+      "name": "users",
+      "schema": "public",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "isPrimaryKey": true,
+          "nullable": false,
+          "isForeignKey": false,
+          "isUnique": true
+        },
+        {
+          "name": "username",
+          "type": "varchar(255)",
+          "isPrimaryKey": false,
+          "nullable": false,
+          "isForeignKey": false,
+          "isUnique": true
+        },
+        {
+          "name": "email",
+          "type": "varchar(255)",
+          "isPrimaryKey": false,
+          "nullable": false,
+          "isForeignKey": false,
+          "isUnique": true
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp",
+          "isPrimaryKey": false,
+          "nullable": false,
+          "isForeignKey": false,
+          "isUnique": false
+        }
+      ],
+      "foreignKeys": [],
+      "indexes": []
+    },
+    {
+      "name": "enterprise_b2b_customer_relationship_management_audit_logs_history_archive_v2",
+      "schema": "audit_logs_schema_that_is_also_very_long_for_some_reason",
+      "columns": [
+        {
+          "name": "log_id",
+          "type": "bigint",
+          "isPrimaryKey": true,
+          "nullable": false,
+          "isForeignKey": false,
+          "isUnique": true
+        },
+        {
+          "name": "user_id",
+          "type": "uuid",
+          "isPrimaryKey": false,
+          "nullable": false,
+          "isForeignKey": true,
+          "isUnique": false
+        },
+        {
+          "name": "very_long_column_name_that_should_be_truncated_properly_in_ui_to_avoid_layout_break",
+          "type": "jsonb",
+          "isPrimaryKey": false,
+          "nullable": true,
+          "isForeignKey": false,
+          "isUnique": false
+        },
+        {
+          "name": "action_type",
+          "type": "varchar",
+          "isPrimaryKey": false,
+          "nullable": false,
+          "isForeignKey": false,
+          "isUnique": false
+        }
+      ],
+      "foreignKeys": [
+        {
+          "name": "fk_audit_user",
+          "column": "user_id",
+          "targetSchema": "public",
+          "targetTable": "users",
+          "targetColumn": "id",
+          "onDelete": "CASCADE",
+          "onUpdate": "NO ACTION"
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "name": "user_custom_profiles",
+      "schema": "public",
+      "columns": [
+        {
+          "name": "custom_field_1_value_tracking",
+          "type": "integer",
+          "isPrimaryKey": true,
+          "nullable": false,
+          "isForeignKey": false,
+          "isUnique": false
+        },
+        {
+          "name": "custom_field_2_value_tracking",
+          "type": "varchar(255)",
+          "isPrimaryKey": false,
+          "nullable": false,
+          "isForeignKey": false,
+          "isUnique": false
+        },
+        {
+          "name": "custom_field_3_value_tracking",
+          "type": "integer",
+          "isPrimaryKey": false,
+          "nullable": false,
+          "isForeignKey": false,
+          "isUnique": false
+        },
+        {
+          "name": "custom_field_4_value_tracking",
+          "type": "varchar(255)",
+          "isPrimaryKey": false,
+          "nullable": false,
+          "isForeignKey": false,
+          "isUnique": false
+        },
+        {
+          "name": "custom_field_5_value_tracking",
+          "type": "integer",
+          "isPrimaryKey": false,
+          "nullable": false,
+          "isForeignKey": false,
+          "isUnique": false
+        },
+        {
+          "name": "custom_field_6_value_tracking",
+          "type": "varchar(255)",
+          "isPrimaryKey": false,
+          "nullable": true,
+          "isForeignKey": false,
+          "isUnique": false
+        },
+        {
+          "name": "custom_field_7_value_tracking",
+          "type": "integer",
+          "isPrimaryKey": false,
+          "nullable": true,
+          "isForeignKey": false,
+          "isUnique": false
+        },
+        {
+          "name": "custom_field_8_value_tracking",
+          "type": "varchar(255)",
+          "isPrimaryKey": false,
+          "nullable": true,
+          "isForeignKey": false,
+          "isUnique": false
+        },
+        {
+          "name": "custom_field_9_value_tracking",
+          "type": "integer",
+          "isPrimaryKey": false,
+          "nullable": true,
+          "isForeignKey": false,
+          "isUnique": false
+        },
+        {
+          "name": "custom_field_10_value_tracking",
+          "type": "varchar(255)",
+          "isPrimaryKey": false,
+          "nullable": true,
+          "isForeignKey": false,
+          "isUnique": false
+        },
+        {
+          "name": "custom_field_11_value_tracking",
+          "type": "integer",
+          "isPrimaryKey": false,
+          "nullable": true,
+          "isForeignKey": false,
+          "isUnique": false
+        },
+        {
+          "name": "custom_field_12_value_tracking",
+          "type": "varchar(255)",
+          "isPrimaryKey": false,
+          "nullable": true,
+          "isForeignKey": false,
+          "isUnique": false
+        },
+        {
+          "name": "custom_field_13_value_tracking",
+          "type": "integer",
+          "isPrimaryKey": false,
+          "nullable": true,
+          "isForeignKey": false,
+          "isUnique": false
+        },
+        {
+          "name": "custom_field_14_value_tracking",
+          "type": "varchar(255)",
+          "isPrimaryKey": false,
+          "nullable": true,
+          "isForeignKey": false,
+          "isUnique": false
+        },
+        {
+          "name": "custom_field_15_value_tracking",
+          "type": "integer",
+          "isPrimaryKey": false,
+          "nullable": true,
+          "isForeignKey": false,
+          "isUnique": false
+        },
+        {
+          "name": "custom_field_16_value_tracking",
+          "type": "varchar(255)",
+          "isPrimaryKey": false,
+          "nullable": true,
+          "isForeignKey": false,
+          "isUnique": false
+        },
+        {
+          "name": "custom_field_17_value_tracking",
+          "type": "integer",
+          "isPrimaryKey": false,
+          "nullable": true,
+          "isForeignKey": false,
+          "isUnique": false
+        },
+        {
+          "name": "custom_field_18_value_tracking",
+          "type": "varchar(255)",
+          "isPrimaryKey": false,
+          "nullable": true,
+          "isForeignKey": false,
+          "isUnique": false
+        },
+        {
+          "name": "custom_field_19_value_tracking",
+          "type": "integer",
+          "isPrimaryKey": false,
+          "nullable": true,
+          "isForeignKey": false,
+          "isUnique": false
+        },
+        {
+          "name": "custom_field_20_value_tracking",
+          "type": "varchar(255)",
+          "isPrimaryKey": false,
+          "nullable": true,
+          "isForeignKey": false,
+          "isUnique": false
+        },
+        {
+          "name": "custom_field_21_value_tracking",
+          "type": "integer",
+          "isPrimaryKey": false,
+          "nullable": true,
+          "isForeignKey": false,
+          "isUnique": false
+        },
+        {
+          "name": "custom_field_22_value_tracking",
+          "type": "varchar(255)",
+          "isPrimaryKey": false,
+          "nullable": true,
+          "isForeignKey": false,
+          "isUnique": false
+        },
+        {
+          "name": "custom_field_23_value_tracking",
+          "type": "integer",
+          "isPrimaryKey": false,
+          "nullable": true,
+          "isForeignKey": false,
+          "isUnique": false
+        },
+        {
+          "name": "custom_field_24_value_tracking",
+          "type": "varchar(255)",
+          "isPrimaryKey": false,
+          "nullable": true,
+          "isForeignKey": false,
+          "isUnique": false
+        },
+        {
+          "name": "custom_field_25_value_tracking",
+          "type": "integer",
+          "isPrimaryKey": false,
+          "nullable": true,
+          "isForeignKey": false,
+          "isUnique": false
+        },
+        {
+          "name": "custom_field_26_value_tracking",
+          "type": "varchar(255)",
+          "isPrimaryKey": false,
+          "nullable": true,
+          "isForeignKey": false,
+          "isUnique": false
+        },
+        {
+          "name": "custom_field_27_value_tracking",
+          "type": "integer",
+          "isPrimaryKey": false,
+          "nullable": true,
+          "isForeignKey": false,
+          "isUnique": false
+        },
+        {
+          "name": "custom_field_28_value_tracking",
+          "type": "varchar(255)",
+          "isPrimaryKey": false,
+          "nullable": true,
+          "isForeignKey": false,
+          "isUnique": false
+        },
+        {
+          "name": "custom_field_29_value_tracking",
+          "type": "integer",
+          "isPrimaryKey": false,
+          "nullable": true,
+          "isForeignKey": false,
+          "isUnique": false
+        },
+        {
+          "name": "custom_field_30_value_tracking",
+          "type": "varchar(255)",
+          "isPrimaryKey": false,
+          "nullable": true,
+          "isForeignKey": false,
+          "isUnique": false
+        },
+        {
+          "name": "custom_field_31_value_tracking",
+          "type": "integer",
+          "isPrimaryKey": false,
+          "nullable": true,
+          "isForeignKey": false,
+          "isUnique": false
+        },
+        {
+          "name": "custom_field_32_value_tracking",
+          "type": "varchar(255)",
+          "isPrimaryKey": false,
+          "nullable": true,
+          "isForeignKey": false,
+          "isUnique": false
+        },
+        {
+          "name": "custom_field_33_value_tracking",
+          "type": "integer",
+          "isPrimaryKey": false,
+          "nullable": true,
+          "isForeignKey": false,
+          "isUnique": false
+        },
+        {
+          "name": "custom_field_34_value_tracking",
+          "type": "varchar(255)",
+          "isPrimaryKey": false,
+          "nullable": true,
+          "isForeignKey": false,
+          "isUnique": false
+        },
+        {
+          "name": "custom_field_35_value_tracking",
+          "type": "integer",
+          "isPrimaryKey": false,
+          "nullable": true,
+          "isForeignKey": false,
+          "isUnique": false
+        },
+        {
+          "name": "custom_field_36_value_tracking",
+          "type": "varchar(255)",
+          "isPrimaryKey": false,
+          "nullable": true,
+          "isForeignKey": false,
+          "isUnique": false
+        },
+        {
+          "name": "custom_field_37_value_tracking",
+          "type": "integer",
+          "isPrimaryKey": false,
+          "nullable": true,
+          "isForeignKey": false,
+          "isUnique": false
+        },
+        {
+          "name": "custom_field_38_value_tracking",
+          "type": "varchar(255)",
+          "isPrimaryKey": false,
+          "nullable": true,
+          "isForeignKey": false,
+          "isUnique": false
+        },
+        {
+          "name": "custom_field_39_value_tracking",
+          "type": "integer",
+          "isPrimaryKey": false,
+          "nullable": true,
+          "isForeignKey": false,
+          "isUnique": false
+        },
+        {
+          "name": "custom_field_40_value_tracking",
+          "type": "varchar(255)",
+          "isPrimaryKey": false,
+          "nullable": true,
+          "isForeignKey": false,
+          "isUnique": false
+        },
+        {
+          "name": "custom_field_41_value_tracking",
+          "type": "integer",
+          "isPrimaryKey": false,
+          "nullable": true,
+          "isForeignKey": false,
+          "isUnique": false
+        },
+        {
+          "name": "custom_field_42_value_tracking",
+          "type": "varchar(255)",
+          "isPrimaryKey": false,
+          "nullable": true,
+          "isForeignKey": false,
+          "isUnique": false
+        },
+        {
+          "name": "custom_field_43_value_tracking",
+          "type": "integer",
+          "isPrimaryKey": false,
+          "nullable": true,
+          "isForeignKey": false,
+          "isUnique": false
+        },
+        {
+          "name": "custom_field_44_value_tracking",
+          "type": "varchar(255)",
+          "isPrimaryKey": false,
+          "nullable": true,
+          "isForeignKey": false,
+          "isUnique": false
+        },
+        {
+          "name": "custom_field_45_value_tracking",
+          "type": "integer",
+          "isPrimaryKey": false,
+          "nullable": true,
+          "isForeignKey": false,
+          "isUnique": false
+        },
+        {
+          "name": "custom_field_46_value_tracking",
+          "type": "varchar(255)",
+          "isPrimaryKey": false,
+          "nullable": true,
+          "isForeignKey": false,
+          "isUnique": false
+        },
+        {
+          "name": "custom_field_47_value_tracking",
+          "type": "integer",
+          "isPrimaryKey": false,
+          "nullable": true,
+          "isForeignKey": false,
+          "isUnique": false
+        },
+        {
+          "name": "custom_field_48_value_tracking",
+          "type": "varchar(255)",
+          "isPrimaryKey": false,
+          "nullable": true,
+          "isForeignKey": false,
+          "isUnique": false
+        },
+        {
+          "name": "custom_field_49_value_tracking",
+          "type": "integer",
+          "isPrimaryKey": false,
+          "nullable": true,
+          "isForeignKey": false,
+          "isUnique": false
+        },
+        {
+          "name": "custom_field_50_value_tracking",
+          "type": "varchar(255)",
+          "isPrimaryKey": false,
+          "nullable": true,
+          "isForeignKey": false,
+          "isUnique": false
+        },
+        {
+          "name": "custom_field_51_value_tracking",
+          "type": "integer",
+          "isPrimaryKey": false,
+          "nullable": true,
+          "isForeignKey": false,
+          "isUnique": false
+        },
+        {
+          "name": "custom_field_52_value_tracking",
+          "type": "varchar(255)",
+          "isPrimaryKey": false,
+          "nullable": true,
+          "isForeignKey": false,
+          "isUnique": false
+        },
+        {
+          "name": "custom_field_53_value_tracking",
+          "type": "integer",
+          "isPrimaryKey": false,
+          "nullable": true,
+          "isForeignKey": false,
+          "isUnique": false
+        },
+        {
+          "name": "custom_field_54_value_tracking",
+          "type": "varchar(255)",
+          "isPrimaryKey": false,
+          "nullable": true,
+          "isForeignKey": false,
+          "isUnique": false
+        },
+        {
+          "name": "custom_field_55_value_tracking",
+          "type": "integer",
+          "isPrimaryKey": false,
+          "nullable": true,
+          "isForeignKey": false,
+          "isUnique": false
+        },
+        {
+          "name": "custom_field_56_value_tracking",
+          "type": "varchar(255)",
+          "isPrimaryKey": false,
+          "nullable": true,
+          "isForeignKey": false,
+          "isUnique": false
+        },
+        {
+          "name": "custom_field_57_value_tracking",
+          "type": "integer",
+          "isPrimaryKey": false,
+          "nullable": true,
+          "isForeignKey": false,
+          "isUnique": false
+        },
+        {
+          "name": "custom_field_58_value_tracking",
+          "type": "varchar(255)",
+          "isPrimaryKey": false,
+          "nullable": true,
+          "isForeignKey": false,
+          "isUnique": false
+        },
+        {
+          "name": "custom_field_59_value_tracking",
+          "type": "integer",
+          "isPrimaryKey": false,
+          "nullable": true,
+          "isForeignKey": false,
+          "isUnique": false
+        },
+        {
+          "name": "custom_field_60_value_tracking",
+          "type": "varchar(255)",
+          "isPrimaryKey": false,
+          "nullable": true,
+          "isForeignKey": false,
+          "isUnique": false
+        }
+      ],
+      "foreignKeys": [
+        {
+          "name": "fk_custom_profile_user",
+          "column": "custom_field_1_value_tracking",
+          "targetSchema": "public",
+          "targetTable": "users",
+          "targetColumn": "id",
+          "onDelete": "CASCADE",
+          "onUpdate": "NO ACTION"
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "name": "orders",
+      "schema": "sales",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "isPrimaryKey": true,
+          "nullable": false,
+          "isForeignKey": false,
+          "isUnique": true
+        },
+        {
+          "name": "customer_id",
+          "type": "uuid",
+          "isPrimaryKey": false,
+          "nullable": false,
+          "isForeignKey": true,
+          "isUnique": false
+        },
+        {
+          "name": "created_by_user_id",
+          "type": "uuid",
+          "isPrimaryKey": false,
+          "nullable": false,
+          "isForeignKey": true,
+          "isUnique": false
+        },
+        {
+          "name": "updated_by_user_id",
+          "type": "uuid",
+          "isPrimaryKey": false,
+          "nullable": true,
+          "isForeignKey": true,
+          "isUnique": false
+        },
+        {
+          "name": "deleted_by_user_id",
+          "type": "uuid",
+          "isPrimaryKey": false,
+          "nullable": true,
+          "isForeignKey": true,
+          "isUnique": false
+        },
+        {
+          "name": "approved_by_user_id",
+          "type": "uuid",
+          "isPrimaryKey": false,
+          "nullable": true,
+          "isForeignKey": true,
+          "isUnique": false
+        },
+        {
+          "name": "total_amount",
+          "type": "decimal(10,2)",
+          "isPrimaryKey": false,
+          "nullable": false,
+          "isForeignKey": false,
+          "isUnique": false
+        }
+      ],
+      "foreignKeys": [
+        {
+          "name": "fk_order_cust",
+          "column": "customer_id",
+          "targetSchema": "public",
+          "targetTable": "users",
+          "targetColumn": "id",
+          "onDelete": "RESTRICT",
+          "onUpdate": "CASCADE"
+        },
+        {
+          "name": "fk_order_creator",
+          "column": "created_by_user_id",
+          "targetSchema": "public",
+          "targetTable": "users",
+          "targetColumn": "id",
+          "onDelete": "SET NULL",
+          "onUpdate": "CASCADE"
+        },
+        {
+          "name": "fk_order_updater",
+          "column": "updated_by_user_id",
+          "targetSchema": "public",
+          "targetTable": "users",
+          "targetColumn": "id",
+          "onDelete": "SET NULL",
+          "onUpdate": "CASCADE"
+        },
+        {
+          "name": "fk_order_deleter",
+          "column": "deleted_by_user_id",
+          "targetSchema": "public",
+          "targetTable": "users",
+          "targetColumn": "id",
+          "onDelete": "SET NULL",
+          "onUpdate": "CASCADE"
+        },
+        {
+          "name": "fk_order_approver",
+          "column": "approved_by_user_id",
+          "targetSchema": "public",
+          "targetTable": "users",
+          "targetColumn": "id",
+          "onDelete": "SET NULL",
+          "onUpdate": "CASCADE"
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "name": "order_items",
+      "schema": "sales",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "isPrimaryKey": true,
+          "nullable": false,
+          "isForeignKey": false,
+          "isUnique": true
+        },
+        {
+          "name": "order_id",
+          "type": "uuid",
+          "isPrimaryKey": false,
+          "nullable": false,
+          "isForeignKey": true,
+          "isUnique": false
+        },
+        {
+          "name": "product_id",
+          "type": "uuid",
+          "isPrimaryKey": false,
+          "nullable": false,
+          "isForeignKey": true,
+          "isUnique": false
+        },
+        {
+          "name": "quantity",
+          "type": "integer",
+          "isPrimaryKey": false,
+          "nullable": false,
+          "isForeignKey": false,
+          "isUnique": false
+        }
+      ],
+      "foreignKeys": [
+        {
+          "name": "fk_order_item_order",
+          "column": "order_id",
+          "targetSchema": "sales",
+          "targetTable": "orders",
+          "targetColumn": "id",
+          "onDelete": "CASCADE",
+          "onUpdate": "CASCADE"
+        },
+        {
+          "name": "fk_order_item_product",
+          "column": "product_id",
+          "targetSchema": "inventory",
+          "targetTable": "products",
+          "targetColumn": "id",
+          "onDelete": "RESTRICT",
+          "onUpdate": "CASCADE"
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "name": "products",
+      "schema": "inventory",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "isPrimaryKey": true,
+          "nullable": false,
+          "isForeignKey": false,
+          "isUnique": true
+        },
+        {
+          "name": "name",
+          "type": "varchar(255)",
+          "isPrimaryKey": false,
+          "nullable": false,
+          "isForeignKey": false,
+          "isUnique": false
+        },
+        {
+          "name": "price",
+          "type": "decimal",
+          "isPrimaryKey": false,
+          "nullable": false,
+          "isForeignKey": false,
+          "isUnique": false
+        }
+      ],
+      "foreignKeys": [],
+      "indexes": []
+    },
+    {
+      "name": "product_categories",
+      "schema": "inventory",
+      "columns": [
+        {
+          "name": "product_id",
+          "type": "uuid",
+          "isPrimaryKey": true,
+          "nullable": false,
+          "isForeignKey": true,
+          "isUnique": false
+        },
+        {
+          "name": "category_id",
+          "type": "uuid",
+          "isPrimaryKey": true,
+          "nullable": false,
+          "isForeignKey": true,
+          "isUnique": false
+        }
+      ],
+      "foreignKeys": [
+        {
+          "name": "fk_pc_product",
+          "column": "product_id",
+          "targetSchema": "inventory",
+          "targetTable": "products",
+          "targetColumn": "id",
+          "onDelete": "CASCADE",
+          "onUpdate": "CASCADE"
+        },
+        {
+          "name": "fk_pc_category",
+          "column": "category_id",
+          "targetSchema": "inventory",
+          "targetTable": "categories",
+          "targetColumn": "id",
+          "onDelete": "CASCADE",
+          "onUpdate": "CASCADE"
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "name": "categories",
+      "schema": "inventory",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "isPrimaryKey": true,
+          "nullable": false,
+          "isForeignKey": false,
+          "isUnique": true
+        },
+        {
+          "name": "name",
+          "type": "varchar(100)",
+          "isPrimaryKey": false,
+          "nullable": false,
+          "isForeignKey": false,
+          "isUnique": true
+        },
+        {
+          "name": "parent_id",
+          "type": "uuid",
+          "isPrimaryKey": false,
+          "nullable": true,
+          "isForeignKey": true,
+          "isUnique": false
+        }
+      ],
+      "foreignKeys": [
+        {
+          "name": "fk_cat_parent",
+          "column": "parent_id",
+          "targetSchema": "inventory",
+          "targetTable": "categories",
+          "targetColumn": "id",
+          "onDelete": "SET NULL",
+          "onUpdate": "CASCADE"
+        }
+      ],
+      "indexes": []
+    }
+  ]
+}

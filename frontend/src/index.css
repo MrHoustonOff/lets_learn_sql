@@ -1,89 +1,188 @@
-@import "tw-animate-css";
-@import "shadcn/tailwind.css";
-@import "@fontsource-variable/geist";
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
-  .theme {
-    --font-heading: var(--font-sans);
-    --font-sans: 'Geist Variable', sans-serif
-  }
   :root {
-    --background: oklch(1 0 0);
-    --foreground: oklch(0.145 0 0);
-    --card: oklch(1 0 0);
-    --card-foreground: oklch(0.145 0 0);
-    --popover: oklch(1 0 0);
-    --popover-foreground: oklch(0.145 0 0);
-    --primary: oklch(0.205 0 0);
-    --primary-foreground: oklch(0.985 0 0);
-    --secondary: oklch(0.97 0 0);
-    --secondary-foreground: oklch(0.205 0 0);
-    --muted: oklch(0.97 0 0);
-    --muted-foreground: oklch(0.556 0 0);
-    --accent: oklch(0.97 0 0);
-    --accent-foreground: oklch(0.205 0 0);
-    --destructive: oklch(0.577 0.245 27.325);
-    --border: oklch(0.922 0 0);
-    --input: oklch(0.922 0 0);
-    --ring: oklch(0.708 0 0);
-    --chart-1: oklch(0.87 0 0);
-    --chart-2: oklch(0.556 0 0);
-    --chart-3: oklch(0.439 0 0);
-    --chart-4: oklch(0.371 0 0);
-    --chart-5: oklch(0.269 0 0);
-    --radius: 0.625rem;
-    --sidebar: oklch(0.985 0 0);
-    --sidebar-foreground: oklch(0.145 0 0);
-    --sidebar-primary: oklch(0.205 0 0);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.97 0 0);
-    --sidebar-accent-foreground: oklch(0.205 0 0);
-    --sidebar-border: oklch(0.922 0 0);
-    --sidebar-ring: oklch(0.708 0 0)
+    /* LIGHT THEME (Warm Neutrals) */
+    --background: 40 23.1% 94.9%; /* lPage #f5f3ef */
+    --foreground: 40 6.1% 9.6%; /* lPriText #1a1917 */
+
+    --card: 60 16.7% 97.6%; /* lCard #fafaf8 */
+    --card-foreground: 40 6.1% 9.6%; /* lPriText #1a1917 */
+
+    --popover: 0 0% 100%; /* lSurface #ffffff */
+    --popover-foreground: 40 6.1% 9.6%; /* lPriText #1a1917 */
+
+    --primary: 25.7 86.7% 47.1%; /* o500 #e06910 */
+    --primary-foreground: 28.7 100% 95.5%; /* o50 #fff3e8 */
+
+    --secondary: 40 13% 89%; /* lighter surface for hover */
+    --secondary-foreground: 36 4.5% 21.8%; /* lSecText #3a3835 */
+
+    --muted: 37.5 14.8% 89.4%; /* lBorderLight #e8e5e0 */
+    --muted-foreground: 36 4.1% 52.2%; /* lMutedText #8a8680 */
+
+    --accent: 37.5 14.8% 89.4%; /* lBorderLight #e8e5e0 */
+    --accent-foreground: 40 6.1% 9.6%; /* lPriText #1a1917 */
+
+    --destructive: 0 72.2% 50.6%; /* lDanger #dc2626 */
+    --destructive-foreground: 28.7 100% 95.5%; /* o50 #fff3e8 */
+
+    --border: 40 9.2% 74.5%; /* lBorderMid #c4c0b8 */
+    --input: 37.5 14.8% 89.4%; /* lBorderLight #e8e5e0 */
+    --ring: 25.7 86.7% 47.1%; /* o500 #e06910 */
+
+    --radius: 0.5rem;
+
+    /* Custom Glassmorphism Theme Variables - Light Mode */
+    /* Light mode doesn't strictly use glassmorphism in the spec, but we keep the tokens */
+    --glass-bg: 60 16.7% 97.6%; /* lCard */
+    --glass-opacity: 0.95;
+    --glass-border: 40 9.2% 74.5%; /* lBorderMid */
+    --glass-border-opacity: 0.5;
+    --glass-hover-bg: 0 0% 100%; /* lSurface */
+    --glass-hover-opacity: 1;
+    
+    --bg-gradient-start: 40 23.1% 94.9%; /* lPage */
+    --bg-gradient-end: 60 16.7% 97.6%; /* lCard */
+
+    --glow: 25.7 86.7% 47.1%;
+    --glow-opacity: 0.05;
+
+    /* Badges & Tags */
+    --badge-bg: 28.7 100% 95.5%; /* o50 */
+    --badge-bg-opacity: 1;
+    --badge-fg: 24.6 84% 39.2%; /* o600 */
   }
+
   .dark {
-    --background: oklch(0.145 0 0);
-    --foreground: oklch(0.985 0 0);
-    --card: oklch(0.205 0 0);
-    --card-foreground: oklch(0.985 0 0);
-    --popover: oklch(0.205 0 0);
-    --popover-foreground: oklch(0.985 0 0);
-    --primary: oklch(0.922 0 0);
-    --primary-foreground: oklch(0.205 0 0);
-    --secondary: oklch(0.269 0 0);
-    --secondary-foreground: oklch(0.985 0 0);
-    --muted: oklch(0.269 0 0);
-    --muted-foreground: oklch(0.708 0 0);
-    --accent: oklch(0.269 0 0);
-    --accent-foreground: oklch(0.985 0 0);
-    --destructive: oklch(0.704 0.191 22.216);
-    --border: oklch(1 0 0 / 10%);
-    --input: oklch(1 0 0 / 15%);
-    --ring: oklch(0.556 0 0);
-    --chart-1: oklch(0.87 0 0);
-    --chart-2: oklch(0.556 0 0);
-    --chart-3: oklch(0.439 0 0);
-    --chart-4: oklch(0.371 0 0);
-    --chart-5: oklch(0.269 0 0);
-    --sidebar: oklch(0.205 0 0);
-    --sidebar-foreground: oklch(0.985 0 0);
-    --sidebar-primary: oklch(0.488 0.243 264.376);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.269 0 0);
-    --sidebar-accent-foreground: oklch(0.985 0 0);
-    --sidebar-border: oklch(1 0 0 / 10%);
-    --sidebar-ring: oklch(0.556 0 0)
+    /* DARK THEME (Warm Neutrals) */
+    --background: 0 0% 5.9%; /* dPage #0f0f0f */
+    --foreground: 40 28.6% 91.8%; /* dPriText #f0ece4 */
+
+    --card: 0 0% 13.3%; /* dCard #222222 */
+    --card-foreground: 40 28.6% 91.8%; /* dPriText #f0ece4 */
+
+    --popover: 0 0% 10.2%; /* dSurface #1a1a1a */
+    --popover-foreground: 40 28.6% 91.8%; /* dPriText #f0ece4 */
+
+    --primary: 26.5 87.4% 53.3%; /* o400 #f07c20 */
+    --primary-foreground: 0 0% 5.9%; /* dPage #0f0f0f */
+
+    --secondary: 0 0% 18%; /* dCardHover #2e2e2e */
+    --secondary-foreground: 40 9.8% 76.1%; /* dSecText #c8c4bc */
+
+    --muted: 0 0% 10.2%; /* dSurface #1a1a1a */
+    --muted-foreground: 37.5 3.3% 51.8%; /* dMutedText #888580 */
+
+    --accent: 0 0% 18%; /* dCardHover #2e2e2e */
+    --accent-foreground: 40 28.6% 91.8%; /* dPriText #f0ece4 */
+
+    --destructive: 0 78.9% 72.2%; /* dDanger #f08080 */
+    --destructive-foreground: 0 0% 5.9%; /* dPage #0f0f0f */
+
+    --border: 0 0% 26.7%; /* dBorder #444444 */
+    --input: 0 0% 26.7%; /* dBorder #444444 */
+    --ring: 26.5 87.4% 53.3%; /* o400 #f07c20 */
+
+    /* Custom Glassmorphism Theme Variables - Dark Mode */
+    --glass-bg: 0 0% 13.3%; /* dCard #222222 */
+    --glass-opacity: 0.95; /* Легкая прозрачность для свечения сзади, но цвет почти чистый #222222 */
+    --glass-border: 0 0% 100%;
+    --glass-border-opacity: 0.08; 
+    --glass-hover-bg: 0 0% 18%; /* dCardHover #2e2e2e */
+    --glass-hover-opacity: 0.95;
+
+    --bg-gradient-start: 0 0% 5.9%; /* dPage */
+    --bg-gradient-end: 0 0% 10.2%; /* dSurface */
+
+    --glow: 26.5 87.4% 53.3%;
+    --glow-opacity: 0.15;
+
+    /* Badges & Tags */
+    /* "rgba(240,124,32,0.15) фон + orange-200 текст в тёмной" */
+    --badge-bg: 26.5 87.4% 53.3%; /* o400 (#f07c20) with opacity */
+    --badge-bg-opacity: 0.15;
+    --badge-fg: 30.4 100% 72.5%; /* o200 */
   }
+}
+
+@layer base {
   * {
-    @apply border-border outline-ring/50;
+    @apply border-border;
   }
   body {
     @apply bg-background text-foreground;
   }
-  html {
-    @apply font-sans;
-  }
+}
+
+/* Custom styles for React Flow Controls to match Glassmorphism */
+.custom-controls.react-flow__controls {
+  @apply bg-glass border border-glass-border shadow-lg backdrop-blur-xl rounded-xl overflow-hidden flex flex-col p-0;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+}
+
+.custom-controls .react-flow__controls-button {
+  @apply bg-transparent border-b border-glass-border text-foreground w-10 h-10 flex items-center justify-center transition-colors hover:bg-glass-hover;
+}
+
+/* 
+  ГЛОБАЛЬНАЯ ОПТИМИЗАЦИЯ ПРИ ПЕРЕТАСКИВАНИИ 
+  Когда пользователь тащит узел, мы "фризим" визуализатор,
+  жестко отключая стеклянные эффекты через CSS (самое быстрое решение).
+*/
+.is-global-dragging .react-flow__node {
+  /* Снимаем эффекты стекла у ВСЕХ узлов */
+  backdrop-filter: none !important;
+  box-shadow: none !important;
+}
+
+/* Приглушаем неактивные узлы (те, что не тащим) */
+.is-global-dragging .react-flow__node:not(.dragging) {
+  transition: opacity 0.2s, filter 0.2s;
+}
+
+/* Отключаем CSS-анимацию граней */
+.is-global-dragging .react-flow__edge-animated path {
+  animation: none !important;
+}
+
+.custom-controls .react-flow__controls-button:last-child {
+  @apply border-b-0;
+}
+
+.custom-controls .react-flow__controls-button svg {
+  @apply opacity-80;
+}
+
+/* Закрашиваем дефолтные иконки ReactFlow, но не трогаем иконки Lucide (которые рисуются через stroke) */
+.custom-controls .react-flow__controls-button svg:not(.lucide) {
+  @apply fill-foreground;
+}
+
+.react-flow__edgelabel-renderer {
+  z-index: 1000 !important;
+}
+
+/* Custom Scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  @apply bg-black/20 dark:bg-white/20 rounded-full;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  @apply bg-black/40 dark:bg-white/40;
+}
+
+/* Left-sided scrollbar trick */
+.scroll-left {
+  direction: rtl;
+}
+.scroll-left > * {
+  direction: ltr;
 }
