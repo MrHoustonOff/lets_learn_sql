@@ -50,6 +50,19 @@ module.exports = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        glass: {
+          DEFAULT: "hsl(var(--glass-bg) / var(--glass-opacity))",
+          hover: "hsl(var(--glass-hover-bg) / var(--glass-hover-opacity))",
+          border: "hsl(var(--glass-border) / var(--glass-border-opacity))",
+        },
+        badge: {
+          DEFAULT: "hsl(var(--badge-bg) / var(--badge-bg-opacity))",
+          foreground: "hsl(var(--badge-fg))"
+        },
+        gradient: {
+          start: "hsl(var(--bg-gradient-start))",
+          end: "hsl(var(--bg-gradient-end))"
+        }
       },
       borderRadius: {
         lg: "var(--radius)",

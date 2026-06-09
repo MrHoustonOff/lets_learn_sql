@@ -1,0 +1,86 @@
+import { BaseEdge, getSmoothStepPath, getBezierPath } from '@xyflow/react';
+import type { EdgeProps } from '@xyflow/react';
+
+export const RelationEdge: React.FC<EdgeProps> = ({
+  sourceX,
+  sourceY,
+  targetX,
+  targetY,
+  sourcePosition,
+  targetPosition,
+  style = {},
+  data,
+  markerEnd,
+}) => {
+  const edgeStyleType = data?.edgeStyle as 'bezier' | 'smoothstep' | undefined;
+  
+  const pathParams = {
+    sourceX, sourceY, sourcePosition,
+    targetX, targetY, targetPosition,
+  };
+
+  const [edgePath] = edgeStyleType === 'smoothstep' 
+    ? getSmoothStepPath({ ...pathParams, borderRadius: 20 })
+    : getBezierPath(pathParams);
+
+  const relationType = data?.relationType as '1:1' | '1:M' | undefined;
+  
+  // Базовый цвет и толщина линии
+  const stroke = 'hsl(var(--primary))';
+  const strokeWidth = 2;
+
+  // Source находится справа от ноды (Position.Right). Линии идут вправо (+x).
+  const renderManyMarker = (x: number, y: number) => {
+    return (
+      <g transform={`translate(${x}, ${y})`}>
+        {/* Ветка вверх */}
+        <line x1="0" y1="0" x2="8" y2="-5" stroke={stroke} strokeWidth={strokeWidth} strokeLinecap="round" />
+        {/* Ветка вниз */}
+        <line x1="0" y1="0" x2="8" y2="5" stroke={stroke} strokeWidth={strokeWidth} strokeLinecap="round" />
+        {/* Центральная линия сквозь маркер */}
+        <line x1="0" y1="0" x2="16" y2="0" stroke={stroke} strokeWidth={strokeWidth} />
+        {/* Кружок (Zero or Many) */}
+        <circle cx="12" cy="0" r="2.5" fill="hsl(var(--background))" stroke={stroke} strokeWidth={strokeWidth} />
+      </g>
+    );
+  };
+
+  const renderOneMarker = (x: number, y: number) => {
+    return (
+      <g transform={`translate(${x}, ${y})`}>
+        {/* Две вертикальные риски (Mandatory One) */}
+        <line x1="4" y1="-5" x2="4" y2="5" stroke={stroke} strokeWidth={strokeWidth} strokeLinecap="round" />
+        <line x1="9" y1="-5" x2="9" y2="5" stroke={stroke} strokeWidth={strokeWidth} strokeLinecap="round" />
+        <line x1="0" y1="0" x2="16" y2="0" stroke={stroke} strokeWidth={strokeWidth} />
+      </g>
+    );
+  };
+
+  // Target находится слева от ноды (Position.Left). Линии идут влево (-x).
+  const renderTargetOneMarker = (x: number, y: number) => {
+    return (
+      <g transform={`translate(${x}, ${y})`}>
+        {/* Две вертикальные риски (Mandatory One) */}
+        <line x1="-4" y1="-5" x2="-4" y2="5" stroke={stroke} strokeWidth={strokeWidth} strokeLinecap="round" />
+        <line x1="-9" y1="-5" x2="-9" y2="5" stroke={stroke} strokeWidth={strokeWidth} strokeLinecap="round" />
+        <line x1="0" y1="0" x2="-16" y2="0" stroke={stroke} strokeWidth={strokeWidth} />
+      </g>
+    );
+  };
+
+  const showMarkers = data?.showMarkers !== false; // По умолчанию true
+
+  return (
+    <>
+      <BaseEdge path={edgePath} markerEnd={markerEnd} style={{ ...style, stroke, strokeWidth }} />
+      {/* Рисуем SVG маркеры вручную поверх линии для идеального позиционирования */}
+      
+      {/* Source Marker (Many or One) */}
+      {showMarkers && relationType === '1:M' && renderManyMarker(sourceX, sourceY)}
+      {showMarkers && relationType === '1:1' && renderOneMarker(sourceX, sourceY)}
+
+      {/* Target Marker (Always One in our DB schema context) */}
+      {showMarkers && renderTargetOneMarker(targetX, targetY)}
+    </>
+  );
+};

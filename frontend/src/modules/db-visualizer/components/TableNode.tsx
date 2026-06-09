@@ -1,18 +1,23 @@
 import React from 'react';
+import { Handle, Position } from '@xyflow/react';
 import type { TableSchema } from '../types';
-import { ColumnRow } from './ColumnRow';
 import { Database } from 'lucide-react';
+import { ColumnRow } from './ColumnRow';
 
-interface TableCardProps {
-  table: TableSchema;
+interface TableNodeProps {
+  data: {
+    table: TableSchema;
+  };
 }
 
-export const TableCard: React.FC<TableCardProps> = ({ table }) => {
+export const TableNode: React.FC<TableNodeProps> = ({ data }) => {
+  const { table } = data;
+
   return (
-    <div className="relative group rounded-xl bg-glass border border-glass-border backdrop-blur-xl shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] hover:shadow-[0_8px_32px_0_rgba(0,0,0,0.5)] transition-all duration-300 hover:-translate-y-1 hover:bg-glass-hover">
+    <div className="relative group rounded-xl bg-glass border border-glass-border backdrop-blur-xl shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] hover:shadow-[0_8px_32px_0_rgba(0,0,0,0.6)] hover:border-primary/50 transition-all duration-300 min-w-[300px]">
       
       {/* Header */}
-      <div className="px-4 py-3 border-b border-glass-border flex items-center gap-3 rounded-t-xl">
+      <div className="px-4 py-3 border-b border-glass-border flex items-center gap-3 rounded-t-xl bg-black/10 dark:bg-white/5">
         <Database size={16} className="text-emerald-500 dark:text-emerald-400" />
         <h3 className="font-semibold text-foreground tracking-wide">{table.name}</h3>
         {table.schema !== 'public' && (
@@ -23,9 +28,27 @@ export const TableCard: React.FC<TableCardProps> = ({ table }) => {
       </div>
 
       {/* Columns List */}
-      <div className="flex flex-col">
+      <div className="flex flex-col relative">
         {table.columns.map(col => (
-          <ColumnRow key={col.name} column={col} />
+          <div key={col.name} className="relative">
+            {/* Target Handle (Left) */}
+            <Handle 
+              type="target" 
+              position={Position.Left} 
+              id={`${col.name}-target`} 
+              className="w-1 h-1 opacity-0 pointer-events-none" 
+            />
+            
+            <ColumnRow column={col} />
+            
+            {/* Source Handle (Right) */}
+            <Handle 
+              type="source" 
+              position={Position.Right} 
+              id={`${col.name}-source`} 
+              className="w-1 h-1 opacity-0 pointer-events-none" 
+            />
+          </div>
         ))}
       </div>
 
