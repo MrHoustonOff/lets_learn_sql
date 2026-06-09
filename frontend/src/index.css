@@ -127,6 +127,27 @@
   @apply bg-transparent border-b border-glass-border text-foreground w-10 h-10 flex items-center justify-center transition-colors hover:bg-glass-hover;
 }
 
+/* 
+  ГЛОБАЛЬНАЯ ОПТИМИЗАЦИЯ ПРИ ПЕРЕТАСКИВАНИИ 
+  Когда пользователь тащит узел, мы "фризим" визуализатор,
+  жестко отключая стеклянные эффекты через CSS (самое быстрое решение).
+*/
+.is-global-dragging .react-flow__node {
+  /* Снимаем эффекты стекла у ВСЕХ узлов */
+  backdrop-filter: none !important;
+  box-shadow: none !important;
+}
+
+/* Приглушаем неактивные узлы (те, что не тащим) */
+.is-global-dragging .react-flow__node:not(.dragging) {
+  transition: opacity 0.2s, filter 0.2s;
+}
+
+/* Отключаем CSS-анимацию граней */
+.is-global-dragging .react-flow__edge-animated path {
+  animation: none !important;
+}
+
 .custom-controls .react-flow__controls-button:last-child {
   @apply border-b-0;
 }

@@ -8,6 +8,7 @@ interface TableNodeProps {
   data: {
     table: TableSchema;
     highlightedColumns?: Set<string>;
+    isFaded?: boolean;
   };
   dragging?: boolean;
 }
@@ -19,11 +20,9 @@ export const TableNode: React.FC<TableNodeProps> = ({ data, dragging }) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
   // Сворачиваем при перетаскивании
-  useEffect(() => {
-    if (dragging && isExpanded) {
-      setIsExpanded(false);
-    }
-  }, [dragging, isExpanded]);
+  if (dragging && isExpanded) {
+    setIsExpanded(false);
+  }
 
   // Обновляем Handle-позиции, когда высота меняется (анимация может занять время, поэтому таймаут или просто сразу)
   useEffect(() => {
@@ -33,18 +32,12 @@ export const TableNode: React.FC<TableNodeProps> = ({ data, dragging }) => {
     }
   }, [isExpanded, nodeId, updateNodeInternals]);
 
-  // Проверяем, есть ли в таблице искомые столбцы
-  const hasHighlightedColumns = React.useMemo(() => {
-    if (!highlightedColumns || highlightedColumns.size === 0) return true; // Если нет фильтра - всё ок
-    return table.columns.some(col => highlightedColumns.has(col.name));
-  }, [table, highlightedColumns]);
-
-  // Если фильтр активен, но в таблице нет нужных столбцов - уводим в инвиз
-  const isFaded = highlightedColumns && highlightedColumns.size > 0 && !hasHighlightedColumns;
+  // Используем isFaded, который теперь приходит из кэшированных данных
+  const isFaded = data.isFaded;
 
   return (
-    <div className={`relative group rounded-xl bg-glass border border-glass-border backdrop-blur-xl shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] hover:shadow-[0_8px_32px_0_rgba(0,0,0,0.6)] hover:border-primary/50 hover:scale-[1.02] transition-all duration-300 w-[320px] max-w-[320px] flex flex-col ${
-      isFaded ? 'opacity-40 grayscale-[0.5]' : ''
+    <div className={`relative group rounded-xl bg-glass border border-glass-border backdrop-blur-xl shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] hover:shadow-[0_8px_32px_0_rgba(0,0,0,0.5)] transition-all duration-300 hover:-translate-y-1 hover:bg-glass-hover w-[320px] max-w-[320px] flex flex-col ${
+      isFaded ? 'opacity-40 grayscale-[0.8] scale-[0.98]' : ''
     }`}>
       
       {/* Header */}

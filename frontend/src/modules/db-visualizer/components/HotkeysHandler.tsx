@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { useReactFlow } from '@xyflow/react';
 
 // Система хоткеев, которую легко расширять и настраивать
-export const HOTKEYS_CONFIG = {
+const HOTKEYS_CONFIG = {
   fitView: ['f', 'keyf', ' ', 'space', 'spacebar'], // 'keyf' работает на любой раскладке (в т.ч. русской 'а')
   resetLayout: ['r', 'keyr', 'к'], // 'keyr' или русская 'к'
 };
@@ -45,7 +45,7 @@ export const HotkeysHandler: React.FC<HotkeysHandlerProps> = ({ onResetLayout })
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [fitView]);
+  }, [fitView, onResetLayout]);
 
   return null;
 };
