@@ -46,9 +46,8 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
 
   // -- Columns Logic --
   const allColumns = useMemo(() => {
-    const cols = new Set<string>();
-    schema.tables.forEach(t => t.columns.forEach(c => cols.add(c.name)));
-    return Array.from(cols).sort();
+    const cols = schema.tables.flatMap(t => t.columns.map(c => c.name));
+    return Array.from(new Set(cols)).sort();
   }, [schema]);
   
   const filteredColumns = useMemo(() => 
@@ -61,6 +60,21 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
       next.delete(colName);
     } else {
       next.add(colName);
+      
+      // Авто-показ скрытых таблиц, содержащих выбранный столбец
+      let hiddenChanged = false;
+      const nextHidden = new Set(hiddenTables);
+      schema.tables.forEach(t => {
+        const tableId = `${t.schema}.${t.name}`;
+        if (nextHidden.has(tableId) && t.columns.some(c => c.name === colName)) {
+          nextHidden.delete(tableId);
+          hiddenChanged = true;
+        }
+      });
+      
+      if (hiddenChanged) {
+        onChangeHiddenTables(nextHidden);
+      }
     }
     onChangeHighlightedColumns(next);
   };

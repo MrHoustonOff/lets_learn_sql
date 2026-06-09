@@ -4,7 +4,9 @@ import { ThemeProvider } from './components/theme-provider';
 function App() {
   return (
     <ThemeProvider defaultTheme="dark" storageKey="pgym-ui-theme">
-      <DBVisualizer />
+      <div className="h-screen w-full">
+        <DBVisualizer />
+      </div>
     </ThemeProvider>
   );
 }

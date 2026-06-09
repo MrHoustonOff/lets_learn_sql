@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Settings2, Eye, EyeOff, Waypoints, Spline, CircleDot, RotateCcw, BookOpenText } from 'lucide-react';
+import { Settings2, Eye, EyeOff, Waypoints, Spline, CircleDot, RotateCcw, BookOpenText, Activity, Minus } from 'lucide-react';
 
 interface ViewMenuProps {
   showRelations: boolean;
@@ -10,6 +10,8 @@ interface ViewMenuProps {
   onToggleLegend: () => void;
   edgeStyle: 'bezier' | 'smoothstep';
   onChangeEdgeStyle: (style: 'bezier' | 'smoothstep') => void;
+  animateEdges: boolean;
+  onChangeAnimateEdges: (animate: boolean) => void;
   onResetLayout: () => void;
 }
 
@@ -22,6 +24,8 @@ export const ViewMenu: React.FC<ViewMenuProps> = ({
   onToggleLegend,
   edgeStyle,
   onChangeEdgeStyle,
+  animateEdges,
+  onChangeAnimateEdges,
   onResetLayout,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -52,7 +56,27 @@ export const ViewMenu: React.FC<ViewMenuProps> = ({
           isOpen ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'
         }`}
       >
-          
+          {/* Переключатель легенды */}
+          <button
+            onClick={() => onToggleLegend()}
+            className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 transition-colors text-sm text-left w-full mb-1"
+          >
+            {showLegend ? (
+              <BookOpenText size={16} className="text-blue-500" />
+            ) : (
+              <BookOpenText size={16} className="text-muted-foreground" />
+            )}
+            <span className="flex-1">Отображать легенду</span>
+            <div className={`w-8 h-4 rounded-full relative transition-colors ${showLegend ? 'bg-primary' : 'bg-black/20 dark:bg-white/20'}`}>
+              <div className={`absolute top-0.5 w-3 h-3 rounded-full bg-white transition-all shadow-sm ${showLegend ? 'left-4' : 'left-0.5'}`} />
+            </div>
+          </button>
+
+          <div className="h-px bg-glass-border my-1" />
+          <div className="px-2 py-1">
+            <span className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider pl-1">Связи</span>
+          </div>
+
           {/* Переключатель связей */}
           <button
             onClick={() => onToggleRelations()}
@@ -69,22 +93,6 @@ export const ViewMenu: React.FC<ViewMenuProps> = ({
             </div>
           </button>
 
-          {/* Переключатель легенды */}
-          <button
-            onClick={() => onToggleLegend()}
-            className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 transition-colors text-sm text-left w-full"
-          >
-            {showLegend ? (
-              <BookOpenText size={16} className="text-blue-500" />
-            ) : (
-              <BookOpenText size={16} className="text-muted-foreground" />
-            )}
-            <span className="flex-1">Отображать легенду</span>
-            <div className={`w-8 h-4 rounded-full relative transition-colors ${showLegend ? 'bg-primary' : 'bg-black/20 dark:bg-white/20'}`}>
-              <div className={`absolute top-0.5 w-3 h-3 rounded-full bg-white transition-all shadow-sm ${showLegend ? 'left-4' : 'left-0.5'}`} />
-            </div>
-          </button>
-
           {/* Переключатель маркеров (1:1, 1:M) */}
           <button
             onClick={() => onToggleMarkers()}
@@ -95,17 +103,15 @@ export const ViewMenu: React.FC<ViewMenuProps> = ({
             ) : (
               <CircleDot size={16} className="text-muted-foreground" />
             )}
-            <span className="flex-1">Отображать тип связей (1:1, 1:M)</span>
+            <span className="flex-1">Показывать тип (1:1, 1:M)</span>
             <div className={`w-8 h-4 rounded-full relative transition-colors ${showMarkers ? 'bg-primary' : 'bg-black/20 dark:bg-white/20'}`}>
               <div className={`absolute top-0.5 w-3 h-3 rounded-full bg-white transition-all shadow-sm ${showMarkers ? 'left-4' : 'left-0.5'}`} />
             </div>
           </button>
 
-          <div className="h-px bg-glass-border my-1" />
-
           {/* Переключатель формы линий */}
           <div className={`px-3 py-2 space-y-2 ${!showRelations ? 'opacity-50 pointer-events-none' : ''}`}>
-            <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Форма соединений</span>
+            <span className="text-xs text-muted-foreground font-medium">Форма линий</span>
             <div className="flex gap-1 p-1 bg-black/5 dark:bg-white/5 rounded-lg border border-glass-border">
               <button
                 onClick={() => onChangeEdgeStyle('bezier')}
@@ -128,6 +134,35 @@ export const ViewMenu: React.FC<ViewMenuProps> = ({
               >
                 <Waypoints size={14} />
                 Квадратные
+              </button>
+            </div>
+          </div>
+
+          {/* Переключатель анимации линий */}
+          <div className={`px-3 py-2 space-y-2 ${!showRelations ? 'opacity-50 pointer-events-none' : ''}`}>
+            <span className="text-xs text-muted-foreground font-medium">Стиль линий</span>
+            <div className="flex gap-1 p-1 bg-black/5 dark:bg-white/5 rounded-lg border border-glass-border">
+              <button
+                onClick={() => onChangeAnimateEdges(true)}
+                className={`flex-1 flex items-center justify-center gap-2 py-1.5 rounded-md text-xs transition-colors ${
+                  animateEdges 
+                    ? 'bg-background shadow-sm text-foreground font-medium' 
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                <Activity size={14} />
+                Бегущие
+              </button>
+              <button
+                onClick={() => onChangeAnimateEdges(false)}
+                className={`flex-1 flex items-center justify-center gap-2 py-1.5 rounded-md text-xs transition-colors ${
+                  !animateEdges 
+                    ? 'bg-background shadow-sm text-foreground font-medium' 
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                <Minus size={14} />
+                Сплошные
               </button>
             </div>
           </div>

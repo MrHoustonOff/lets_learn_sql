@@ -20,7 +20,7 @@ export const ColumnRow: React.FC<ColumnRowProps> = ({ column, isHighlighted }) =
         {!column.isPrimaryKey && !column.isForeignKey && column.isUnique && <AlertCircle size={14} className="text-purple-500 dark:text-purple-400" />}
         {!column.isPrimaryKey && !column.isForeignKey && !column.isUnique && <span className="w-3.5 h-3.5 rounded-full border border-black/20 dark:border-white/20 group-hover:border-black/50 dark:group-hover:border-white/50"></span>}
       </div>
-      <div className="flex-1 font-medium text-foreground">
+      <div className="flex-1 font-medium text-foreground truncate" title={column.name}>
         {column.name}
       </div>
       <div className="text-xs font-mono text-muted-foreground truncate max-w-[120px]">

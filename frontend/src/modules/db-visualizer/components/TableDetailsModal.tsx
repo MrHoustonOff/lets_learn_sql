@@ -19,7 +19,7 @@ export const TableDetailsModal: React.FC<TableDetailsModalProps> = ({ table, onC
       />
 
       {/* Modal */}
-      <div className="relative w-full max-w-4xl max-h-[85vh] flex flex-col bg-glass backdrop-blur-2xl border border-glass-border rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
+      <div className="relative w-full max-w-4xl min-h-[60vh] max-h-[85vh] flex flex-col bg-glass backdrop-blur-2xl border border-glass-border rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
         
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-glass-border bg-black/10 dark:bg-white/5">
@@ -35,7 +35,7 @@ export const TableDetailsModal: React.FC<TableDetailsModalProps> = ({ table, onC
                 </span>
               </div>
               <p className="text-sm text-muted-foreground mt-0.5">
-                {table.columns.length} columns, {table.indexes.length} indexes
+                {table.columns?.length || 0} columns, {table.indexes?.length || 0} indexes
               </p>
             </div>
           </div>
@@ -74,9 +74,9 @@ export const TableDetailsModal: React.FC<TableDetailsModalProps> = ({ table, onC
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-hidden relative min-h-[60vh]">
+        <div className="flex-1 overflow-hidden relative min-h-0">
           <div 
-            className={`flex w-[200%] h-full transition-transform duration-300 ease-in-out ${
+            className={`absolute inset-y-0 left-0 flex w-[200%] transition-transform duration-300 ease-in-out ${
               activeTab === 'schema' ? 'translate-x-0' : '-translate-x-1/2'
             }`}
           >
@@ -89,19 +89,20 @@ export const TableDetailsModal: React.FC<TableDetailsModalProps> = ({ table, onC
                   <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider mb-3 flex items-center gap-2">
                     <TableProperties size={16} className="text-primary" /> Столбцы
                   </h3>
-                  <div className="border border-glass-border rounded-xl overflow-hidden bg-black/5 dark:bg-white/5">
-                    <table className="w-full text-left text-sm">
-                      <thead className="bg-black/10 dark:bg-white/10 text-muted-foreground text-xs uppercase tracking-wider">
-                        <tr>
-                          <th className="px-4 py-3 font-medium">Ключи</th>
-                          <th className="px-4 py-3 font-medium">Имя</th>
-                          <th className="px-4 py-3 font-medium">Тип</th>
-                          <th className="px-4 py-3 font-medium">Null</th>
-                          <th className="px-4 py-3 font-medium">По умолчанию</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-glass-border">
-                        {table.columns.map(col => (
+                  <div className="border border-glass-border rounded-xl overflow-hidden bg-black/5 dark:bg-white/5 max-h-[45vh] flex flex-col">
+                    <div className="overflow-y-auto overflow-x-auto custom-scrollbar">
+                      <table className="w-full text-left text-sm relative">
+                        <thead className="bg-black/10 dark:bg-white/10 text-muted-foreground text-xs uppercase tracking-wider sticky top-0 z-10 backdrop-blur-md shadow-sm">
+                          <tr>
+                            <th className="px-4 py-3 font-medium">Ключи</th>
+                            <th className="px-4 py-3 font-medium">Имя</th>
+                            <th className="px-4 py-3 font-medium">Тип</th>
+                            <th className="px-4 py-3 font-medium">Null</th>
+                            <th className="px-4 py-3 font-medium">По умолчанию</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-glass-border">
+                        {table.columns?.map(col => (
                           <tr key={col.name} className="hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
                             <td className="px-4 py-3">
                               <div className="flex items-center gap-1">
@@ -124,19 +125,20 @@ export const TableDetailsModal: React.FC<TableDetailsModalProps> = ({ table, onC
                         ))}
                       </tbody>
                     </table>
+                    </div>
                   </div>
                 </section>
 
                 {/* Indexes & Keys Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* Indexes */}
-                  {table.indexes.length > 0 && (
+                  {(table.indexes?.length || 0) > 0 && (
                     <section>
                       <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider mb-3 flex items-center gap-2">
                         <Hash size={16} className="text-amber-500" /> Индексы
                       </h3>
                       <div className="space-y-2">
-                        {table.indexes.map(idx => (
+                        {table.indexes?.map(idx => (
                           <div key={idx.name} className="p-3 bg-black/5 dark:bg-white/5 border border-glass-border rounded-xl">
                             <div className="flex items-center justify-between mb-1">
                               <span className="font-semibold text-sm">{idx.name}</span>
@@ -153,13 +155,13 @@ export const TableDetailsModal: React.FC<TableDetailsModalProps> = ({ table, onC
                   )}
 
                   {/* Foreign Keys */}
-                  {table.foreignKeys.length > 0 && (
+                  {(table.foreignKeys?.length || 0) > 0 && (
                     <section>
                       <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider mb-3 flex items-center gap-2">
                         <Link size={16} className="text-blue-500" /> Внешние ключи
                       </h3>
                       <div className="space-y-2">
-                        {table.foreignKeys.map(fk => (
+                        {table.foreignKeys?.map(fk => (
                           <div key={fk.name} className="p-3 bg-black/5 dark:bg-white/5 border border-glass-border rounded-xl">
                             <div className="font-semibold text-sm mb-1 break-all">{fk.name}</div>
                             <div className="text-xs text-muted-foreground flex items-center flex-wrap gap-x-2 gap-y-1">
@@ -178,13 +180,13 @@ export const TableDetailsModal: React.FC<TableDetailsModalProps> = ({ table, onC
                   )}
 
                   {/* Referenced By */}
-                  {table.referencedBy.length > 0 && (
+                  {(table.referencedBy?.length || 0) > 0 && (
                     <section>
                       <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider mb-3 flex items-center gap-2">
                         <Fingerprint size={16} className="text-emerald-500" /> Ссылаются на эту таблицу
                       </h3>
                       <div className="space-y-2">
-                        {table.referencedBy.map(ref => (
+                        {table.referencedBy?.map(ref => (
                           <div key={ref.constraint} className="p-3 bg-black/5 dark:bg-white/5 border border-glass-border rounded-xl">
                             <div className="text-xs text-muted-foreground flex items-center gap-2">
                               <span className="font-mono text-foreground">{ref.table}.{ref.column}</span>

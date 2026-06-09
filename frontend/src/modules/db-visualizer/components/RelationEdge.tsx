@@ -12,12 +12,13 @@ export const RelationEdge: React.FC<EdgeProps> = ({
   style = {},
   data,
   markerEnd,
+  animated,
 }) => {
   const edgeStyleType = data?.edgeStyle as 'bezier' | 'smoothstep' | undefined;
-  const edgeIndex = (data?.edgeIndex as number) || 0;
+  const localEdgeIndex = (data?.localEdgeIndex as number) || 0;
   
-  // Стабильный "веерный" сдвиг на основе индекса (от -2 до +2)
-  const shift = (edgeIndex % 5) - 2;
+  // Стабильный "веерный" сдвиг на основе локального индекса (от -2 до +2)
+  const shift = (localEdgeIndex % 5) - 2;
 
   const pathParams = {
     sourceX, sourceY, sourcePosition,
@@ -82,7 +83,12 @@ export const RelationEdge: React.FC<EdgeProps> = ({
 
   return (
     <g opacity={opacity} className="transition-opacity duration-300">
-      <BaseEdge path={edgePath} markerEnd={markerEnd} style={{ ...style, stroke, strokeWidth }} />
+      <BaseEdge 
+        path={edgePath} 
+        markerEnd={markerEnd} 
+        style={{ ...style, stroke, strokeWidth }} 
+        className={animated ? 'react-flow__edge-animated' : ''}
+      />
       {/* Рисуем SVG маркеры вручную поверх линии для идеального позиционирования */}
       
       {/* Source Marker (Many or One) */}

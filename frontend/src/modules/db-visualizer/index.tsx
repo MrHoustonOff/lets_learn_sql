@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import type { DatabaseSchema, TableSchema } from './types';
-import northwindMock from './mock/northwind.json';
+import crashTestMock from './mock/crash_test.json';
 import { useTheme } from '../../components/theme-provider';
 import { Moon, Sun, Filter } from 'lucide-react';
 import { ReactFlow, Background, BackgroundVariant, Controls, useNodesState, useEdgesState } from '@xyflow/react';
@@ -33,18 +33,17 @@ export const DBVisualizer: React.FC<DBVisualizerProps> = ({ schema }) => {
   const [showMarkers, setShowMarkers] = useState(true);
   const [showLegend, setShowLegend] = useState(true);
   const [edgeStyle, setEdgeStyle] = useState<'bezier' | 'smoothstep'>('bezier');
+  const [animateEdges, setAnimateEdges] = useState(true);
   
   const [hiddenTables, setHiddenTables] = useState<Set<string>>(new Set());
   const [highlightedColumns, setHighlightedColumns] = useState<Set<string>>(new Set());
   const [showFilters, setShowFilters] = useState(false);
   const [selectedTable, setSelectedTable] = useState<TableSchema | null>(null);
-
-  const useMock = import.meta.env.VITE_USE_MOCK === 'true' || !schema;
-  const activeSchema = useMock ? (northwindMock as DatabaseSchema) : schema;
-
-  // Храним граф в состоянии для поддержки Drag & Drop
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
+
+  const useMock = import.meta.env.VITE_USE_MOCK === 'true' || !schema;
+  const activeSchema = useMock ? (crashTestMock as unknown as DatabaseSchema) : schema;
 
   // Однократный расчет Dagre-layout при загрузке или смене схемы
   React.useEffect(() => {
@@ -95,17 +94,17 @@ export const DBVisualizer: React.FC<DBVisualizerProps> = ({ schema }) => {
   }, [activeSchema, highlightedColumns]);
 
   const modifiedEdges = useMemo(() => {
-    return edges.map((edge, index) => {
+    return edges.map(edge => {
       const isFaded = fadedTables.has(edge.source) || fadedTables.has(edge.target);
       return {
         ...edge,
         hidden: !showRelations || hiddenTables.has(edge.source) || hiddenTables.has(edge.target),
-        type: edgeStyle === 'bezier' ? 'relationEdge' : 'smoothstep',
+        animated: animateEdges,
+        type: 'relationEdge',
         data: {
           ...edge.data,
           edgeStyle,
-          showMarkers,
-          edgeIndex: index
+          showMarkers
         },
         style: {
           ...edge.style,
@@ -113,14 +112,14 @@ export const DBVisualizer: React.FC<DBVisualizerProps> = ({ schema }) => {
         }
       };
     });
-  }, [edges, showRelations, hiddenTables, edgeStyle, showMarkers, fadedTables]);
+  }, [edges, showRelations, hiddenTables, edgeStyle, showMarkers, fadedTables, animateEdges]);
 
   if (!activeSchema) {
     return <div className="text-foreground p-4">No schema provided.</div>;
   }
 
   return (
-    <div className="h-screen w-full bg-background text-foreground font-sans overflow-hidden relative transition-colors duration-500 z-0 flex flex-col">
+    <div className="h-full w-full bg-background text-foreground font-sans overflow-hidden relative transition-colors duration-500 z-0 flex flex-col">
       {/* Радиальное свечение под холстом */}
       <div className="absolute inset-0 z-0 pointer-events-none bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,hsla(var(--glow)/var(--glow-opacity)),transparent)]"></div>
       
@@ -164,6 +163,8 @@ export const DBVisualizer: React.FC<DBVisualizerProps> = ({ schema }) => {
             onToggleLegend={() => setShowLegend(!showLegend)}
             edgeStyle={edgeStyle}
             onChangeEdgeStyle={setEdgeStyle}
+            animateEdges={animateEdges}
+            onChangeAnimateEdges={setAnimateEdges}
             onResetLayout={handleResetLayout}
           />
           <button 

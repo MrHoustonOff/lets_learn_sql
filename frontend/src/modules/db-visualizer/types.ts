@@ -32,6 +32,7 @@ export interface IndexSchema {
 export interface ForeignKeySchema {
   name: string;
   column: string;
+  targetSchema?: string;
   targetTable: string;
   targetColumn: string;
   onDelete: string;

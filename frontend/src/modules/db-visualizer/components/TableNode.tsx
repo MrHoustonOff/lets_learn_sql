@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Handle, Position, useUpdateNodeInternals, useNodeId } from '@xyflow/react';
 import type { TableSchema } from '../types';
-import { Database } from 'lucide-react';
+import { Database, ChevronDown, ChevronUp } from 'lucide-react';
 import { ColumnRow } from './ColumnRow';
 
 interface TableNodeProps {
@@ -9,12 +9,29 @@ interface TableNodeProps {
     table: TableSchema;
     highlightedColumns?: Set<string>;
   };
+  dragging?: boolean;
 }
 
-export const TableNode: React.FC<TableNodeProps> = ({ data }) => {
+export const TableNode: React.FC<TableNodeProps> = ({ data, dragging }) => {
   const { table, highlightedColumns } = data;
   const nodeId = useNodeId();
   const updateNodeInternals = useUpdateNodeInternals();
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  // Сворачиваем при перетаскивании
+  useEffect(() => {
+    if (dragging && isExpanded) {
+      setIsExpanded(false);
+    }
+  }, [dragging, isExpanded]);
+
+  // Обновляем Handle-позиции, когда высота меняется (анимация может занять время, поэтому таймаут или просто сразу)
+  useEffect(() => {
+    if (nodeId) {
+      // Маленький таймаут для плавного рендеринга (если есть transition)
+      setTimeout(() => updateNodeInternals(nodeId), 50);
+    }
+  }, [isExpanded, nodeId, updateNodeInternals]);
 
   // Проверяем, есть ли в таблице искомые столбцы
   const hasHighlightedColumns = React.useMemo(() => {
@@ -26,29 +43,24 @@ export const TableNode: React.FC<TableNodeProps> = ({ data }) => {
   const isFaded = highlightedColumns && highlightedColumns.size > 0 && !hasHighlightedColumns;
 
   return (
-    <div className={`relative group rounded-xl bg-glass border border-glass-border backdrop-blur-xl shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] hover:shadow-[0_8px_32px_0_rgba(0,0,0,0.6)] hover:border-primary/50 hover:scale-[1.02] transition-all duration-300 min-w-[300px] ${
+    <div className={`relative group rounded-xl bg-glass border border-glass-border backdrop-blur-xl shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] hover:shadow-[0_8px_32px_0_rgba(0,0,0,0.6)] hover:border-primary/50 hover:scale-[1.02] transition-all duration-300 w-[320px] max-w-[320px] flex flex-col ${
       isFaded ? 'opacity-40 grayscale-[0.5]' : ''
     }`}>
       
       {/* Header */}
       <div className="px-4 py-3 border-b border-glass-border flex items-center gap-3 rounded-t-xl bg-black/10 dark:bg-white/5">
-        <Database size={16} className="text-emerald-500 dark:text-emerald-400" />
-        <h3 className="font-semibold text-foreground tracking-wide">{table.name}</h3>
+        <Database size={16} className="text-emerald-500 dark:text-emerald-400 shrink-0" />
+        <h3 className="font-semibold text-foreground tracking-wide truncate flex-1" title={table.name}>{table.name}</h3>
         {table.schema !== 'public' && (
-          <span className="ml-auto text-[10px] uppercase tracking-wider bg-badge text-badge-foreground px-2 py-0.5 rounded-full">
+          <span className="shrink-0 ml-auto max-w-[100px] truncate text-[10px] uppercase tracking-wider bg-badge text-badge-foreground px-2 py-0.5 rounded-full" title={table.schema}>
             {table.schema}
           </span>
         )}
       </div>
 
       {/* Columns List */}
-      <div 
-        className="flex flex-col relative max-h-[300px] overflow-y-auto custom-scrollbar nowheel"
-        onScroll={() => {
-          if (nodeId) updateNodeInternals(nodeId);
-        }}
-      >
-        {table.columns.map(col => (
+      <div className="flex flex-col relative transition-all duration-300">
+        {(isExpanded ? table.columns : table.columns.slice(0, 10)).map(col => (
           <div key={col.name} className="relative">
             {/* Target Handle (Left) */}
             <Handle 
@@ -72,6 +84,24 @@ export const TableNode: React.FC<TableNodeProps> = ({ data }) => {
             />
           </div>
         ))}
+        
+        {/* Chevron Button */}
+        {table.columns.length > 10 && (
+          <button 
+            onClick={(e) => { e.stopPropagation(); setIsExpanded(!isExpanded); }}
+            className="flex items-center justify-center gap-2 py-2 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/5 border-t border-glass-border transition-colors w-full"
+          >
+            {isExpanded ? (
+              <>
+                <ChevronUp size={14} /> Свернуть
+              </>
+            ) : (
+              <>
+                <ChevronDown size={14} /> Еще {table.columns.length - 10} столбцов
+              </>
+            )}
+          </button>
+        )}
       </div>
 
       {/* Extra Info (Indexes/Foreign Keys) */}

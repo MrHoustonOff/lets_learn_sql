@@ -2,7 +2,7 @@ import dagre from 'dagre';
 import type { Node, Edge } from '@xyflow/react';
 import type { DatabaseSchema } from './types';
 
-const nodeWidth = 320;
+const nodeWidth = 350;
 const nodeHeight = 250;
 
 export const getLayoutedElements = (schema: DatabaseSchema, direction = 'LR') => {
@@ -18,13 +18,18 @@ export const getLayoutedElements = (schema: DatabaseSchema, direction = 'LR') =>
   const nodes: Node[] = [];
   const edges: Edge[] = [];
 
+  // Счетчик для подсчета количества связей между одними и теми же таблицами
+  const edgePairCount: Record<string, number> = {};
+
   // Create nodes
   schema.tables.forEach((table) => {
     const tableId = `${table.schema}.${table.name}`;
     
-    // Calculate approximate height based on columns and indexes (max 300px for columns due to scroll)
-    const columnsHeight = Math.min(table.columns.length * 36, 300);
-    const approxHeight = 50 + columnsHeight + (table.indexes.length > 0 ? 50 + table.indexes.length * 20 : 0);
+    // Calculate approximate height based on visible columns (max 10) and indexes
+    const visibleColumnsCount = Math.min(table.columns.length, 10);
+    const hasChevron = table.columns.length > 10;
+    const chevronHeight = hasChevron ? 32 : 0;
+    const approxHeight = 50 + (visibleColumnsCount * 36) + chevronHeight + (table.indexes.length > 0 ? 50 + table.indexes.length * 20 : 0);
     
     dagreGraph.setNode(tableId, { width: nodeWidth, height: approxHeight });
 
@@ -38,7 +43,22 @@ export const getLayoutedElements = (schema: DatabaseSchema, direction = 'LR') =>
     // Create edges for foreign keys
     table.foreignKeys.forEach((fk) => {
       const sourceId = tableId;
-      const targetId = `${table.schema}.${fk.targetTable}`; // assuming target is in same schema
+      
+      // Ищем схему целевой таблицы, если она не указана явно
+      let resolvedTargetSchema = fk.targetSchema;
+      if (!resolvedTargetSchema) {
+        // Проверяем, есть ли таблица в той же схеме
+        const inSameSchema = schema.tables.some(t => t.schema === table.schema && t.name === fk.targetTable);
+        if (inSameSchema) {
+          resolvedTargetSchema = table.schema;
+        } else {
+          // Ищем в других схемах
+          const foundTable = schema.tables.find(t => t.name === fk.targetTable);
+          resolvedTargetSchema = foundTable ? foundTable.schema : 'public';
+        }
+      }
+      
+      const targetId = `${resolvedTargetSchema}.${fk.targetTable}`;
       
       const edgeId = `e-${sourceId}-${fk.column}-${targetId}-${fk.targetColumn}`;
 
@@ -50,6 +70,13 @@ export const getLayoutedElements = (schema: DatabaseSchema, direction = 'LR') =>
       const isOneToOne = columnSchema?.isUnique || columnSchema?.isPrimaryKey;
       const relationType = isOneToOne ? '1:1' : '1:M';
 
+      // Вычисляем локальный индекс связи между этими двумя таблицами
+      const pairKey = [sourceId, targetId].sort().join('|');
+      if (edgePairCount[pairKey] === undefined) {
+        edgePairCount[pairKey] = 0;
+      }
+      const localEdgeIndex = edgePairCount[pairKey]++;
+
       edges.push({
         id: edgeId,
         source: sourceId,
@@ -58,7 +85,7 @@ export const getLayoutedElements = (schema: DatabaseSchema, direction = 'LR') =>
         targetHandle: `${fk.targetColumn}-target`,
         type: 'relationEdge', // ИСПОЛЬЗУЕМ КАСТОМНЫЙ EDGE
         animated: true,
-        data: { relationType }, // ПЕРЕДАЕМ ТИП В DATA
+        data: { relationType, localEdgeIndex }, // ПЕРЕДАЕМ ТИП В DATA
         style: { stroke: 'hsl(var(--primary))', strokeWidth: 2, opacity: 0.8 },
       });
     });
