@@ -5,6 +5,8 @@ import { ExplainModal } from './ExplainModal';
 import { useUIStore } from '../../store/uiStore';
 import { useQueryStore } from '../../store/queryStore';
 
+import { DataTable } from '../ui/DataTable';
+
 interface ResultsPaneProps {
   isMaximized?: boolean;
   onToggleMaximize?: () => void;
@@ -21,60 +23,6 @@ export const ResultsPane: React.FC<ResultsPaneProps> = ({
   const { result, isLoading, error } = useQueryStore();
   
   const isMaximized = propIsMaximized !== undefined ? propIsMaximized : maximizedPane === 'results';
-  
-  // Ресайз колонок
-  const [colWidths, setColWidths] = useState<Record<number, number>>({});
-  const tableRef = useRef<HTMLTableElement>(null);
-  const resizingCol = useRef<{ index: number, startX: number, startWidth: number } | null>(null);
-
-  // Сброс ширин колонок при новом результате
-  useEffect(() => {
-    setColWidths({});
-  }, [result]);
-
-  const handleMouseDown = (e: React.MouseEvent, index: number) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    let currentWidths = { ...colWidths };
-    if (Object.keys(currentWidths).length === 0 && tableRef.current) {
-      const ths = tableRef.current.querySelectorAll('th');
-      ths.forEach((t, i) => {
-        currentWidths[i] = t.getBoundingClientRect().width;
-      });
-      setColWidths(currentWidths);
-    }
-
-    const startWidth = currentWidths[index] || 100;
-    resizingCol.current = { index, startX: e.pageX, startWidth };
-
-    document.addEventListener('mousemove', handleMouseMove);
-    document.addEventListener('mouseup', handleMouseUp);
-  };
-
-  const handleMouseMove = (e: MouseEvent) => {
-    if (!resizingCol.current) return;
-    const { index, startX, startWidth } = resizingCol.current;
-    const diff = e.pageX - startX;
-    const newWidth = Math.max(40, startWidth + diff);
-    setColWidths(prev => ({ ...prev, [index]: newWidth }));
-  };
-
-  const handleMouseUp = () => {
-    resizingCol.current = null;
-    document.removeEventListener('mousemove', handleMouseMove);
-    document.removeEventListener('mouseup', handleMouseUp);
-  };
-
-  useEffect(() => {
-    return () => {
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
-    };
-  }, []);
-
-  const isResized = Object.keys(colWidths).length > 0;
-  const totalTableWidth = isResized ? Object.values(colWidths).reduce((a, b) => a + b, 0) : undefined;
 
   const handleToggleMaximize = () => {
     if (propOnToggleMaximize) {
@@ -170,52 +118,15 @@ export const ResultsPane: React.FC<ResultsPaneProps> = ({
                 <p>Запрос выполнен успешно, но вернул 0 строк.</p>
               </div>
             ) : (
-              <table 
-                ref={tableRef}
-                className={`text-left text-sm whitespace-nowrap ${isResized ? 'table-fixed' : 'w-full'}`}
-                style={isResized ? { width: `${totalTableWidth}px` } : {}}
-              >
-                <thead className="text-xs uppercase bg-hover text-muted-foreground sticky top-0 z-10 backdrop-blur-md shadow-sm">
-                  <tr className="divide-x divide-glass-border/50">
-                    {result.columns.map((col, i) => (
-                      <th 
-                        key={i} 
-                        className="px-4 py-2.5 border-b border-glass-border font-semibold relative group select-none"
-                        style={isResized ? { width: `${colWidths[i]}px` } : undefined}
-                      >
-                        <div className="truncate">{col}</div>
-                        <div 
-                          className="absolute right-0 top-0 bottom-0 w-2 cursor-col-resize hover:bg-primary/50 transition-colors z-20"
-                          onMouseDown={(e) => handleMouseDown(e, i)}
-                        />
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-glass-border">
-                  {result.rows.map((row, rowIndex) => (
-                    <tr key={rowIndex} className="hover:bg-black/5 dark:hover:bg-white/5 transition-colors divide-x divide-glass-border/50">
-                      {row.map((cell, cellIndex) => (
-                        <td 
-                          key={cellIndex} 
-                          className="px-4 py-2 truncate"
-                          style={isResized ? { width: `${colWidths[cellIndex]}px` } : { maxWidth: '300px' }}
-                        >
-                          {cell === null ? (
-                            <span className="text-muted-foreground italic opacity-50">NULL</span>
-                          ) : typeof cell === 'boolean' ? (
-                            <span className={cell ? "text-success" : "text-destructive"}>{cell.toString()}</span>
-                          ) : typeof cell === 'number' ? (
-                            <span className="text-blue-500 dark:text-blue-400 font-mono">{cell}</span>
-                          ) : (
-                            <span>{String(cell)}</span>
-                          )}
-                        </td>
-                      ))}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              <div className="h-full w-full p-2">
+                <DataTable 
+                  columns={result.columns} 
+                  rows={result.rows} 
+                  executionTimeMs={result.duration_ms} 
+                  totalRowCount={result.row_count}
+                  isTruncated={result.truncated}
+                />
+              </div>
             )}
           </>
         ) : (

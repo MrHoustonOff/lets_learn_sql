@@ -3,6 +3,8 @@ import { createPortal } from 'react-dom';
 import type { TableSchema } from '../types';
 import { X, Database, Key, Link, AlertCircle, Hash, TableProperties, Fingerprint, Zap, Play } from 'lucide-react';
 
+import { DataTable } from '../../../components/ui/DataTable';
+
 interface TableDetailsModalProps {
   table: TableSchema;
   onClose: () => void;
@@ -14,58 +16,6 @@ export const TableDetailsModal: React.FC<TableDetailsModalProps> = ({ table, onC
   const [data, setData] = useState<{ columns: string[], rows: any[][] } | null>(null);
   const [loadingData, setLoadingData] = useState(false);
   const [dataError, setDataError] = useState<string | null>(null);
-
-  // Состояние для ресайза колонок
-  const [colWidths, setColWidths] = useState<Record<number, number>>({});
-  const tableRef = useRef<HTMLTableElement>(null);
-  const resizingCol = useRef<{ index: number, startX: number, startWidth: number } | null>(null);
-
-  const handleMouseDown = (e: React.MouseEvent, index: number) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    // Получаем текущие ширины, если их еще нет в стейте
-    let currentWidths = { ...colWidths };
-    if (Object.keys(currentWidths).length === 0 && tableRef.current) {
-      const ths = tableRef.current.querySelectorAll('th');
-      ths.forEach((t, i) => {
-        currentWidths[i] = t.getBoundingClientRect().width;
-      });
-      setColWidths(currentWidths);
-    }
-
-    const startWidth = currentWidths[index] || 100;
-    resizingCol.current = { index, startX: e.pageX, startWidth };
-
-    document.addEventListener('mousemove', handleMouseMove);
-    document.addEventListener('mouseup', handleMouseUp);
-  };
-
-  const handleMouseMove = (e: MouseEvent) => {
-    if (!resizingCol.current) return;
-    const { index, startX, startWidth } = resizingCol.current;
-    const diff = e.pageX - startX;
-    const newWidth = Math.max(40, startWidth + diff); // Минимальная ширина 40px
-
-    setColWidths(prev => ({ ...prev, [index]: newWidth }));
-  };
-
-  const handleMouseUp = () => {
-    resizingCol.current = null;
-    document.removeEventListener('mousemove', handleMouseMove);
-    document.removeEventListener('mouseup', handleMouseUp);
-  };
-
-  useEffect(() => {
-    // Очистка событий при анмаунте
-    return () => {
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
-    };
-  }, []);
-
-  const isResized = Object.keys(colWidths).length > 0;
-  const totalTableWidth = isResized ? Object.values(colWidths).reduce((a, b) => a + b, 0) : undefined;
 
   const fetchSampleData = async (overrideLimit?: string) => {
     setLoadingData(true);
@@ -388,51 +338,8 @@ export const TableDetailsModal: React.FC<TableDetailsModalProps> = ({ table, onC
                       <p>Таблица пуста</p>
                     </div>
                   ) : (
-                    <div className="flex-1 border border-glass-border rounded-xl bg-hover overflow-auto relative">
-                      <table 
-                        ref={tableRef}
-                        className={`text-left text-sm whitespace-nowrap ${isResized ? 'table-fixed' : 'w-full'}`} 
-                        style={isResized ? { width: `${totalTableWidth}px` } : {}}
-                      >
-                        <thead className="bg-hover text-muted-foreground text-xs uppercase tracking-wider sticky top-0 z-10 backdrop-blur-md shadow-sm">
-                          <tr className="divide-x divide-glass-border/50">
-                            {data.columns.map((col, i) => (
-                              <th 
-                                key={i} 
-                                className="px-4 py-3 font-medium border-b border-glass-border relative group select-none"
-                                style={isResized ? { width: `${colWidths[i]}px` } : undefined}
-                              >
-                                <div className="truncate">{col}</div>
-                                <div 
-                                  className="absolute right-0 top-0 bottom-0 w-2 cursor-col-resize hover:bg-primary/50 transition-colors z-20"
-                                  onMouseDown={(e) => handleMouseDown(e, i)}
-                                />
-                              </th>
-                            ))}
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-glass-border">
-                          {data.rows.map((row, rowIndex) => (
-                            <tr key={rowIndex} className="hover:bg-black/5 dark:hover:bg-white/5 transition-colors divide-x divide-glass-border/50">
-                              {row.map((cell, cellIndex) => (
-                                <td 
-                                  key={cellIndex} 
-                                  className="px-4 py-2.5 truncate"
-                                  style={isResized ? { width: `${colWidths[cellIndex]}px` } : { maxWidth: '300px' }}
-                                >
-                                  {cell === null ? (
-                                    <span className="text-muted-foreground italic opacity-50">NULL</span>
-                                  ) : typeof cell === 'boolean' ? (
-                                    <span className={cell ? 'text-success' : 'text-destructive'}>{cell ? 'true' : 'false'}</span>
-                                  ) : (
-                                    <span className="text-foreground">{String(cell)}</span>
-                                  )}
-                                </td>
-                              ))}
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
+                    <div className="flex-1 overflow-hidden relative">
+                      <DataTable columns={data.columns} rows={data.rows} />
                     </div>
                   )}
                 </div>

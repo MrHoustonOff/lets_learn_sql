@@ -185,16 +185,20 @@
 
 /* Custom Scrollbar */
 .custom-scrollbar::-webkit-scrollbar {
-  width: 4px;
+  width: 6px;
+  height: 6px;
 }
 .custom-scrollbar::-webkit-scrollbar-track {
   background: transparent;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  @apply bg-black/20 dark:bg-white/20 rounded-full;
+  @apply bg-primary/60 rounded-full;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  @apply bg-black/40 dark:bg-white/40;
+  @apply bg-primary/90;
+}
+.custom-scrollbar::-webkit-scrollbar-corner {
+  background: transparent;
 }
 
 /* Left-sided scrollbar trick */
@@ -218,4 +222,7 @@
 }
 ::-webkit-scrollbar-thumb:hover {
   @apply bg-primary/80;
+}
+::-webkit-scrollbar-corner {
+  background: transparent;
 }
