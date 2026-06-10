@@ -5,10 +5,11 @@ services:
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
-      POSTGRES_DB: pgym
+      POSTGRES_DB: northwind
     ports:
       - "5432:5432"
     volumes:
+      - ./backend/init:/docker-entrypoint-initdb.d
       - pgym_db_data:/var/lib/postgresql/data
     restart: unless-stopped
 
