@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useUIStore } from '../../store/uiStore';
 import { CheckCircle2, Circle, Star, ChevronRight } from 'lucide-react';
@@ -8,6 +8,22 @@ export const CourseTOC: React.FC = () => {
   const { t } = useTranslation();
   const isCourseTocOpen = useUIStore(state => state.isCourseTocOpen);
   const setCourseTocOpen = useUIStore(state => state.setCourseTocOpen);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isCourseTocOpen) {
+        setCourseTocOpen(false);
+      }
+    };
+
+    if (isCourseTocOpen) {
+      document.addEventListener('keydown', handleKeyDown);
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isCourseTocOpen, setCourseTocOpen]);
 
   // Моковые данные для отображения
   const courseData = {
@@ -68,7 +84,7 @@ export const CourseTOC: React.FC = () => {
       </div>
 
       {/* Body */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-6 scrollbar-thin">
+      <div className="flex-1 overflow-y-auto p-4 space-y-6 primary-scrollbar">
         {/* Global Progress */}
         <div className="space-y-2">
           <div className="flex items-center justify-between text-sm">

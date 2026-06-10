@@ -2,7 +2,9 @@ import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom'
 import { ThemeProvider } from './components/theme-provider';
 import { GlobalLayout } from './layouts/GlobalLayout';
 import { TaskScreen } from './pages/TaskScreen';
-import { CoursesPage, TasksPage, SettingsPage, ProfilePage } from './pages/PlaceholderPages';
+import { CoursesListPage } from './pages/CoursesListPage';
+import { CourseDetailsPage } from './pages/CourseDetailsPage';
+import { TasksPage, SettingsPage, ProfilePage } from './pages/PlaceholderPages';
 
 const router = createBrowserRouter([
   {
@@ -15,11 +17,11 @@ const router = createBrowserRouter([
       },
       {
         path: 'courses',
-        element: <CoursesPage />,
+        element: <CoursesListPage />,
       },
       {
         path: 'courses/:id',
-        element: <CoursesPage />, // placeholder for CoursePage
+        element: <CourseDetailsPage />,
       },
       {
         path: 'tasks',

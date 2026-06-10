@@ -1,13 +1,16 @@
 import React from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
 import { Navbar } from '../components/navigation/Navbar';
 import { CourseTOC } from '../components/navigation/CourseTOC';
 
 export const GlobalLayout: React.FC = () => {
+  const location = useLocation();
+  const isTaskPage = location.pathname.startsWith('/tasks');
+
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-background text-foreground transition-colors duration-300 relative z-0">
-      {/* Sliding Course TOC (Left Panel) */}
-      <CourseTOC />
+      {/* Sliding Course TOC (Left Panel) - only visible on task pages */}
+      {isTaskPage && <CourseTOC />}
 
       {/* Main Content (Task Screen or other pages) */}
       <div className="flex-1 flex flex-col relative z-10 w-full h-full">

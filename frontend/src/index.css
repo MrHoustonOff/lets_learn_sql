@@ -204,3 +204,17 @@
 .scroll-left > * {
   direction: ltr;
 }
+
+/* Primary Color Scrollbar */
+.primary-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+.primary-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.primary-scrollbar::-webkit-scrollbar-thumb {
+  @apply bg-primary/50 rounded-full;
+}
+.primary-scrollbar::-webkit-scrollbar-thumb:hover {
+  @apply bg-primary/80;
+}

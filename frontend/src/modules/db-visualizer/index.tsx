@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useCallback, useRef } from 'react';
 import type { DatabaseSchema, TableSchema } from './types';
 import crashTestMock from './mock/crash_test.json';
-import { Filter, Maximize2, Minimize2 } from 'lucide-react';
+import { Filter, Maximize2, Minimize2, X } from 'lucide-react';
 import { ReactFlow, Background, BackgroundVariant, Controls, useNodesState, useEdgesState } from '@xyflow/react';
 import type { Node, Edge } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
@@ -21,6 +21,7 @@ interface DBVisualizerProps {
   schema?: DatabaseSchema;
   isMaximized?: boolean;
   onToggleMaximize?: () => void;
+  onClose?: () => void;
 }
 
 const nodeTypes = {
@@ -31,7 +32,7 @@ const edgeTypes = {
   relationEdge: RelationEdge,
 };
 
-export const DBVisualizer: React.FC<DBVisualizerProps> = ({ schema, isMaximized = true, onToggleMaximize }) => {
+export const DBVisualizer: React.FC<DBVisualizerProps> = ({ schema, isMaximized = true, onToggleMaximize, onClose }) => {
   const [showRelations, setShowRelations] = useState(true);
   const [showMarkers, setShowMarkers] = useState(true);
   const [showLegend, setShowLegend] = useState(true);
@@ -150,6 +151,16 @@ export const DBVisualizer: React.FC<DBVisualizerProps> = ({ schema, isMaximized 
               className="p-2.5 rounded-xl hover:bg-hover transition-colors bg-glass backdrop-blur-md border border-glass-border shadow-sm"
             >
               {isMaximized ? <Minimize2 size={20} /> : <Maximize2 size={20} />}
+            </button>
+          )}
+
+          {onClose && (
+            <button 
+              onClick={onClose}
+              title="Закрыть"
+              className="p-2.5 rounded-xl hover:bg-hover transition-colors bg-glass backdrop-blur-md border border-glass-border shadow-sm text-muted-foreground hover:text-foreground"
+            >
+              <X size={20} />
             </button>
           )}
         </div>
