@@ -33,6 +33,15 @@
     --input: 37.5 14.8% 89.4%; /* lBorderLight #e8e5e0 */
     --ring: 25.7 86.7% 47.1%; /* o500 #e06910 */
 
+    --success: 160 84% 39%; /* emerald-500 */
+    --warning: 38 92% 50%; /* amber-500 */
+    --warning-text: 32 95% 44%; /* amber-600 */
+    --info: 217 91% 60%; /* blue-500 */
+    --accent-alt: 285 73% 52%; /* purple-500 */
+    --accent-alt-text: 271 81% 56%; /* purple-600 */
+    --bg-hover: 0 0% 0%; /* black */
+    --bg-hover-opacity: 0.05;
+
     --radius: 0.5rem;
 
     /* Custom Glassmorphism Theme Variables - Light Mode */
@@ -85,6 +94,15 @@
     --border: 0 0% 26.7%; /* dBorder #444444 */
     --input: 0 0% 26.7%; /* dBorder #444444 */
     --ring: 26.5 87.4% 53.3%; /* o400 #f07c20 */
+
+    --success: 160 84% 39%; /* emerald-500 */
+    --warning: 38 92% 50%; /* amber-500 */
+    --warning-text: 43 96% 56%; /* amber-400 */
+    --info: 217 91% 60%; /* blue-500 */
+    --accent-alt: 285 73% 52%; /* purple-500 */
+    --accent-alt-text: 292 84% 61%; /* purple-400 */
+    --bg-hover: 0 0% 100%; /* white */
+    --bg-hover-opacity: 0.05;
 
     /* Custom Glassmorphism Theme Variables - Dark Mode */
     --glass-bg: 0 0% 13.3%; /* dCard #222222 */
@@ -185,4 +203,19 @@
 }
 .scroll-left > * {
   direction: ltr;
+}
+
+/* Global Primary Color Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-primary/50 rounded-full;
+}
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-primary/80;
 }

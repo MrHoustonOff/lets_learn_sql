@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Settings2, Eye, EyeOff, Waypoints, Spline, CircleDot, RotateCcw, BookOpenText, Activity, Minus } from 'lucide-react';
+import { Eye, EyeOff, Waypoints, Spline, CircleDot, RotateCcw, BookOpenText, Activity, Minus, Move } from 'lucide-react';
 
 interface ViewMenuProps {
   showRelations: boolean;
@@ -8,6 +8,8 @@ interface ViewMenuProps {
   onToggleMarkers: () => void;
   showLegend: boolean;
   onToggleLegend: () => void;
+  showToolbar: boolean;
+  onToggleToolbar: () => void;
   edgeStyle: 'bezier' | 'smoothstep';
   onChangeEdgeStyle: (style: 'bezier' | 'smoothstep') => void;
   animateEdges: boolean;
@@ -22,6 +24,8 @@ export const ViewMenu: React.FC<ViewMenuProps> = ({
   onToggleMarkers,
   showLegend,
   onToggleLegend,
+  showToolbar,
+  onToggleToolbar,
   edgeStyle,
   onChangeEdgeStyle,
   animateEdges,
@@ -45,9 +49,14 @@ export const ViewMenu: React.FC<ViewMenuProps> = ({
     <div className="relative" ref={menuRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-3 py-2 rounded-full hover:bg-black/10 dark:hover:bg-white/10 transition-colors bg-glass backdrop-blur-md border border-glass-border shadow-sm text-sm font-medium"
+        className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium text-base transition-all shadow-sm border ${
+          isOpen 
+            ? 'bg-black/10 dark:bg-white/10 border-glass-border text-foreground'
+            : 'bg-glass backdrop-blur-md border-glass-border hover:bg-black/5 dark:hover:bg-white/5 text-foreground'
+        }`}
+        title="Настройки вида"
       >
-        <Settings2 size={16} />
+        <Eye size={16} />
         <span>Вид</span>
       </button>
       {/* Выпадающее меню */}
@@ -69,6 +78,22 @@ export const ViewMenu: React.FC<ViewMenuProps> = ({
             <span className="flex-1">Отображать легенду</span>
             <div className={`w-8 h-4 rounded-full relative transition-colors ${showLegend ? 'bg-primary' : 'bg-black/20 dark:bg-white/20'}`}>
               <div className={`absolute top-0.5 w-3 h-3 rounded-full bg-white transition-all shadow-sm ${showLegend ? 'left-4' : 'left-0.5'}`} />
+            </div>
+          </button>
+
+          {/* Переключатель тулбара */}
+          <button
+            onClick={() => onToggleToolbar()}
+            className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 transition-colors text-sm text-left w-full mb-1"
+          >
+            {showToolbar ? (
+              <Move size={16} className="text-blue-500" />
+            ) : (
+              <Move size={16} className="text-muted-foreground" />
+            )}
+            <span className="flex-1">Отображать тулбар</span>
+            <div className={`w-8 h-4 rounded-full relative transition-colors ${showToolbar ? 'bg-primary' : 'bg-black/20 dark:bg-white/20'}`}>
+              <div className={`absolute top-0.5 w-3 h-3 rounded-full bg-white transition-all shadow-sm ${showToolbar ? 'left-4' : 'left-0.5'}`} />
             </div>
           </button>
 

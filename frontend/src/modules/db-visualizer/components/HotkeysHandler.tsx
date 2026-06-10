@@ -9,10 +9,11 @@ const HOTKEYS_CONFIG = {
 
 interface HotkeysHandlerProps {
   onResetLayout?: () => void;
+  hoveredNodeRef?: React.MutableRefObject<string | null>;
 }
 
-export const HotkeysHandler: React.FC<HotkeysHandlerProps> = ({ onResetLayout }) => {
-  const { fitView } = useReactFlow();
+export const HotkeysHandler: React.FC<HotkeysHandlerProps> = ({ onResetLayout, hoveredNodeRef }) => {
+  const { fitView, getNode } = useReactFlow();
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -31,6 +32,19 @@ export const HotkeysHandler: React.FC<HotkeysHandlerProps> = ({ onResetLayout })
       // Центрирование (Fit View)
       if (HOTKEYS_CONFIG.fitView.includes(key) || HOTKEYS_CONFIG.fitView.includes(code)) {
         e.preventDefault();
+        
+        if (hoveredNodeRef?.current) {
+          const node = getNode(hoveredNodeRef.current);
+          if (node) {
+            fitView({ 
+              nodes: [node], 
+              duration: 800,
+              padding: 0.5 
+            });
+            return;
+          }
+        }
+
         fitView({ duration: 800 });
       }
 
@@ -45,7 +59,7 @@ export const HotkeysHandler: React.FC<HotkeysHandlerProps> = ({ onResetLayout })
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [fitView, onResetLayout]);
+  }, [fitView, onResetLayout, hoveredNodeRef, getNode]);
 
   return null;
 };
