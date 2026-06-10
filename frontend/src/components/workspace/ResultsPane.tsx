@@ -12,16 +12,16 @@ export const ResultsPane: React.FC = () => {
   const isMaximized = maximizedPane === 'results';
 
   return (
-    <div className={`h-full flex flex-col transition-all duration-300 ${isMaximized ? 'absolute inset-0 z-50 bg-background rounded-2xl' : 'bg-transparent relative'}`}>
+    <div className={`h-full flex flex-col transition-all duration-300 ${isMaximized ? 'absolute inset-0 z-[100] bg-background rounded-2xl' : 'bg-transparent relative'}`}>
       {/* Header Tabs */}
-      <div className="h-10 border-b border-glass-border flex items-center justify-between px-2 shrink-0 bg-black/10 dark:bg-white/5">
+      <div className="h-10 border-b border-glass-border flex items-center justify-between px-2 shrink-0 bg-hover">
         <div className="flex items-center gap-1">
           <button 
             onClick={() => setActiveTab('result')}
             className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-md transition-all ${
               activeTab === 'result' 
                 ? 'bg-background text-foreground shadow-sm border border-border/40' 
-                : 'text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/5 border border-transparent'
+                : 'text-muted-foreground hover:text-foreground hover:bg-hover border border-transparent'
             }`}
           >
             <Table2 size={14} />
@@ -32,7 +32,7 @@ export const ResultsPane: React.FC = () => {
             className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-md transition-all ${
               activeTab === 'explain' 
                 ? 'bg-background text-foreground shadow-sm border border-border/40' 
-                : 'text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/5 border border-transparent'
+                : 'text-muted-foreground hover:text-foreground hover:bg-hover border border-transparent'
             }`}
           >
             <Activity size={14} />
@@ -44,7 +44,7 @@ export const ResultsPane: React.FC = () => {
           {activeTab === 'explain' && (
             <button 
               onClick={() => setIsExplainModalOpen(true)}
-              className="flex items-center gap-1.5 text-xs font-semibold text-amber-600 dark:text-amber-400 hover:bg-amber-500/10 px-2 py-1 rounded transition-colors mr-1"
+              className="flex items-center gap-1.5 text-xs font-semibold text-warning-text hover:bg-warning/10 px-2 py-1 rounded transition-colors mr-1"
             >
               <Maximize2 size={12} />
               {t('full_analysis')}
@@ -53,7 +53,7 @@ export const ResultsPane: React.FC = () => {
           <div className="w-px h-4 bg-glass-border mx-1" />
           <button 
             onClick={() => setMaximizedPane(isMaximized ? null : 'results')}
-            className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/5 rounded-md transition-colors"
+            className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-hover rounded-md transition-colors"
             title={isMaximized ? "Свернуть" : "Развернуть"}
           >
             {isMaximized ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
@@ -96,7 +96,7 @@ export const ResultsPane: React.FC = () => {
           </table>
         ) : (
           <div className="p-4 h-full flex flex-col items-center justify-center text-center">
-            <Activity size={32} className="text-amber-500/50 mb-3" />
+            <Activity size={32} className="text-warning/50 mb-3" />
             <h4 className="font-semibold text-foreground mb-1">Мини-превью плана выполнения</h4>
             <p className="text-sm text-muted-foreground max-w-sm mb-4">
               Здесь будет отображаться краткая выжимка по Explain. Для детального разбора нажмите "Полный анализ".

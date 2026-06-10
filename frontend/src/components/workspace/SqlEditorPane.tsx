@@ -12,18 +12,18 @@ export const SqlEditorPane: React.FC = () => {
   const isMaximized = maximizedPane === 'editor';
 
   return (
-    <div className={`h-full flex flex-col transition-all duration-300 ${isMaximized ? 'absolute inset-0 z-50 bg-background rounded-2xl' : 'bg-transparent'}`}>
-      <div className="h-10 border-b border-glass-border flex items-center justify-between px-3 shrink-0 bg-black/10 dark:bg-white/5">
+    <div className={`h-full flex flex-col transition-all duration-300 ${isMaximized ? 'absolute inset-0 z-[100] bg-background rounded-2xl' : 'bg-transparent'}`}>
+      <div className="h-10 border-b border-glass-border flex items-center justify-between px-3 shrink-0 bg-hover">
         <span className="text-sm font-semibold text-foreground uppercase tracking-wider text-[11px] opacity-70">Редактор SQL</span>
         <div className="flex gap-2">
           <button 
-            className="flex items-center gap-1.5 text-xs font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20 px-3 py-1.5 rounded-md transition-colors"
+            className="flex items-center gap-1.5 text-xs font-semibold bg-success/10 text-success hover:bg-success/20 px-3 py-1.5 rounded-md transition-colors"
           >
             <Play size={12} className="fill-current" />
             Run
           </button>
           <button 
-            className="flex items-center gap-1.5 text-xs font-semibold bg-amber-500/10 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20 px-3 py-1.5 rounded-md transition-colors"
+            className="flex items-center gap-1.5 text-xs font-semibold bg-warning/10 text-warning-text hover:bg-warning/20 px-3 py-1.5 rounded-md transition-colors"
           >
             <Zap size={12} className="fill-current" />
             Explain
@@ -31,7 +31,7 @@ export const SqlEditorPane: React.FC = () => {
           <div className="w-px h-4 bg-glass-border mx-1" />
           <button 
             onClick={() => setMaximizedPane(isMaximized ? null : 'editor')}
-            className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/5 rounded-md transition-colors"
+            className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-hover rounded-md transition-colors"
             title={isMaximized ? "Свернуть" : "Развернуть"}
           >
             {isMaximized ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
