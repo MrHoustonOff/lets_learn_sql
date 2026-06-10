@@ -218,11 +218,11 @@ export const DBVisualizer: React.FC<DBVisualizerProps> = ({ schema, isMaximized 
   }
 
   return (
-    <div className="h-full w-full bg-background text-foreground font-sans overflow-visible relative transition-colors duration-500 z-0 flex flex-col">
+    <div className="h-full w-full bg-background text-foreground font-sans overflow-visible relative transition-colors duration-500 flex flex-col">
       {/* Радиальное свечение под холстом */}
       <div className="absolute inset-0 z-0 pointer-events-none bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,hsla(var(--glow)/var(--glow-opacity)),transparent)]"></div>
       
-      <header className={`absolute top-0 left-0 right-0 flex items-start justify-between z-20 pointer-events-none transition-all duration-300 ${isMaximized ? 'p-6' : 'p-2'}`}>
+      <header className={`absolute top-0 left-0 right-0 flex items-start justify-between z-50 pointer-events-none transition-all duration-300 ${isMaximized ? 'p-6' : 'p-2'}`}>
         {/* Левая часть: Кнопка Фильтры и сама Панель */}
         <div className={`relative pointer-events-none flex flex-col items-start gap-2 transition-transform duration-300 origin-top-left ${isMaximized ? 'scale-100' : 'scale-[0.6]'}`}>
           <button

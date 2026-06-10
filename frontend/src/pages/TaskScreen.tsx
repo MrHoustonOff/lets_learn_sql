@@ -9,7 +9,14 @@ import { useUIStore } from '../store/uiStore';
 
 export const TaskScreen: React.FC = () => {
   const { maximizedPane, setMaximizedPane } = useUIStore();
+  
+  const isTaskMaximized = maximizedPane === 'task';
+  const isEditorMaximized = maximizedPane === 'editor';
   const isDbMaximized = maximizedPane === 'db';
+  const isResultsMaximized = maximizedPane === 'results';
+
+  const isLeftMaximized = isTaskMaximized || isEditorMaximized;
+  const isRightMaximized = isDbMaximized || isResultsMaximized;
 
   return (
     <div className="h-full w-full flex flex-col px-2 pb-2 pt-0 gap-2">
@@ -25,15 +32,15 @@ export const TaskScreen: React.FC = () => {
         >
         
         {/* ================= LEFT HALF ================= */}
-        <Panel defaultSize={40} minSize={20}>
-          <PanelGroup orientation="vertical" id="llpg_left_vertical">
+        <Panel defaultSize={40} minSize={20} className={`!overflow-visible transition-all duration-300 ${isLeftMaximized ? 'z-50' : ''}`}>
+          <PanelGroup orientation="vertical" id="llpg_left_vertical" className="!overflow-visible">
             
             {/* Panel 1: Task / Reference */}
-            <Panel defaultSize={50} minSize={20}>
+            <Panel defaultSize={50} minSize={20} className={`!overflow-visible transition-all duration-300 ${isTaskMaximized ? 'z-50' : ''}`}>
               <TaskPane />
             </Panel>
 
-            <PanelResizeHandle className="h-[2px] bg-glass-border hover:bg-primary/50 transition-colors relative flex items-center justify-center group cursor-row-resize z-[60] outline-none">
+            <PanelResizeHandle className="h-[2px] bg-glass-border hover:bg-primary/50 transition-colors relative flex items-center justify-center group cursor-row-resize z-40 outline-none">
               <div className="absolute -inset-y-3 inset-x-0 z-40"></div>
               <div className="absolute z-50 bg-background/90 backdrop-blur-md border border-glass-border rounded flex items-center justify-center px-1 py-[1px] text-muted-foreground group-hover:text-primary group-hover:border-primary/50 transition-colors shadow-sm">
                 <GripHorizontal size={12} />
@@ -41,14 +48,14 @@ export const TaskScreen: React.FC = () => {
             </PanelResizeHandle>
 
             {/* Panel 3: SQL Editor */}
-            <Panel defaultSize={50} minSize={20}>
+            <Panel defaultSize={50} minSize={20} className={`!overflow-visible transition-all duration-300 ${isEditorMaximized ? 'z-50' : ''}`}>
               <SqlEditorPane />
             </Panel>
             
           </PanelGroup>
         </Panel>
 
-        <PanelResizeHandle className="w-[2px] bg-glass-border hover:bg-primary/50 transition-colors relative flex items-center justify-center group cursor-col-resize z-[60] outline-none">
+        <PanelResizeHandle className="w-[2px] bg-glass-border hover:bg-primary/50 transition-colors relative flex items-center justify-center group cursor-col-resize z-40 outline-none">
           <div className="absolute inset-y-0 -inset-x-3 z-40"></div>
           <div className="absolute z-50 bg-background/90 backdrop-blur-md border border-glass-border rounded flex items-center justify-center py-1 px-[1px] text-muted-foreground group-hover:text-primary group-hover:border-primary/50 transition-colors shadow-sm">
             <GripVertical size={12} />
@@ -56,11 +63,11 @@ export const TaskScreen: React.FC = () => {
         </PanelResizeHandle>
 
         {/* ================= RIGHT HALF ================= */}
-        <Panel defaultSize={60} minSize={30} className="!overflow-visible z-40">
+        <Panel defaultSize={60} minSize={30} className={`!overflow-visible transition-all duration-300 ${isRightMaximized ? 'z-50' : ''}`}>
           <PanelGroup orientation="vertical" id="llpg_right_vertical" className="!overflow-visible">
             
             {/* Panel 2: DB Viewer */}
-            <Panel defaultSize={50} minSize={20} className="!overflow-visible z-50">
+            <Panel defaultSize={50} minSize={20} className={`!overflow-visible transition-all duration-300 ${isDbMaximized ? 'z-50' : ''}`}>
                <div className={`transition-all duration-300 ${isDbMaximized ? 'absolute inset-0 z-50 bg-background rounded-2xl overflow-hidden' : 'h-full w-full relative !overflow-visible'}`}>
                   <DBVisualizer 
                     isMaximized={isDbMaximized} 
@@ -69,7 +76,7 @@ export const TaskScreen: React.FC = () => {
                </div>
             </Panel>
 
-            <PanelResizeHandle className="h-[2px] bg-glass-border hover:bg-primary/50 transition-colors relative flex items-center justify-center group cursor-row-resize z-[60] outline-none">
+            <PanelResizeHandle className="h-[2px] bg-glass-border hover:bg-primary/50 transition-colors relative flex items-center justify-center group cursor-row-resize z-40 outline-none">
               <div className="absolute -inset-y-3 inset-x-0 z-40"></div>
               <div className="absolute z-50 bg-background/90 backdrop-blur-md border border-glass-border rounded flex items-center justify-center px-1 py-[1px] text-muted-foreground group-hover:text-primary group-hover:border-primary/50 transition-colors shadow-sm">
                 <GripHorizontal size={12} />
@@ -77,7 +84,7 @@ export const TaskScreen: React.FC = () => {
             </PanelResizeHandle>
 
             {/* Panel 4: Results / Explain */}
-            <Panel defaultSize={50} minSize={20}>
+            <Panel defaultSize={50} minSize={20} className={`!overflow-visible transition-all duration-300 ${isResultsMaximized ? 'z-50' : ''}`}>
               <ResultsPane />
             </Panel>
 
