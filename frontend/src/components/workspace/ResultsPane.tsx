@@ -176,7 +176,7 @@ export const ResultsPane: React.FC<ResultsPaneProps> = ({
                 style={isResized ? { width: `${totalTableWidth}px` } : {}}
               >
                 <thead className="text-xs uppercase bg-hover text-muted-foreground sticky top-0 z-10 backdrop-blur-md shadow-sm">
-                  <tr>
+                  <tr className="divide-x divide-glass-border/50">
                     {result.columns.map((col, i) => (
                       <th 
                         key={i} 
@@ -194,7 +194,7 @@ export const ResultsPane: React.FC<ResultsPaneProps> = ({
                 </thead>
                 <tbody className="divide-y divide-glass-border">
                   {result.rows.map((row, rowIndex) => (
-                    <tr key={rowIndex} className="hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
+                    <tr key={rowIndex} className="hover:bg-black/5 dark:hover:bg-white/5 transition-colors divide-x divide-glass-border/50">
                       {row.map((cell, cellIndex) => (
                         <td 
                           key={cellIndex} 

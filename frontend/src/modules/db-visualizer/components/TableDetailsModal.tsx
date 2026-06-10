@@ -214,7 +214,7 @@ export const TableDetailsModal: React.FC<TableDetailsModalProps> = ({ table, onC
                     <div className="overflow-y-auto overflow-x-auto">
                       <table className="w-full text-left text-sm relative">
                         <thead className="bg-hover text-muted-foreground text-xs uppercase tracking-wider sticky top-0 z-10 backdrop-blur-md shadow-sm">
-                          <tr>
+                          <tr className="divide-x divide-glass-border/50">
                             <th className="px-4 py-3 font-medium">Ключи</th>
                             <th className="px-4 py-3 font-medium">Имя</th>
                             <th className="px-4 py-3 font-medium">Тип</th>
@@ -224,7 +224,7 @@ export const TableDetailsModal: React.FC<TableDetailsModalProps> = ({ table, onC
                         </thead>
                         <tbody className="divide-y divide-glass-border">
                         {table.columns?.map(col => (
-                          <tr key={col.name} className="hover:bg-hover transition-colors">
+                          <tr key={col.name} className="hover:bg-hover transition-colors divide-x divide-glass-border/50">
                             <td className="px-4 py-3">
                               <div className="flex items-center gap-1">
                                 {col.isPrimaryKey && <span title="Primary Key"><Key size={14} className="text-warning" /></span>}
@@ -395,7 +395,7 @@ export const TableDetailsModal: React.FC<TableDetailsModalProps> = ({ table, onC
                         style={isResized ? { width: `${totalTableWidth}px` } : {}}
                       >
                         <thead className="bg-hover text-muted-foreground text-xs uppercase tracking-wider sticky top-0 z-10 backdrop-blur-md shadow-sm">
-                          <tr>
+                          <tr className="divide-x divide-glass-border/50">
                             {data.columns.map((col, i) => (
                               <th 
                                 key={i} 
@@ -413,7 +413,7 @@ export const TableDetailsModal: React.FC<TableDetailsModalProps> = ({ table, onC
                         </thead>
                         <tbody className="divide-y divide-glass-border">
                           {data.rows.map((row, rowIndex) => (
-                            <tr key={rowIndex} className="hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
+                            <tr key={rowIndex} className="hover:bg-black/5 dark:hover:bg-white/5 transition-colors divide-x divide-glass-border/50">
                               {row.map((cell, cellIndex) => (
                                 <td 
                                   key={cellIndex} 

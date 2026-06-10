@@ -38,13 +38,13 @@ export const TaskScreen: React.FC = () => {
       <div className="h-full w-full rounded-2xl border border-glass-border bg-background shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] overflow-hidden relative">
         <PanelGroup 
           orientation="horizontal" 
-          id="llpg_main_horizontal_v3" 
+          id="llpg_main_horizontal_v4" 
           className="h-full w-full relative z-10 !overflow-visible"
         >
         
         {/* ================= LEFT HALF ================= */}
         <Panel defaultSize={40} minSize={20} className={`!overflow-visible transition-all duration-300 ${isLeftMaximized ? 'z-[100]' : ''}`}>
-          <PanelGroup orientation="vertical" id="llpg_left_vertical_v3" className="!overflow-visible">
+          <PanelGroup orientation="vertical" id="llpg_left_vertical_v4" className="!overflow-visible">
             
             {/* Panel 1: Task / Reference */}
             <Panel defaultSize={50} minSize={20} className={`!overflow-visible transition-all duration-300 ${isTaskMaximized ? 'z-[100]' : ''}`}>
@@ -58,14 +58,9 @@ export const TaskScreen: React.FC = () => {
               </div>
             </PanelResizeHandle>
 
-            {/* Panel 3: DB Viewer */}
-            <Panel defaultSize={50} minSize={20} className={`!overflow-visible transition-all duration-300 ${isDbMaximized ? 'z-[100]' : ''}`}>
-               <div className={`transition-all duration-300 ${isDbMaximized ? 'absolute inset-0 z-[100] bg-background rounded-2xl overflow-hidden' : 'h-full w-full relative !overflow-visible'}`}>
-                  <DBVisualizer 
-                    isMaximized={isDbMaximized} 
-                    onToggleMaximize={() => setMaximizedPane(isDbMaximized ? null : 'db')}
-                  />
-               </div>
+            {/* Panel 3: SQL Editor */}
+            <Panel defaultSize={50} minSize={20} className={`!overflow-visible transition-all duration-300 ${isEditorMaximized ? 'z-[100]' : ''}`}>
+              <SqlEditorPane />
             </Panel>
             
           </PanelGroup>
@@ -80,11 +75,16 @@ export const TaskScreen: React.FC = () => {
 
         {/* ================= RIGHT HALF ================= */}
         <Panel defaultSize={60} minSize={30} className={`!overflow-visible transition-all duration-300 ${isRightMaximized ? 'z-[100]' : ''}`}>
-          <PanelGroup orientation="vertical" id="llpg_right_vertical_v3" className="!overflow-visible">
+          <PanelGroup orientation="vertical" id="llpg_right_vertical_v4" className="!overflow-visible">
             
-            {/* Panel 2: SQL Editor */}
-            <Panel defaultSize={50} minSize={20} className={`!overflow-visible transition-all duration-300 ${isEditorMaximized ? 'z-[100]' : ''}`}>
-              <SqlEditorPane />
+            {/* Panel 2: DB Viewer */}
+            <Panel defaultSize={50} minSize={20} className={`!overflow-visible transition-all duration-300 ${isDbMaximized ? 'z-[100]' : ''}`}>
+               <div className={`transition-all duration-300 ${isDbMaximized ? 'absolute inset-0 z-[100] bg-background rounded-2xl overflow-hidden' : 'h-full w-full relative !overflow-visible'}`}>
+                  <DBVisualizer 
+                    isMaximized={isDbMaximized} 
+                    onToggleMaximize={() => setMaximizedPane(isDbMaximized ? null : 'db')}
+                  />
+               </div>
             </Panel>
 
             <PanelResizeHandle className="h-[2px] bg-glass-border hover:bg-primary/50 transition-colors relative flex items-center justify-center group cursor-row-resize z-40 outline-none">
