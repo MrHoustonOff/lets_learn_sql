@@ -7,30 +7,16 @@ export interface DatabaseMock {
   technicalName: string;
   name: string;
   description?: string;
+  isDefault?: boolean;
 }
 
 const mockDatabases: DatabaseMock[] = [
   {
-    id: 'db1',
-    technicalName: 'northwind_db_v1',
+    id: 'db-northwind',
+    technicalName: 'northwind',
     name: 'Northwind Sales',
-    description: 'Полная база продаж для курса по PostgreSQL. Содержит таблицы: customers, orders, products, employees и другие. Используется для всех основных задач по DML и DQL.'
-  },
-  {
-    id: 'db2',
-    technicalName: 'auth_schema_db',
-    name: 'Users & Auth'
-  },
-  {
-    id: 'db3',
-    technicalName: 'logs_archive_2023',
-    name: 'Logs Archive (2023)'
-  },
-  {
-    id: 'db4',
-    technicalName: 'sandbox_777',
-    name: 'Test Sandbox',
-    description: 'Песочница для тестов. Сюда можно заливать любой мусор и экспериментировать с DDL.'
+    description: 'Полная база продаж для курса по PostgreSQL. Содержит таблицы: customers, orders, products, employees и другие. Используется для всех основных задач по DML и DQL.',
+    isDefault: true
   }
 ];
 
@@ -65,8 +51,13 @@ export const DatabasesListPage: React.FC = () => {
                 <h3 className="font-semibold text-foreground truncate text-lg">
                   {db.name}
                 </h3>
-                <div className="text-xs text-muted-foreground font-mono truncate mt-1">
-                  {db.technicalName}
+                <div className="text-xs text-muted-foreground font-mono truncate mt-1 flex items-center gap-2">
+                  <span>{db.technicalName}</span>
+                  {db.isDefault && (
+                    <span className="px-1.5 py-0.5 rounded-md bg-primary/20 text-primary text-[10px] uppercase font-bold tracking-wider">
+                      Default
+                    </span>
+                  )}
                 </div>
               </div>
             </div>

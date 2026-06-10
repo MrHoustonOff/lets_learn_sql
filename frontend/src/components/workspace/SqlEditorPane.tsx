@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import CodeMirror from '@uiw/react-codemirror';
 import { sql } from '@codemirror/lang-sql';
-import { Play, Zap, Maximize2, Minimize2 } from 'lucide-react';
+import { keymap } from '@codemirror/view';
+import { Play, Zap, Maximize2, Minimize2, Loader2 } from 'lucide-react';
 import { useTheme } from '../../components/theme-provider';
 import { useUIStore } from '../../store/uiStore';
+import { useQueryStore } from '../../store/queryStore';
 
 interface SqlEditorPaneProps {
   isMaximized?: boolean;
@@ -14,7 +16,7 @@ export const SqlEditorPane: React.FC<SqlEditorPaneProps> = ({
   isMaximized: propIsMaximized, 
   onToggleMaximize: propOnToggleMaximize 
 }) => {
-  const [query, setQuery] = useState('SELECT * FROM customers\nWHERE country = \'UK\';');
+  const { sql: query, setSql: setQuery, executeQuery, isLoading } = useQueryStore();
   const { theme } = useTheme();
   const { maximizedPane, setMaximizedPane } = useUIStore();
   
@@ -34,10 +36,12 @@ export const SqlEditorPane: React.FC<SqlEditorPaneProps> = ({
         <span className="text-sm font-semibold text-foreground uppercase tracking-wider text-[11px] opacity-70">Редактор SQL</span>
         <div className="flex gap-2">
           <button 
-            className="flex items-center gap-1.5 text-xs font-semibold bg-success/10 text-success hover:bg-success/20 px-3 py-1.5 rounded-md transition-colors"
+            onClick={() => executeQuery()}
+            disabled={isLoading}
+            className="flex items-center gap-1.5 text-xs font-semibold bg-success/10 text-success hover:bg-success/20 px-3 py-1.5 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <Play size={12} className="fill-current" />
-            Run
+            {isLoading ? <Loader2 size={12} className="animate-spin" /> : <Play size={12} className="fill-current" />}
+            Run <span className="opacity-50 font-normal hidden sm:inline ml-1">(Ctrl+Enter)</span>
           </button>
           <button 
             className="flex items-center gap-1.5 text-xs font-semibold bg-warning/10 text-warning-text hover:bg-warning/20 px-3 py-1.5 rounded-md transition-colors"
@@ -60,7 +64,16 @@ export const SqlEditorPane: React.FC<SqlEditorPaneProps> = ({
           value={query}
           height="100%"
           theme={theme === 'dark' ? 'dark' : 'light'}
-          extensions={[sql()]}
+          extensions={[
+            sql(),
+            keymap.of([{
+              key: 'Mod-Enter',
+              run: () => {
+                executeQuery();
+                return true;
+              }
+            }])
+          ]}
           onChange={(val) => setQuery(val)}
           className="h-full text-[14px]"
           basicSetup={{

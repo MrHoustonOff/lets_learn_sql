@@ -11,8 +11,8 @@ export const getLayoutedElements = (schema: DatabaseSchema, direction = 'LR') =>
 
   dagreGraph.setGraph({ 
     rankdir: direction,
-    nodesep: 50,
-    ranksep: 200,
+    nodesep: 100, // Увеличен отступ между узлами
+    ranksep: 300, // Увеличен отступ между слоями
   });
 
   const nodes: Node[] = [];
@@ -25,11 +25,12 @@ export const getLayoutedElements = (schema: DatabaseSchema, direction = 'LR') =>
   schema.tables.forEach((table) => {
     const tableId = `${table.schema}.${table.name}`;
     
-    // Calculate approximate height based on visible columns (max 10) and indexes
+    // Более точный расчет высоты (с запасом, чтобы не налезали)
     const visibleColumnsCount = Math.min(table.columns.length, 10);
     const hasChevron = table.columns.length > 10;
-    const chevronHeight = hasChevron ? 32 : 0;
-    const approxHeight = 50 + (visibleColumnsCount * 36) + chevronHeight + (table.indexes.length > 0 ? 50 + table.indexes.length * 20 : 0);
+    const chevronHeight = hasChevron ? 36 : 0;
+    const extraInfoHeight = (table.indexes.length > 0 || table.foreignKeys.length > 0) ? 60 + table.indexes.length * 24 : 0;
+    const approxHeight = 60 + (visibleColumnsCount * 40) + chevronHeight + extraInfoHeight;
     
     dagreGraph.setNode(tableId, { width: nodeWidth, height: approxHeight });
 

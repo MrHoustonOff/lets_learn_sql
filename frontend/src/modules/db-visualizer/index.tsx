@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useCallback, useRef } from 'react';
 import type { DatabaseSchema, TableSchema } from './types';
-import crashTestMock from './mock/crash_test.json';
+import { useSchema } from './hooks/useSchema';
 import { Filter, Maximize2, Minimize2, X } from 'lucide-react';
 import { ReactFlow, Background, BackgroundVariant, Controls, useNodesState, useEdgesState } from '@xyflow/react';
 import type { Node, Edge } from '@xyflow/react';
@@ -16,6 +16,7 @@ import { TableDetailsModal } from './components/TableDetailsModal';
 import { ResizeCenterKeeper } from './components/ResizeCenterKeeper';
 import { useGraphDrag } from './hooks/useGraphDrag';
 import { useGraphFilters } from './hooks/useGraphFilters';
+
 
 interface DBVisualizerProps {
   schema?: DatabaseSchema;
@@ -48,30 +49,62 @@ export const DBVisualizer: React.FC<DBVisualizerProps> = ({ schema, isMaximized 
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
 
-  const useMock = import.meta.env.VITE_USE_MOCK === 'true' || !schema;
-  const activeSchema = useMock ? (crashTestMock as unknown as DatabaseSchema) : schema;
+  const { schema: fetchedSchema, loading, error } = useSchema();
+  const activeSchema = schema || fetchedSchema;
 
-  // Однократный расчет Dagre-layout при загрузке или смене схемы
+  // Загрузка сохраненного базового расположения
+  const loadSavedLayout = useCallback((layoutedNodes: Node[]) => {
+    if (!activeSchema) return layoutedNodes;
+    try {
+      const savedLayoutStr = localStorage.getItem(`db_layout_${activeSchema.name}`);
+      if (savedLayoutStr) {
+        const savedLayout = JSON.parse(savedLayoutStr) as Record<string, { x: number; y: number }>;
+        return layoutedNodes.map(node => {
+          if (savedLayout[node.id]) {
+            return { ...node, position: savedLayout[node.id] };
+          }
+          return node;
+        });
+      }
+    } catch (e) {
+      console.error('Failed to load saved layout', e);
+    }
+    return layoutedNodes;
+  }, [activeSchema]);
+
+  // Первоначальное создание узлов при загрузке или смене схемы
   React.useEffect(() => {
     if (!activeSchema) return;
     const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(activeSchema);
-    setNodes(layoutedNodes);
+    const nodesWithSavedPositions = loadSavedLayout(layoutedNodes);
+    setNodes(nodesWithSavedPositions);
     setEdges(layoutedEdges);
-  }, [activeSchema, setNodes, setEdges]);
+  }, [activeSchema, setNodes, setEdges, loadSavedLayout]);
 
-  // Функция полного сброса (пересчет Dagre)
+  // Выбор таблицы
   const onNodeClick = useCallback((_event: React.MouseEvent, node: Node) => {
     if (node.type === 'tableNode' && node.data?.table) {
       setSelectedTable(node.data.table as TableSchema);
     }
   }, []);
 
+  const handleSaveLayout = useCallback(() => {
+    if (!activeSchema) return;
+    const layout: Record<string, { x: number; y: number }> = {};
+    nodes.forEach(node => {
+      layout[node.id] = node.position;
+    });
+    localStorage.setItem(`db_layout_${activeSchema.name}`, JSON.stringify(layout));
+  }, [activeSchema, nodes]);
+
   const handleResetLayout = useCallback(() => {
     if (!activeSchema) return;
+    // Просто перечитываем из базы (и накладываем сохраненный вид, если он есть)
     const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(activeSchema);
-    setNodes(layoutedNodes);
+    const nodesWithSavedPositions = loadSavedLayout(layoutedNodes);
+    setNodes(nodesWithSavedPositions);
     setEdges(layoutedEdges);
-  }, [activeSchema, setNodes, setEdges]);
+  }, [activeSchema, setNodes, setEdges, loadSavedLayout]);
 
   const { draggedNode, setDraggedNode, activeDragItems } = useGraphDrag(edges);
 
@@ -87,6 +120,29 @@ export const DBVisualizer: React.FC<DBVisualizerProps> = ({ schema, isMaximized 
     showMarkers,
     animateEdges
   });
+
+  if (loading) {
+    return (
+      <div className="h-full w-full flex items-center justify-center bg-background text-muted-foreground">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-8 h-8 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
+          <div>Загрузка схемы базы данных...</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="h-full w-full flex items-center justify-center bg-background text-destructive">
+        <div className="flex flex-col items-center gap-2 max-w-md text-center">
+          <X size={32} />
+          <div className="font-semibold text-lg">Ошибка загрузки схемы</div>
+          <div className="text-sm opacity-80">{error}</div>
+        </div>
+      </div>
+    );
+  }
 
   if (!activeSchema) {
     return <div className="text-foreground p-4">No schema provided.</div>;
@@ -141,6 +197,7 @@ export const DBVisualizer: React.FC<DBVisualizerProps> = ({ schema, isMaximized 
             onChangeEdgeStyle={setEdgeStyle}
             animateEdges={animateEdges}
             onChangeAnimateEdges={setAnimateEdges}
+            onSaveLayout={handleSaveLayout}
             onResetLayout={handleResetLayout}
           />
           

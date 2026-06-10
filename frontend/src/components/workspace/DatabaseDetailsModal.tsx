@@ -68,7 +68,7 @@ export const DatabaseDetailsModal: React.FC<DatabaseDetailsModalProps> = ({ isOp
 
         {/* Modal Body with PanelGroup */}
         <div className="flex-1 overflow-hidden relative">
-          <PanelGroup direction="horizontal" id="db_modal_horizontal" className="h-full w-full">
+          <PanelGroup orientation="horizontal" id="db_modal_horizontal_v3" className="h-full w-full">
             
             {/* Left Panel: Info & Actions */}
             <Panel defaultSize={30} minSize={20} className="bg-glass/50 backdrop-blur-sm p-6 flex flex-col gap-8 primary-scrollbar overflow-y-auto">
@@ -151,7 +151,7 @@ export const DatabaseDetailsModal: React.FC<DatabaseDetailsModalProps> = ({ isOp
                 )}
                 
                 {activeTab === 'editor' && (
-                  <PanelGroup direction="vertical" id="db_modal_editor_vertical" className="h-full w-full">
+                  <PanelGroup orientation="vertical" id="db_modal_editor_vertical_v3" className="h-full w-full">
                     <Panel defaultSize={60} minSize={20} className={`!overflow-visible transition-all duration-300 ${maximizedPane === 'editor' ? 'z-[100]' : ''}`}>
                       <SqlEditorPane 
                         isMaximized={maximizedPane === 'editor'}

@@ -14,6 +14,7 @@ interface ViewMenuProps {
   onChangeEdgeStyle: (style: 'bezier' | 'smoothstep') => void;
   animateEdges: boolean;
   onChangeAnimateEdges: (animate: boolean) => void;
+  onSaveLayout?: () => void;
   onResetLayout: () => void;
 }
 
@@ -30,6 +31,7 @@ export const ViewMenu: React.FC<ViewMenuProps> = ({
   onChangeEdgeStyle,
   animateEdges,
   onChangeAnimateEdges,
+  onSaveLayout,
   onResetLayout,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -195,6 +197,19 @@ export const ViewMenu: React.FC<ViewMenuProps> = ({
           <div className="h-px bg-glass-border my-1" />
 
           {/* Действия */}
+          {onSaveLayout && (
+            <button
+              onClick={() => {
+                onSaveLayout();
+                setIsOpen(false);
+              }}
+              className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-primary/10 transition-colors text-sm text-left w-full text-foreground font-medium mb-1"
+            >
+              <Activity size={16} className="text-primary" />
+              <span className="flex-1">Сохранить расположение</span>
+            </button>
+          )}
+
           <button
             onClick={() => {
               if (onResetLayout) onResetLayout();
