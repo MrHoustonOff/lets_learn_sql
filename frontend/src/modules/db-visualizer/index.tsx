@@ -229,10 +229,10 @@ export const DBVisualizer: React.FC<DBVisualizerProps> = ({ schema, isMaximized 
             onClick={() => setShowFilters(!showFilters)}
             className={`pointer-events-auto flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium text-base transition-all shadow-sm border ${
               (hiddenTables.size > 0 || highlightedColumns.size > 0)
-                ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/50 hover:bg-amber-500/20'
+                ? 'bg-warning/10 text-warning-text border-warning/50 hover:bg-warning/20'
                 : showFilters
-                  ? 'bg-black/10 dark:bg-white/10 border-glass-border text-foreground'
-                  : 'bg-glass backdrop-blur-md border-glass-border hover:bg-black/5 dark:hover:bg-white/5 text-foreground'
+                  ? 'bg-hover border-glass-border text-foreground'
+                  : 'bg-glass backdrop-blur-md border-glass-border hover:bg-hover text-foreground'
             }`}
           >
             <Filter size={16} />
@@ -273,7 +273,7 @@ export const DBVisualizer: React.FC<DBVisualizerProps> = ({ schema, isMaximized 
             <button 
               onClick={onToggleMaximize}
               title={isMaximized ? "Свернуть" : "Развернуть"}
-              className="p-2.5 rounded-xl hover:bg-black/10 dark:hover:bg-white/10 transition-colors bg-glass backdrop-blur-md border border-glass-border shadow-sm"
+              className="p-2.5 rounded-xl hover:bg-hover transition-colors bg-glass backdrop-blur-md border border-glass-border shadow-sm"
             >
               {isMaximized ? <Minimize2 size={20} /> : <Maximize2 size={20} />}
             </button>

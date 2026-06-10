@@ -60,7 +60,7 @@ export const CourseTOC: React.FC = () => {
         }`}
       >
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-glass-border bg-black/10 dark:bg-white/5 shrink-0">
+      <div className="flex items-center justify-between p-4 border-b border-glass-border bg-hover shrink-0">
         <div>
           <h2 className="font-semibold text-sm text-muted-foreground uppercase tracking-wider">КУРС</h2>
           <h1 className="font-bold text-foreground truncate" title={courseData.title}>{courseData.title}</h1>
@@ -76,7 +76,7 @@ export const CourseTOC: React.FC = () => {
             <span className="text-muted-foreground font-mono">{courseData.progress}%</span>
           </div>
           <div className="h-2 w-full bg-secondary rounded-full overflow-hidden">
-            <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${courseData.progress}%` }}></div>
+            <div className="h-full bg-success rounded-full" style={{ width: `${courseData.progress}%` }}></div>
           </div>
           <p className="text-xs text-muted-foreground">{courseData.totalTasks} задач</p>
         </div>
@@ -92,7 +92,7 @@ export const CourseTOC: React.FC = () => {
                   <span>{section.completed}/{section.total}</span>
                 </div>
                 <div className="h-1.5 w-full bg-secondary rounded-full overflow-hidden">
-                  <div className="h-full bg-emerald-500/70 rounded-full" style={{ width: `${section.progress}%` }}></div>
+                  <div className="h-full bg-success/70 rounded-full" style={{ width: `${section.progress}%` }}></div>
                 </div>
               </div>
 
@@ -108,18 +108,18 @@ export const CourseTOC: React.FC = () => {
                         className={`group flex items-center gap-3 px-3 py-2 rounded-xl text-sm transition-all border border-transparent ${
                           isActive 
                             ? 'bg-primary/10 border-primary/20 text-primary font-medium shadow-sm' 
-                            : 'text-muted-foreground hover:bg-black/5 dark:hover:bg-white/5 hover:border-glass-border hover:text-foreground'
+                            : 'text-muted-foreground hover:bg-hover hover:border-glass-border hover:text-foreground'
                         }`}
                       >
                         {/* Status Icon */}
                         <div className="relative shrink-0 flex items-center justify-center w-5 h-5">
                           {task.status === 'done' ? (
-                            <CheckCircle2 size={16} className="text-emerald-500" />
+                            <CheckCircle2 size={16} className="text-success" />
                           ) : (
                             <Circle size={14} className="opacity-40 group-hover:opacity-100 transition-opacity" />
                           )}
                           {task.bookmarked && (
-                            <Star size={10} className="absolute -top-1 -right-1 text-amber-500 fill-amber-500" />
+                            <Star size={10} className="absolute -top-1 -right-1 text-warning fill-warning" />
                           )}
                         </div>
                         
@@ -139,7 +139,7 @@ export const CourseTOC: React.FC = () => {
           {/* Chevron Trigger */}
       <button 
         onClick={() => setCourseTocOpen(!isCourseTocOpen)}
-        className={`fixed top-1/2 -translate-y-1/2 z-50 py-4 px-1 bg-glass backdrop-blur-md border border-l-0 border-glass-border rounded-r-xl shadow-md transition-all duration-300 hover:bg-black/5 dark:hover:bg-white/5 ${
+        className={`fixed top-1/2 -translate-y-1/2 z-50 py-4 px-1 bg-glass backdrop-blur-md border border-l-0 border-glass-border rounded-r-xl shadow-md transition-all duration-300 hover:bg-hover ${
           isCourseTocOpen ? 'left-[21rem]' : 'left-0'
         }`}
       >

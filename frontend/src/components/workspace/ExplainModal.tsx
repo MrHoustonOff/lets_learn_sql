@@ -18,7 +18,7 @@ export const ExplainModal: React.FC<ExplainModalProps> = ({ isOpen, onClose }) =
         {/* Header */}
         <div className="h-14 border-b border-glass-border flex items-center justify-between px-6 shrink-0 bg-glass/50">
           <div className="flex items-center gap-2">
-            <Activity className="text-amber-500" size={20} />
+            <Activity className="text-warning" size={20} />
             <h2 className="font-semibold text-lg">{t('full_analysis')}</h2>
           </div>
           <button 
@@ -32,8 +32,8 @@ export const ExplainModal: React.FC<ExplainModalProps> = ({ isOpen, onClose }) =
         {/* Content */}
         <div className="flex-1 p-6 overflow-y-auto">
           <div className="h-full flex flex-col items-center justify-center text-center max-w-lg mx-auto">
-            <div className="w-24 h-24 rounded-full bg-amber-500/10 flex items-center justify-center mb-6 border border-amber-500/20">
-              <Activity size={48} className="text-amber-500" />
+            <div className="w-24 h-24 rounded-full bg-warning/10 flex items-center justify-center mb-6 border border-warning/20">
+              <Activity size={48} className="text-warning" />
             </div>
             <h3 className="text-xl font-bold mb-2">Анализ плана выполнения</h3>
             <p className="text-muted-foreground">
