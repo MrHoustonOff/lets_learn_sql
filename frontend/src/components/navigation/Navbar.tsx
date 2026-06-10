@@ -2,7 +2,7 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../theme-provider';
-import { Moon, Sun, User, BookOpen, CheckSquare } from 'lucide-react';
+import { Moon, Sun, User, BookOpen, CheckSquare, Database } from 'lucide-react';
 
 export const Navbar: React.FC = () => {
   const { t } = useTranslation();
@@ -22,7 +22,14 @@ export const Navbar: React.FC = () => {
             className={({ isActive }) => `flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-medium transition-colors ${isActive ? 'bg-black/10 dark:bg-white/10 text-foreground' : 'text-muted-foreground hover:bg-black/5 dark:hover:bg-white/5 hover:text-foreground'}`}
           >
             <BookOpen size={12} />
-            {t('courses')}
+            Курсы
+          </NavLink>
+          <NavLink 
+            to="/databases" 
+            className={({ isActive }) => `flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-medium transition-colors ${isActive ? 'bg-black/10 dark:bg-white/10 text-foreground' : 'text-muted-foreground hover:bg-black/5 dark:hover:bg-white/5 hover:text-foreground'}`}
+          >
+            <Database size={12} />
+            Базы данных
           </NavLink>
           <NavLink 
             to="/tasks" 

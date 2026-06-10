@@ -5,11 +5,28 @@ import { Play, Zap, Maximize2, Minimize2 } from 'lucide-react';
 import { useTheme } from '../../components/theme-provider';
 import { useUIStore } from '../../store/uiStore';
 
-export const SqlEditorPane: React.FC = () => {
+interface SqlEditorPaneProps {
+  isMaximized?: boolean;
+  onToggleMaximize?: () => void;
+}
+
+export const SqlEditorPane: React.FC<SqlEditorPaneProps> = ({ 
+  isMaximized: propIsMaximized, 
+  onToggleMaximize: propOnToggleMaximize 
+}) => {
   const [query, setQuery] = useState('SELECT * FROM customers\nWHERE country = \'UK\';');
   const { theme } = useTheme();
   const { maximizedPane, setMaximizedPane } = useUIStore();
-  const isMaximized = maximizedPane === 'editor';
+  
+  const isMaximized = propIsMaximized !== undefined ? propIsMaximized : maximizedPane === 'editor';
+  
+  const handleToggleMaximize = () => {
+    if (propOnToggleMaximize) {
+      propOnToggleMaximize();
+    } else {
+      setMaximizedPane(isMaximized ? null : 'editor');
+    }
+  };
 
   return (
     <div className={`h-full flex flex-col transition-all duration-300 ${isMaximized ? 'absolute inset-0 z-[100] bg-background rounded-2xl' : 'bg-transparent'}`}>
@@ -30,7 +47,7 @@ export const SqlEditorPane: React.FC = () => {
           </button>
           <div className="w-px h-4 bg-glass-border mx-1" />
           <button 
-            onClick={() => setMaximizedPane(isMaximized ? null : 'editor')}
+            onClick={handleToggleMaximize}
             className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-hover rounded-md transition-colors"
             title={isMaximized ? "Свернуть" : "Развернуть"}
           >

@@ -4,12 +4,29 @@ import { Table2, Activity, Maximize2, Minimize2 } from 'lucide-react';
 import { ExplainModal } from './ExplainModal';
 import { useUIStore } from '../../store/uiStore';
 
-export const ResultsPane: React.FC = () => {
+interface ResultsPaneProps {
+  isMaximized?: boolean;
+  onToggleMaximize?: () => void;
+}
+
+export const ResultsPane: React.FC<ResultsPaneProps> = ({
+  isMaximized: propIsMaximized,
+  onToggleMaximize: propOnToggleMaximize
+}) => {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<'result' | 'explain'>('result');
   const [isExplainModalOpen, setIsExplainModalOpen] = useState(false);
   const { maximizedPane, setMaximizedPane } = useUIStore();
-  const isMaximized = maximizedPane === 'results';
+  
+  const isMaximized = propIsMaximized !== undefined ? propIsMaximized : maximizedPane === 'results';
+  
+  const handleToggleMaximize = () => {
+    if (propOnToggleMaximize) {
+      propOnToggleMaximize();
+    } else {
+      setMaximizedPane(isMaximized ? null : 'results');
+    }
+  };
 
   return (
     <div className={`h-full flex flex-col transition-all duration-300 ${isMaximized ? 'absolute inset-0 z-[100] bg-background rounded-2xl' : 'bg-transparent relative'}`}>
@@ -52,7 +69,7 @@ export const ResultsPane: React.FC = () => {
           )}
           <div className="w-px h-4 bg-glass-border mx-1" />
           <button 
-            onClick={() => setMaximizedPane(isMaximized ? null : 'results')}
+            onClick={handleToggleMaximize}
             className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-hover rounded-md transition-colors"
             title={isMaximized ? "Свернуть" : "Развернуть"}
           >

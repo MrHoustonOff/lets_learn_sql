@@ -4,6 +4,7 @@ import { GlobalLayout } from './layouts/GlobalLayout';
 import { TaskScreen } from './pages/TaskScreen';
 import { CoursesListPage } from './pages/CoursesListPage';
 import { CourseDetailsPage } from './pages/CourseDetailsPage';
+import { DatabasesListPage } from './pages/DatabasesListPage';
 import { TasksPage, SettingsPage, ProfilePage } from './pages/PlaceholderPages';
 
 const router = createBrowserRouter([
@@ -22,6 +23,10 @@ const router = createBrowserRouter([
       {
         path: 'courses/:id',
         element: <CourseDetailsPage />,
+      },
+      {
+        path: 'databases',
+        element: <DatabasesListPage />,
       },
       {
         path: 'tasks',
