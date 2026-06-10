@@ -59,6 +59,16 @@ module.exports = {
           DEFAULT: "hsl(var(--badge-bg) / var(--badge-bg-opacity))",
           foreground: "hsl(var(--badge-fg))"
         },
+        warning: {
+          DEFAULT: "hsl(var(--warning))",
+          text: "hsl(var(--warning-text))"
+        },
+        success: {
+          DEFAULT: "hsl(var(--success))"
+        },
+        hover: {
+          DEFAULT: "hsl(var(--bg-hover) / var(--bg-hover-opacity))"
+        },
         gradient: {
           start: "hsl(var(--bg-gradient-start))",
           end: "hsl(var(--bg-gradient-end))"

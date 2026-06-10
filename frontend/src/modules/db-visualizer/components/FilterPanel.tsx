@@ -85,30 +85,30 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
     <div className="flex flex-col bg-glass backdrop-blur-xl border border-glass-border shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] rounded-xl overflow-hidden w-80 transition-all duration-300">
       
       {/* Header Tabs */}
-      <div className="flex bg-black/10 dark:bg-white/5 border-b border-glass-border relative">
+      <div className="flex bg-hover border-b border-glass-border relative">
         <button
           onClick={() => setActiveTab('tables')}
           className={`flex-1 flex items-center justify-center gap-2 py-3 text-xs font-medium transition-colors ${
             activeTab === 'tables' 
               ? 'text-foreground border-b-2 border-primary bg-background/50' 
-              : 'text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/5'
+              : 'text-muted-foreground hover:text-foreground hover:bg-hover'
           }`}
         >
           <LayoutList size={14} />
           Таблицы
-          {hiddenTables.size > 0 && <div className="w-1.5 h-1.5 rounded-full bg-amber-500" />}
+          {hiddenTables.size > 0 && <div className="w-1.5 h-1.5 rounded-full bg-warning" />}
         </button>
         <button
           onClick={() => setActiveTab('columns')}
           className={`flex-1 flex items-center justify-center gap-2 py-3 text-xs font-medium transition-colors ${
             activeTab === 'columns' 
               ? 'text-foreground border-b-2 border-primary bg-background/50' 
-              : 'text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/5'
+              : 'text-muted-foreground hover:text-foreground hover:bg-hover'
           }`}
         >
           <Columns3 size={14} />
           Столбцы
-          {highlightedColumns.size > 0 && <div className="w-1.5 h-1.5 rounded-full bg-amber-500" />}
+          {highlightedColumns.size > 0 && <div className="w-1.5 h-1.5 rounded-full bg-warning" />}
         </button>
       </div>
 
@@ -129,7 +129,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
                 placeholder="Поиск таблиц..." 
                 value={searchTables}
                 onChange={e => setSearchTables(e.target.value)}
-                className="w-full bg-black/5 dark:bg-white/5 border border-glass-border rounded-lg pl-8 pr-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-primary text-foreground placeholder:text-muted-foreground"
+                className="w-full bg-hover border border-glass-border rounded-lg pl-8 pr-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-primary text-foreground placeholder:text-muted-foreground"
               />
             </div>
             <div className="flex items-center justify-between mb-3 px-1">
@@ -149,11 +149,11 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
                   <button
                     key={t.id}
                     onClick={() => handleToggleTable(t.id)}
-                    className={`w-full flex items-center justify-between gap-3 px-3 py-2 rounded-lg text-sm text-left transition-colors hover:bg-black/5 dark:hover:bg-white/5 ${isHidden ? 'opacity-50' : ''}`}
+                    className={`w-full flex items-center justify-between gap-3 px-3 py-2 rounded-lg text-sm text-left transition-colors hover:bg-hover ${isHidden ? 'opacity-50' : ''}`}
                     style={{ direction: 'ltr' }}
                   >
                     <span className="truncate flex-1 font-medium">{t.name}</span>
-                    <div className={`shrink-0 w-8 h-4 rounded-full relative transition-colors ${!isHidden ? 'bg-emerald-500' : 'bg-black/20 dark:bg-white/20'}`}>
+                    <div className={`shrink-0 w-8 h-4 rounded-full relative transition-colors ${!isHidden ? 'bg-success' : 'bg-hover'}`}>
                       <div className={`absolute top-0.5 w-3 h-3 rounded-full bg-white transition-all shadow-sm ${!isHidden ? 'left-4' : 'left-0.5'}`} />
                     </div>
                   </button>
@@ -175,11 +175,11 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
                 placeholder="Поиск столбцов..." 
                 value={searchColumns}
                 onChange={e => setSearchColumns(e.target.value)}
-                className="w-full bg-black/5 dark:bg-white/5 border border-glass-border rounded-lg pl-8 pr-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-primary text-foreground placeholder:text-muted-foreground"
+                className="w-full bg-hover border border-glass-border rounded-lg pl-8 pr-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-primary text-foreground placeholder:text-muted-foreground"
               />
             </div>
             <div className="flex items-center justify-end mb-3 px-1">
-              <button onClick={handleResetColumns} className="text-[10px] uppercase tracking-wider text-amber-500 hover:text-amber-400 font-medium flex items-center gap-1 transition-colors">
+              <button onClick={handleResetColumns} className="text-[10px] uppercase tracking-wider text-warning hover:text-warning-text font-medium flex items-center gap-1 transition-colors">
                 <FilterX size={12} /> Сбросить фильтр
               </button>
             </div>
@@ -195,12 +195,12 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
                     className={`w-full flex items-center justify-between gap-3 px-3 py-2 rounded-lg text-sm text-left transition-colors ${
                       isHighlighted 
                         ? 'bg-primary/10 text-primary hover:bg-primary/20' 
-                        : 'text-foreground hover:bg-black/5 dark:hover:bg-white/5'
+                        : 'text-foreground hover:bg-hover'
                     }`}
                     style={{ direction: 'ltr' }}
                   >
                     <span className={`truncate flex-1 ${isHighlighted ? 'font-semibold' : 'font-medium'}`}>{c}</span>
-                    <div className={`shrink-0 w-8 h-4 rounded-full relative transition-colors ${isHighlighted ? 'bg-primary' : 'bg-black/20 dark:bg-white/20'}`}>
+                    <div className={`shrink-0 w-8 h-4 rounded-full relative transition-colors ${isHighlighted ? 'bg-primary' : 'bg-hover'}`}>
                       <div className={`absolute top-0.5 w-3 h-3 rounded-full bg-white transition-all shadow-sm ${isHighlighted ? 'left-4' : 'left-0.5'}`} />
                     </div>
                   </button>
