@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Panel, Group as PanelGroup, Separator as PanelResizeHandle } from 'react-resizable-panels';
 import { DBVisualizer } from '../modules/db-visualizer';
 import { TaskPane } from '../components/workspace/TaskPane';
@@ -10,6 +10,17 @@ import { useUIStore } from '../store/uiStore';
 export const TaskScreen: React.FC = () => {
   const { maximizedPane, setMaximizedPane } = useUIStore();
   
+  // Обработка Esc для выхода из полноэкранного режима панелей
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && maximizedPane) {
+        setMaximizedPane(null);
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [maximizedPane, setMaximizedPane]);
+
   const isTaskMaximized = maximizedPane === 'task';
   const isEditorMaximized = maximizedPane === 'editor';
   const isDbMaximized = maximizedPane === 'db';
