@@ -66,6 +66,13 @@ module.exports = {
         success: {
           DEFAULT: "hsl(var(--success))"
         },
+        info: {
+          DEFAULT: "hsl(var(--info))"
+        },
+        "accent-alt": {
+          DEFAULT: "hsl(var(--accent-alt))",
+          text: "hsl(var(--accent-alt-text))"
+        },
         hover: {
           DEFAULT: "hsl(var(--bg-hover) / var(--bg-hover-opacity))"
         },

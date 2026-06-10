@@ -36,6 +36,9 @@
     --success: 160 84% 39%; /* emerald-500 */
     --warning: 38 92% 50%; /* amber-500 */
     --warning-text: 32 95% 44%; /* amber-600 */
+    --info: 217 91% 60%; /* blue-500 */
+    --accent-alt: 285 73% 52%; /* purple-500 */
+    --accent-alt-text: 271 81% 56%; /* purple-600 */
     --bg-hover: 0 0% 0%; /* black */
     --bg-hover-opacity: 0.05;
 
@@ -95,6 +98,9 @@
     --success: 160 84% 39%; /* emerald-500 */
     --warning: 38 92% 50%; /* amber-500 */
     --warning-text: 43 96% 56%; /* amber-400 */
+    --info: 217 91% 60%; /* blue-500 */
+    --accent-alt: 285 73% 52%; /* purple-500 */
+    --accent-alt-text: 292 84% 61%; /* purple-400 */
     --bg-hover: 0 0% 100%; /* white */
     --bg-hover-opacity: 0.05;
 
