@@ -1,12 +1,15 @@
 import React from 'react';
 
-export const Legend: React.FC = () => {
+
+export const Legend: React.FC<{ isMaximized?: boolean }> = ({ isMaximized = true }) => {
   const stroke = "hsl(var(--primary))";
   const strokeWidth = 2;
 
   return (
-    <div className="absolute bottom-6 right-6 z-50 bg-glass backdrop-blur-xl border border-glass-border shadow-lg rounded-xl p-4 min-w-[200px] animate-in fade-in slide-in-from-bottom-4">
-      <h4 className="text-[10px] font-semibold text-foreground uppercase tracking-wider mb-3 opacity-60">Легенда связей</h4>
+    <div className={`absolute bottom-6 right-6 z-50 bg-glass backdrop-blur-xl border border-glass-border shadow-lg rounded-xl p-4 min-w-[200px] animate-in fade-in slide-in-from-bottom-4 transition-all duration-300 ${
+      isMaximized ? 'scale-100 origin-bottom-right' : 'scale-75 origin-bottom-right bottom-2 right-2 p-3'
+    }`}>
+      <h4 className={`font-semibold text-foreground uppercase tracking-wider mb-3 opacity-60 ${isMaximized ? 'text-[10px]' : 'text-[9px] mb-2'}`}>Легенда связей</h4>
       <div className="flex flex-col gap-3">
         {/* 1:M (Crow's foot) */}
         <div className="flex items-center gap-3">

@@ -1,8 +1,7 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useRef } from 'react';
 import type { DatabaseSchema, TableSchema } from './types';
 import crashTestMock from './mock/crash_test.json';
-import { useTheme } from '../../components/theme-provider';
-import { Moon, Sun, Filter } from 'lucide-react';
+import { Filter, Maximize2, Minimize2 } from 'lucide-react';
 import { ReactFlow, Background, BackgroundVariant, Controls, useNodesState, useEdgesState } from '@xyflow/react';
 import type { Node, Edge } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
@@ -14,9 +13,12 @@ import { ViewMenu } from './components/ViewMenu';
 import { FilterPanel } from './components/FilterPanel';
 import { Legend } from './components/Legend';
 import { TableDetailsModal } from './components/TableDetailsModal';
+import { ResizeCenterKeeper } from './components/ResizeCenterKeeper';
 
 interface DBVisualizerProps {
   schema?: DatabaseSchema;
+  isMaximized?: boolean;
+  onToggleMaximize?: () => void;
 }
 
 const nodeTypes = {
@@ -27,11 +29,11 @@ const edgeTypes = {
   relationEdge: RelationEdge,
 };
 
-export const DBVisualizer: React.FC<DBVisualizerProps> = ({ schema }) => {
-  const { theme, setTheme } = useTheme();
+export const DBVisualizer: React.FC<DBVisualizerProps> = ({ schema, isMaximized = true, onToggleMaximize }) => {
   const [showRelations, setShowRelations] = useState(true);
   const [showMarkers, setShowMarkers] = useState(true);
   const [showLegend, setShowLegend] = useState(true);
+  const [showToolbar, setShowToolbar] = useState(true);
   const [edgeStyle, setEdgeStyle] = useState<'bezier' | 'smoothstep'>('bezier');
   const [animateEdges, setAnimateEdges] = useState(true);
   
@@ -39,6 +41,7 @@ export const DBVisualizer: React.FC<DBVisualizerProps> = ({ schema }) => {
   const [highlightedColumns, setHighlightedColumns] = useState<Set<string>>(new Set());
   const [showFilters, setShowFilters] = useState(false);
   const [selectedTable, setSelectedTable] = useState<TableSchema | null>(null);
+  const hoveredNodeRef = useRef<string | null>(null);
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
 
@@ -215,16 +218,16 @@ export const DBVisualizer: React.FC<DBVisualizerProps> = ({ schema }) => {
   }
 
   return (
-    <div className="h-full w-full bg-background text-foreground font-sans overflow-hidden relative transition-colors duration-500 z-0 flex flex-col">
+    <div className="h-full w-full bg-background text-foreground font-sans overflow-visible relative transition-colors duration-500 z-0 flex flex-col">
       {/* Радиальное свечение под холстом */}
       <div className="absolute inset-0 z-0 pointer-events-none bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,hsla(var(--glow)/var(--glow-opacity)),transparent)]"></div>
       
-      <header className="absolute top-6 left-6 right-6 flex items-start justify-between z-20 pointer-events-none">
+      <header className={`absolute top-0 left-0 right-0 flex items-start justify-between z-20 pointer-events-none transition-all duration-300 ${isMaximized ? 'p-6' : 'p-2'}`}>
         {/* Левая часть: Кнопка Фильтры и сама Панель */}
-        <div className="relative pointer-events-auto flex flex-col items-start gap-2">
+        <div className={`relative pointer-events-none flex flex-col items-start gap-2 transition-transform duration-300 origin-top-left ${isMaximized ? 'scale-100' : 'scale-[0.6]'}`}>
           <button
             onClick={() => setShowFilters(!showFilters)}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium transition-all shadow-sm border ${
+            className={`pointer-events-auto flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium text-base transition-all shadow-sm border ${
               (hiddenTables.size > 0 || highlightedColumns.size > 0)
                 ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/50 hover:bg-amber-500/20'
                 : showFilters
@@ -237,7 +240,7 @@ export const DBVisualizer: React.FC<DBVisualizerProps> = ({ schema }) => {
           </button>
           
           {/* Сама панель фильтров (появляется под кнопкой) */}
-          <div className={`transition-all duration-300 origin-top-left ${showFilters ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'}`}>
+          <div className={`absolute top-full left-0 mt-2 transition-all duration-300 origin-top-left ${showFilters ? 'opacity-100 scale-100 pointer-events-auto' : 'opacity-0 scale-95 pointer-events-none'}`}>
             <FilterPanel 
               schema={activeSchema}
               hiddenTables={hiddenTables}
@@ -248,8 +251,8 @@ export const DBVisualizer: React.FC<DBVisualizerProps> = ({ schema }) => {
           </div>
         </div>
 
-        {/* Правая часть: ViewMenu и ThemeToggle */}
-        <div className="flex items-center gap-4 pointer-events-auto">
+        {/* Правая часть: ViewMenu, ThemeToggle, Maximize */}
+        <div className={`flex items-center gap-3 pointer-events-auto transition-transform duration-300 origin-top-right ${isMaximized ? 'scale-100' : 'scale-[0.6]'}`}>
           <ViewMenu 
             showRelations={showRelations}
             onToggleRelations={() => setShowRelations(!showRelations)}
@@ -257,18 +260,24 @@ export const DBVisualizer: React.FC<DBVisualizerProps> = ({ schema }) => {
             onToggleMarkers={() => setShowMarkers(!showMarkers)}
             showLegend={showLegend}
             onToggleLegend={() => setShowLegend(!showLegend)}
+            showToolbar={showToolbar}
+            onToggleToolbar={() => setShowToolbar(!showToolbar)}
             edgeStyle={edgeStyle}
             onChangeEdgeStyle={setEdgeStyle}
             animateEdges={animateEdges}
             onChangeAnimateEdges={setAnimateEdges}
             onResetLayout={handleResetLayout}
           />
-          <button 
-            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-            className="p-2.5 rounded-xl hover:bg-black/10 dark:hover:bg-white/10 transition-colors bg-glass backdrop-blur-md border border-glass-border shadow-sm"
-          >
-            {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
-          </button>
+          
+          {onToggleMaximize && (
+            <button 
+              onClick={onToggleMaximize}
+              title={isMaximized ? "Свернуть" : "Развернуть"}
+              className="p-2.5 rounded-xl hover:bg-black/10 dark:hover:bg-white/10 transition-colors bg-glass backdrop-blur-md border border-glass-border shadow-sm"
+            >
+              {isMaximized ? <Minimize2 size={20} /> : <Maximize2 size={20} />}
+            </button>
+          )}
         </div>
       </header>
 
@@ -279,6 +288,8 @@ export const DBVisualizer: React.FC<DBVisualizerProps> = ({ schema }) => {
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
           onNodeClick={onNodeClick}
+          onNodeMouseEnter={(_, node) => { hoveredNodeRef.current = node.id; }}
+          onNodeMouseLeave={() => { hoveredNodeRef.current = null; }}
           onNodeDragStart={(_, node) => setDraggedNode(node.id)}
           onNodeDragStop={() => setDraggedNode(null)}
           nodeTypes={nodeTypes}
@@ -296,9 +307,15 @@ export const DBVisualizer: React.FC<DBVisualizerProps> = ({ schema }) => {
             color="currentColor" 
             className="opacity-10 dark:opacity-20"
           />
-          <Controls showInteractive={false} className="custom-controls" />
-          <HotkeysHandler onResetLayout={handleResetLayout} />
-          {showLegend && <Legend />}
+          {showToolbar && (
+            <Controls 
+              showInteractive={false} 
+              className={`custom-controls transition-all duration-300 ${isMaximized ? 'scale-100 origin-bottom-left' : 'scale-75 origin-bottom-left'}`} 
+            />
+          )}
+          <HotkeysHandler onResetLayout={handleResetLayout} hoveredNodeRef={hoveredNodeRef} />
+          {showLegend && <Legend isMaximized={isMaximized} />}
+          <ResizeCenterKeeper />
         </ReactFlow>
       </div>
 

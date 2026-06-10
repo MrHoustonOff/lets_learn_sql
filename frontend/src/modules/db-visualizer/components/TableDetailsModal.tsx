@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import type { TableSchema } from '../types';
 import { X, Database, Key, Link, AlertCircle, Hash, TableProperties, Fingerprint } from 'lucide-react';
 
@@ -10,8 +11,16 @@ interface TableDetailsModalProps {
 export const TableDetailsModal: React.FC<TableDetailsModalProps> = ({ table, onClose }) => {
   const [activeTab, setActiveTab] = useState<'schema' | 'data'>('schema');
 
-  return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 animate-in fade-in duration-200">
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
+
+  const modalContent = (
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 animate-in fade-in duration-200 select-text">
       {/* Backdrop */}
       <div 
         className="absolute inset-0 bg-black/40 dark:bg-black/60 backdrop-blur-sm transition-opacity"
@@ -19,7 +28,7 @@ export const TableDetailsModal: React.FC<TableDetailsModalProps> = ({ table, onC
       />
 
       {/* Modal */}
-      <div className="relative w-full max-w-4xl min-h-[60vh] max-h-[85vh] flex flex-col bg-glass backdrop-blur-2xl border border-glass-border rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
+      <div className="relative w-full max-w-6xl min-h-[75vh] max-h-[90vh] flex flex-col bg-glass backdrop-blur-2xl border border-glass-border rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
         
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-glass-border bg-black/10 dark:bg-white/5">
@@ -222,4 +231,6 @@ export const TableDetailsModal: React.FC<TableDetailsModalProps> = ({ table, onC
       </div>
     </div>
   );
+
+  return createPortal(modalContent, document.body);
 };
