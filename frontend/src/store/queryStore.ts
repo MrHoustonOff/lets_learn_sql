@@ -22,6 +22,8 @@ interface QueryState {
   setMaxRowsToDisplay: (max: number) => void;
 }
 
+import { useExplainStore } from './explainStore';
+
 export const useQueryStore = create<QueryState>((set, get) => ({
   sql: "SELECT * FROM customers\nWHERE country = 'UK';",
   result: null,
@@ -38,6 +40,9 @@ export const useQueryStore = create<QueryState>((set, get) => ({
     if (!sql.trim()) return;
 
     set({ isLoading: true, error: null, result: null });
+    
+    // Параллельно запускаем запрос на Explain
+    useExplainStore.getState().fetchExplain(sql, database);
 
     try {
       const response = await fetch('/api/query', {
