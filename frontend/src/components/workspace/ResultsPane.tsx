@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Table2, Activity, Maximize2, Minimize2, Loader2, AlertCircle, Play } from 'lucide-react';
 import { ExplainModal } from './ExplainModal';
+import { MiniExplainPanel } from './explain/MiniExplainPanel';
 import { useUIStore } from '../../store/uiStore';
 import { useQueryStore } from '../../store/queryStore';
 import { useExplainStore } from '../../store/explainStore';
@@ -21,7 +22,7 @@ export const ResultsPane: React.FC<ResultsPaneProps> = ({
   const [activeTab, setActiveTab] = useState<'result' | 'explain'>('result');
   const [isExplainModalOpen, setIsExplainModalOpen] = useState(false);
   const { maximizedPane, setMaximizedPane } = useUIStore();
-  const { result, isLoading, error } = useQueryStore();
+  const { result, isLoading, error, maxRowsToDisplay } = useQueryStore();
   const { options } = useExplainStore();
   
   const isMaximized = propIsMaximized !== undefined ? propIsMaximized : maximizedPane === 'results';
@@ -123,22 +124,16 @@ export const ResultsPane: React.FC<ResultsPaneProps> = ({
               <div className="h-full w-full p-2">
                 <DataTable 
                   columns={result.columns} 
-                  rows={result.rows} 
+                  rows={result.rows.slice(0, maxRowsToDisplay)} 
                   executionTimeMs={result.duration_ms} 
                   totalRowCount={result.row_count}
-                  isTruncated={result.truncated}
+                  isTruncated={result.truncated || result.rows.length > maxRowsToDisplay}
                 />
               </div>
             )}
           </>
         ) : (
-          <div className="p-4 h-full flex flex-col items-center justify-center text-center">
-            <Activity size={32} className="text-warning/50 mb-3" />
-            <h4 className="font-semibold text-foreground mb-1">Мини-превью плана выполнения</h4>
-            <p className="text-sm text-muted-foreground max-w-sm mb-4">
-              Здесь будет отображаться краткая выжимка по Explain. Для детального разбора нажмите "Полный анализ".
-            </p>
-          </div>
+          <MiniExplainPanel />
         )}
       </div>
 

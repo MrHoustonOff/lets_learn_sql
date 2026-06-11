@@ -16,6 +16,10 @@ interface QueryState {
   
   setSql: (sql: string) => void;
   executeQuery: (database?: string) => Promise<void>;
+  
+  // Настройки отображения
+  maxRowsToDisplay: number;
+  setMaxRowsToDisplay: (max: number) => void;
 }
 
 export const useQueryStore = create<QueryState>((set, get) => ({
@@ -23,6 +27,9 @@ export const useQueryStore = create<QueryState>((set, get) => ({
   result: null,
   isLoading: false,
   error: null,
+  
+  maxRowsToDisplay: 100,
+  setMaxRowsToDisplay: (max) => set({ maxRowsToDisplay: max }),
 
   setSql: (sql) => set({ sql }),
   
