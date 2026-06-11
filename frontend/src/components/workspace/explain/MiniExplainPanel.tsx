@@ -1,8 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Info, AlertTriangle, Loader2, CheckCircle2, ArrowDown, ArrowUp, ArrowUpDown } from 'lucide-react';
-import { useExplainStore } from '../../../store/explainStore';
-
-import { FlatNode } from '../../../store/explainStore';
+import { useExplainStore, type FlatNode } from '../../../store/explainStore';
 
 // Хелпер для цвета в зависимости от стоимости
 const getCostColor = (pct: number) => {
