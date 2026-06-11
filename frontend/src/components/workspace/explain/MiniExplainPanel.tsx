@@ -2,11 +2,91 @@ import React, { useState, useMemo } from 'react';
 import { Info, AlertTriangle, Loader2, CheckCircle2, ArrowDown, ArrowUp, ArrowUpDown } from 'lucide-react';
 import { useExplainStore } from '../../../store/explainStore';
 
+import { FlatNode } from '../../../store/explainStore';
+
 // Хелпер для цвета в зависимости от стоимости
 const getCostColor = (pct: number) => {
   if (pct > 60) return 'bg-destructive';
   if (pct > 20) return 'bg-warning';
   return 'bg-emerald-500';
+};
+
+interface PlanTreeNodeProps {
+  node: any;
+  flatNodesMap: Map<string, FlatNode>;
+  isLast: boolean;
+  isRoot?: boolean;
+}
+
+const PlanTreeNode: React.FC<PlanTreeNodeProps> = ({ node, flatNodesMap, isLast, isRoot = false }) => {
+  const flatData = flatNodesMap.get(node.node_id);
+  const colorClass = flatData ? getCostColor(flatData.cost_pct) : 'bg-muted';
+  
+  const nodeType = node["Node Type"];
+  const relation = node["Relation Name"];
+  const index = node["Index Name"];
+  const objectName = index || relation;
+  
+  const filter = node["Filter"] || node["Index Cond"] || node["Hash Cond"];
+  const children = node["Plans"] || [];
+
+  return (
+    <div className={`relative group cursor-default transition-colors ${!isRoot ? 'pl-6' : ''}`}>
+      {/* Линии отступов для не-корневых узлов */}
+      {!isRoot && (
+        <>
+          {/* Вертикальная линия от родителя (проходит насквозь, если не последний) */}
+          <div className={`absolute left-[11px] top-0 ${isLast ? 'bottom-1/2' : 'bottom-[-4px]'} w-px bg-glass-border`} />
+          {/* Горизонтальная линия к этому узлу */}
+          <div className="absolute left-[11px] top-[14px] w-3 h-px bg-glass-border" />
+        </>
+      )}
+
+      <div className="flex flex-col hover:bg-hover p-1 -mx-1 rounded relative z-10">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className={`w-2 h-2 rounded-full ${colorClass} shrink-0`} />
+            <span className="font-semibold text-foreground">{nodeType}</span>
+            {objectName && (
+              <>
+                <span className="text-muted-foreground">→</span>
+                <span className="text-primary">{objectName}</span>
+              </>
+            )}
+            {flatData && (
+              <span className="flex items-center justify-center w-4 h-4 rounded bg-background border border-glass-border text-[10px] text-muted-foreground font-mono ml-1">
+                {flatData.step_number}
+              </span>
+            )}
+          </div>
+          <div className="flex gap-4 text-xs text-muted-foreground ml-4">
+            <span>cost: {node["Total Cost"]?.toFixed(2)}</span>
+            <span>rows~: {node["Plan Rows"]}</span>
+          </div>
+        </div>
+        
+        {filter && (
+          <div className="text-xs text-muted-foreground pl-4 mt-0.5 opacity-70 truncate max-w-lg">
+            Filter/Cond: {filter}
+          </div>
+        )}
+      </div>
+
+      {/* Рендер детей */}
+      {children.length > 0 && (
+        <div className="relative">
+          {children.map((child: any, idx: number) => (
+            <PlanTreeNode 
+              key={idx} 
+              node={child} 
+              flatNodesMap={flatNodesMap} 
+              isLast={idx === children.length - 1} 
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
 };
 
 type SortKey = 'step' | 'cost';
@@ -142,15 +222,21 @@ export const MiniExplainPanel: React.FC = () => {
           </div>
         </section>
 
-        {/* Plan Tree Section (пока мок для шага 5) */}
+        {/* Plan Tree Section */}
         <section>
           <div className="flex items-center gap-2 mb-3">
             <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-              Plan Tree (В разработке)
+              Plan Tree
             </h3>
+            <Info size={14} className="text-muted-foreground/50 cursor-help" title="Иерархия выполнения запроса" />
           </div>
-          <div className="font-mono text-sm bg-black/5 dark:bg-white/5 border border-glass-border rounded-lg p-4 text-muted-foreground text-center opacity-50">
-            Дерево будет реализовано на Шаге 5
+          <div className="font-mono text-sm bg-black/5 dark:bg-white/5 border border-glass-border rounded-lg p-4 space-y-1">
+            <PlanTreeNode 
+              node={slot1.plan_parsed.tree} 
+              flatNodesMap={new Map(sortedNodes.map(n => [n.node_id, n]))} 
+              isLast={true} 
+              isRoot={true}
+            />
           </div>
         </section>
 
