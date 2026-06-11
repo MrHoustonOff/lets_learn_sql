@@ -4,6 +4,7 @@ import { Table2, Activity, Maximize2, Minimize2, Loader2, AlertCircle, Play } fr
 import { ExplainModal } from './ExplainModal';
 import { useUIStore } from '../../store/uiStore';
 import { useQueryStore } from '../../store/queryStore';
+import { useExplainStore } from '../../store/explainStore';
 
 import { DataTable } from '../ui/DataTable';
 
@@ -21,6 +22,7 @@ export const ResultsPane: React.FC<ResultsPaneProps> = ({
   const [isExplainModalOpen, setIsExplainModalOpen] = useState(false);
   const { maximizedPane, setMaximizedPane } = useUIStore();
   const { result, isLoading, error } = useQueryStore();
+  const { options } = useExplainStore();
   
   const isMaximized = propIsMaximized !== undefined ? propIsMaximized : maximizedPane === 'results';
 

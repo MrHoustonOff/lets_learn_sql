@@ -78,6 +78,14 @@ export const TableNode: React.FC<TableNodeProps> = ({ data, dragging }) => {
           </div>
         ))}
         
+        {/* Fallback Handles for hidden columns to prevent React Flow crashes */}
+        {!isExpanded && table.columns.slice(10).map(col => (
+          <div key={`hidden-${col.name}`} className="absolute bottom-0 left-0 right-0 pointer-events-none opacity-0">
+            <Handle type="target" position={Position.Left} id={`${col.name}-target`} className="w-1 h-1" />
+            <Handle type="source" position={Position.Right} id={`${col.name}-source`} className="w-1 h-1" />
+          </div>
+        ))}
+        
         {/* Chevron Button */}
         {table.columns.length > 10 && (
           <button 
