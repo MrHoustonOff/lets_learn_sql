@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { ChevronDown, ChevronRight } from 'lucide-react';
-import { FlatNode } from '../../../../store/explainStore';
+import type { FlatNode } from '../../../../store/explainStore';
 import { getCostColor } from '../utils';
 
 const BRANCH_COLORS = [
