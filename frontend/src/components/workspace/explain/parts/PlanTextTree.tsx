@@ -64,7 +64,7 @@ const PlanTreeNode: React.FC<PlanTreeNodeProps> = ({
       )}
 
       <div
-        className={`flex flex-col hover:bg-hover p-1 -mx-1 rounded relative z-10 cursor-pointer transition-colors ${clickedBranchId === nodeId ? 'ring-1 ring-primary/50 bg-primary/10' : ''} ${isHighlighted ? 'bg-primary/5 ring-1 ring-primary/20' : ''} ${isDimmed ? 'opacity-40 grayscale-[50%]' : ''}`}
+        className={`flex flex-col hover:bg-hover p-1 -mx-1 rounded relative z-layout cursor-pointer transition-colors ${clickedBranchId === nodeId ? 'ring-1 ring-primary/50 bg-primary/10' : ''} ${isHighlighted ? 'bg-primary/5 ring-1 ring-primary/20' : ''} ${isDimmed ? 'opacity-40 grayscale-[50%]' : ''}`}
         onClick={(e) => {
           e.stopPropagation();
           setActivePipelineNodeIds([]);

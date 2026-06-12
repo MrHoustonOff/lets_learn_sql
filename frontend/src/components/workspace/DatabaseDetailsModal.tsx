@@ -42,11 +42,11 @@ export const DatabaseDetailsModal: React.FC<DatabaseDetailsModalProps> = ({ isOp
   if (!isOpen || !database) return null;
 
   return (
-    <div className="fixed inset-0 z-[110] bg-background/80 backdrop-blur-sm flex items-center justify-center p-6 animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-modal-top bg-background/80 backdrop-blur-sm flex items-center justify-center p-6 animate-in fade-in duration-200">
       <div className="bg-background w-full h-full rounded-2xl border border-glass-border shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] flex flex-col overflow-hidden animate-in zoom-in-95 duration-200 relative">
         
         {/* Modal Header */}
-        <div className="h-14 shrink-0 flex items-center justify-between px-6 border-b border-glass-border bg-glass backdrop-blur-md z-50">
+        <div className="h-14 shrink-0 flex items-center justify-between px-6 border-b border-glass-border bg-glass backdrop-blur-md z-layout">
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-lg bg-primary/10 text-primary">
               <Database size={20} />
@@ -107,16 +107,16 @@ export const DatabaseDetailsModal: React.FC<DatabaseDetailsModalProps> = ({ isOp
                         <Trash2 size={16} />
                         {t('db_details:delete_db')}
                       </button>
-                      <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 w-48 p-2 bg-popover text-popover-foreground text-xs rounded-lg border border-border shadow-lg opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50 text-center">
+                      <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 w-48 p-2 bg-popover text-popover-foreground text-xs rounded-lg border border-border shadow-lg opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-tooltip text-center">
                         {t('db_details:delete_db_warning')}
                       </div>
                     </div>
                   </div>
                 </Panel>
 
-                <PanelResizeHandle className="w-[2px] bg-glass-border hover:bg-primary/50 transition-colors relative flex items-center justify-center group !cursor-grab active:!cursor-grabbing z-40 outline-none">
-                  <div className="absolute inset-y-0 -inset-x-3 z-40"></div>
-                  <div className="absolute z-50 bg-background/90 backdrop-blur-md border border-glass-border rounded flex items-center justify-center py-1 px-[1px] text-muted-foreground group-hover:text-primary group-hover:border-primary/50 transition-colors shadow-sm">
+                <PanelResizeHandle className="w-[2px] bg-glass-border hover:bg-primary/50 transition-colors relative flex items-center justify-center group !cursor-grab active:!cursor-grabbing z-resize outline-none">
+                  <div className="absolute inset-y-0 -inset-x-3 z-resize"></div>
+                  <div className="absolute z-resize bg-background/90 backdrop-blur-md border border-glass-border rounded flex items-center justify-center py-1 px-[1px] text-muted-foreground group-hover:text-primary group-hover:border-primary/50 transition-colors shadow-sm">
                     <GripVertical size={12} />
                   </div>
                 </PanelResizeHandle>
@@ -144,7 +144,7 @@ export const DatabaseDetailsModal: React.FC<DatabaseDetailsModalProps> = ({ isOp
               {/* Tab Content */}
               <div className="flex-1" style={{ height: 'calc(100% - 48px)' }}>
                 {activeTab === 'schema' && (
-                  <div className={maximizedPane === 'schema' ? 'absolute inset-0 z-[100] bg-background' : 'h-full w-full'}>
+                  <div className={maximizedPane === 'schema' ? 'absolute inset-0 z-modal bg-background' : 'h-full w-full'}>
                     <DBVisualizer 
                       isMaximized={maximizedPane === 'schema'} 
                       onToggleMaximize={() => setMaximizedPane(maximizedPane === 'schema' ? null : 'schema')}
@@ -154,21 +154,21 @@ export const DatabaseDetailsModal: React.FC<DatabaseDetailsModalProps> = ({ isOp
                 
                 {activeTab === 'editor' && (
                   <PanelGroup orientation="vertical" id="db_modal_editor_vertical_v3" className="h-full w-full">
-                    <Panel defaultSize={60} minSize={20} className={`!overflow-visible transition-all duration-300 ${maximizedPane === 'editor' ? 'z-[100]' : ''}`}>
+                    <Panel defaultSize={60} minSize={20} className={`!overflow-visible transition-all duration-300 ${maximizedPane === 'editor' ? 'z-modal' : ''}`}>
                       <SqlEditorPane 
                         isMaximized={maximizedPane === 'editor'}
                         onToggleMaximize={() => setMaximizedPane(maximizedPane === 'editor' ? null : 'editor')}
                       />
                     </Panel>
                     
-                    <PanelResizeHandle className="h-[2px] bg-glass-border hover:bg-primary/50 transition-colors relative flex items-center justify-center group cursor-row-resize z-40 outline-none">
-                      <div className="absolute -inset-y-3 inset-x-0 z-40"></div>
-                      <div className="absolute z-50 bg-background/90 backdrop-blur-md border border-glass-border rounded flex items-center justify-center px-1 py-[1px] text-muted-foreground group-hover:text-primary group-hover:border-primary/50 transition-colors shadow-sm">
+                    <PanelResizeHandle className="h-[2px] bg-glass-border hover:bg-primary/50 transition-colors relative flex items-center justify-center group cursor-row-resize z-resize outline-none">
+                      <div className="absolute -inset-y-3 inset-x-0 z-resize"></div>
+                      <div className="absolute z-resize bg-background/90 backdrop-blur-md border border-glass-border rounded flex items-center justify-center px-1 py-[1px] text-muted-foreground group-hover:text-primary group-hover:border-primary/50 transition-colors shadow-sm">
                         <GripHorizontal size={12} />
                       </div>
                     </PanelResizeHandle>
                     
-                    <Panel defaultSize={40} minSize={20} className={`!overflow-visible transition-all duration-300 ${maximizedPane === 'results' ? 'z-[100]' : ''}`}>
+                    <Panel defaultSize={40} minSize={20} className={`!overflow-visible transition-all duration-300 ${maximizedPane === 'results' ? 'z-modal' : ''}`}>
                       <ResultsPane 
                         isMaximized={maximizedPane === 'results'}
                         onToggleMaximize={() => setMaximizedPane(maximizedPane === 'results' ? null : 'results')}

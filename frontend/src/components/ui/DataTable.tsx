@@ -91,9 +91,9 @@ const ColumnFilterPopover = ({
 
   return (
     <>
-      <div className="fixed inset-0 z-40" onClick={(e) => { e.stopPropagation(); onClose(); }} />
+      <div className="fixed inset-0 z-overlay" onClick={(e) => { e.stopPropagation(); onClose(); }} />
       <div 
-        className="absolute top-full mt-1 z-50 bg-popover border border-glass-border shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] rounded-xl p-2 min-w-[220px] max-w-[300px] flex flex-col gap-2 font-sans text-foreground normal-case"
+        className="absolute top-full mt-1 z-dropdown bg-popover border border-glass-border shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] rounded-xl p-2 min-w-[220px] max-w-[300px] flex flex-col gap-2 font-sans text-foreground normal-case"
         style={{
           right: isLastCol ? 0 : 'auto',
           left: isLastCol ? 'auto' : 0,
@@ -338,7 +338,7 @@ export const DataTable: React.FC<DataTableProps> = ({ columns, rows, className =
             style={isResized ? { width: `${totalTableWidth}px` } : {}}
           >
             {/* SOLID HEADER (No backdrop-blur, solid bg) */}
-            <thead className="bg-[#fdf4eb] dark:bg-[#281a13] border-b-2 border-primary/20 text-foreground font-semibold uppercase tracking-wider sticky top-0 z-10 shadow-sm">
+            <thead className="bg-[#fdf4eb] dark:bg-[#281a13] border-b-2 border-primary/20 text-foreground font-semibold uppercase tracking-wider sticky top-0 z-layout shadow-sm">
               <tr className="divide-x divide-glass-border">
                 {columns.map((col, i) => (
                   <th 
@@ -397,7 +397,7 @@ export const DataTable: React.FC<DataTableProps> = ({ columns, rows, className =
 
                     {/* Resizer */}
                     <div 
-                      className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-primary transition-colors z-20"
+                      className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-primary transition-colors z-resize"
                       onMouseDown={(e) => handleMouseDown(e, i)}
                     />
                   </th>

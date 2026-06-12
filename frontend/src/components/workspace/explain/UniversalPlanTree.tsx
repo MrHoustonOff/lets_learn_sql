@@ -389,10 +389,10 @@ const UniversalPlanTreeInner: React.FC<UniversalPlanTreeInnerProps> = ({ onClose
   return (
     <div className="h-full w-full bg-background text-foreground font-sans overflow-visible relative transition-colors duration-500 flex flex-col">
       {/* Радиальное свечение под холстом как в DB Viewer */}
-      <div className="absolute inset-0 z-0 pointer-events-none bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,hsla(var(--glow)/var(--glow-opacity)),transparent)]"></div>
+      <div className="absolute inset-0 z-base pointer-events-none bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,hsla(var(--glow)/var(--glow-opacity)),transparent)]"></div>
       
       {/* Панель переключения метрик */}
-      <div className="absolute top-4 left-1/2 -translate-x-1/2 z-50 flex items-center bg-glass backdrop-blur-md border border-glass-border p-1 rounded-xl shadow-lg">
+      <div className="absolute top-4 left-1/2 -translate-x-1/2 z-menu flex items-center bg-glass backdrop-blur-md border border-glass-border p-1 rounded-xl shadow-lg">
         <button
           onClick={() => setMetric('NONE')}
           className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${metric === 'NONE' ? 'bg-background shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-hover'}`}
@@ -419,7 +419,7 @@ const UniversalPlanTreeInner: React.FC<UniversalPlanTreeInnerProps> = ({ onClose
         </button>
       </div>
 
-      <div className="flex-1 relative z-10 text-foreground">
+      <div className="flex-1 relative z-layout text-foreground">
         <ReactFlow
           nodes={nodes}
           edges={edges}

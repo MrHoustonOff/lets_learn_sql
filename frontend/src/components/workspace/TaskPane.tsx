@@ -18,8 +18,8 @@ export const TaskPane: React.FC<TaskPaneProps> = ({ slotId }) => {
   const isMaximized = maximizedPane === 'task';
 
   const content = (
-    <div className={`h-full flex flex-col transition-all duration-300 min-h-0 min-w-0 ${isMaximized ? 'fixed inset-4 z-[100] bg-background rounded-2xl shadow-2xl border border-glass-border overflow-hidden' : 'bg-transparent overflow-hidden'}`}>
-      <div className="h-10 border-b border-glass-border flex items-center px-2 shrink-0 bg-hover justify-between relative z-50 min-w-0">
+    <div className={`h-full flex flex-col transition-all duration-300 min-h-0 min-w-0 ${isMaximized ? 'fixed inset-4 z-modal bg-background rounded-2xl shadow-2xl border border-glass-border overflow-hidden' : 'bg-transparent overflow-hidden'}`}>
+      <div className="h-10 border-b border-glass-border flex items-center px-2 shrink-0 bg-hover justify-between relative z-layout min-w-0">
         <div className="flex items-center gap-1 min-w-0">
           <button 
           onClick={() => setActiveTab('task')}
@@ -118,7 +118,7 @@ export const TaskPane: React.FC<TaskPaneProps> = ({ slotId }) => {
 
   if (isMaximized) {
     return createPortal(
-      <div className="fixed inset-0 z-[90] bg-background/80 backdrop-blur-sm">
+      <div className="fixed inset-0 z-modal-backdrop bg-background/80 backdrop-blur-sm">
         {content}
       </div>,
       document.body

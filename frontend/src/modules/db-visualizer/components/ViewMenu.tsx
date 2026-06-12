@@ -67,7 +67,7 @@ export const ViewMenu: React.FC<ViewMenuProps> = ({
       </button>
       {/* Выпадающее меню */}
       <div 
-        className={`absolute top-full right-0 mt-2 w-64 bg-glass backdrop-blur-xl border border-glass-border rounded-xl shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] p-2 flex flex-col z-50 transition-all duration-300 origin-top-right ${
+        className={`absolute top-full right-0 mt-2 w-64 bg-glass backdrop-blur-xl border border-glass-border rounded-xl shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] p-2 flex flex-col z-dropdown transition-all duration-300 origin-top-right ${
           isOpen ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'
         }`}
       >

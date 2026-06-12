@@ -36,13 +36,13 @@ export const ViewMenu: React.FC<ViewMenuProps> = ({ onResetProportions }) => {
   };
 
   return (
-    <div ref={menuRef} className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-full z-[60] flex flex-col items-center justify-end">
+    <div ref={menuRef} className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-full z-menu flex flex-col items-center justify-end">
       {/* Dropdown Menu (Appears above the button, or below? The button is AT THE TOP EDGE OF THE WORKSPACE.
           Since the button is translating Y full UPWARDS, the menu should probably drop DOWN INTO the workspace!
           Wait, if the button is sticking UP out of the workspace, a menu dropping DOWN will cover the workspace.
           If we use absolute top-full left-1/2 -translate-x-1/2, it will drop into the workspace. */}
       {isOpen && (
-        <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-64 rounded-xl border border-glass-border bg-glass backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.3)] p-1.5 flex flex-col gap-1 z-50">
+        <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-64 rounded-xl border border-glass-border bg-glass backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.3)] p-1.5 flex flex-col gap-1 z-dropdown">
           <div className="px-2 py-1.5">
             <span className="text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground/70">
               {t('view_menu.layout', 'Layout')}

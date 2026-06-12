@@ -45,7 +45,7 @@ export const DatabasesListPage: React.FC = () => {
             {/* Hover Background Glow */}
             <div className="absolute inset-0 bg-primary/0 group-hover:bg-primary/5 transition-colors pointer-events-none" />
             
-            <div className="flex items-start gap-4 mb-4 relative z-10">
+            <div className="flex items-start gap-4 mb-4 relative z-layout">
               <div className="p-3 rounded-xl bg-primary/10 text-primary">
                 <Database size={24} />
               </div>
@@ -65,11 +65,11 @@ export const DatabasesListPage: React.FC = () => {
             </div>
             
             {db.description ? (
-              <p className="text-sm text-muted-foreground line-clamp-3 relative z-10 mt-auto">
+              <p className="text-sm text-muted-foreground line-clamp-3 relative z-layout mt-auto">
                 {db.description}
               </p>
             ) : (
-              <p className="text-sm text-muted-foreground/50 italic relative z-10 mt-auto">
+              <p className="text-sm text-muted-foreground/50 italic relative z-layout mt-auto">
                 {t('db_list:no_description')}
               </p>
             )}

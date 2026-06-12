@@ -25,7 +25,9 @@ module.exports = {
         dropdown: "50",
         menu: "60",
         popover: "80",
+        "modal-backdrop": "90",
         modal: "100",
+        "modal-top": "110",
         tooltip: "120"
       },
       colors: {

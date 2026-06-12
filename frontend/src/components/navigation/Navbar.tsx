@@ -19,7 +19,7 @@ export const Navbar: React.FC = () => {
   const lang = useAppLang();
   const { theme, setTheme } = useTheme();
   return (
-    <nav className="h-auto pb-2 flex items-start justify-between px-4 z-50 bg-transparent pointer-events-none">
+    <nav className="h-auto pb-2 flex items-start justify-between px-4 z-layout bg-transparent pointer-events-none">
       <div className="flex items-start gap-6 pointer-events-auto">
         <div className="pt-2">
           <span className="font-extrabold text-lg tracking-tight text-primary drop-shadow-[0_0_8px_rgba(var(--primary),0.6)]">

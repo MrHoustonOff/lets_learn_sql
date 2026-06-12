@@ -113,7 +113,7 @@ export const TableDetailsModal: React.FC<TableDetailsModalProps> = ({ table, onC
           onClose();
         }
       }}
-      className="fixed inset-0 z-[9999] flex items-center justify-center p-4 animate-in fade-in duration-200 select-text"
+      className="fixed inset-0 z-modal-top flex items-center justify-center p-4 animate-in fade-in duration-200 select-text"
     >
       {/* Backdrop */}
       <div 
@@ -207,7 +207,7 @@ export const TableDetailsModal: React.FC<TableDetailsModalProps> = ({ table, onC
                   <div className="border border-glass-border rounded-xl overflow-hidden bg-black/5 dark:bg-white/5 max-h-[45vh] flex flex-col shadow-sm">
                     <div className="overflow-y-auto overflow-x-auto">
                       <table className="w-full text-left text-sm relative">
-                        <thead className="bg-primary/10 text-primary text-[10px] uppercase tracking-wider sticky top-0 z-10">
+                        <thead className="bg-primary/10 text-primary text-[10px] uppercase tracking-wider sticky top-0 z-layout">
                           <tr className="divide-x divide-primary/10">
                             <th className="px-4 py-2.5 font-bold">{t('db_visualizer:table_details.keys')}</th>
                             <th className="px-4 py-2.5 font-bold">{t('db_visualizer:table_details.name')}</th>
