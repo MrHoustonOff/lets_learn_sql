@@ -21,21 +21,21 @@ export const Navbar: React.FC = () => {
         <div className="hidden md:flex items-center gap-2">
           <NavLink 
             to="/courses" 
-            className={({ isActive }) => `-translate-y-[1px] flex items-center gap-2 px-5 py-2 rounded-b-2xl text-xs font-bold transition-all duration-300 ease-out outline-none select-none active:scale-95 bg-glass backdrop-blur-md border border-t-0 border-glass-border shadow-[0_8px_24px_-4px_rgba(0,0,0,0.2)] [&.active>svg]:drop-shadow-[0_0_8px_rgba(var(--primary),0.5)] ${isActive ? 'text-primary bg-primary/5' : 'text-muted-foreground hover:text-foreground hover:bg-foreground/5'}`}
+            className={({ isActive }) => `-translate-y-[1px] flex items-center gap-2 px-5 py-2 rounded-b-2xl text-xs font-bold transition-all duration-300 active:duration-75 ease-out outline-none select-none active:scale-95 bg-glass backdrop-blur-md border border-t-0 border-glass-border shadow-[0_8px_24px_-4px_rgba(0,0,0,0.2)] [&.active>svg]:drop-shadow-[0_0_8px_rgba(var(--primary),0.5)] ${isActive ? 'text-primary bg-primary/5' : 'text-muted-foreground hover:text-foreground hover:bg-foreground/5'}`}
           >
             <BookOpen size={14} />
             {t('courses')}
           </NavLink>
           <NavLink 
             to="/databases" 
-            className={({ isActive }) => `-translate-y-[1px] flex items-center gap-2 px-5 py-2 rounded-b-2xl text-xs font-bold transition-all duration-300 ease-out outline-none select-none active:scale-95 bg-glass backdrop-blur-md border border-t-0 border-glass-border shadow-[0_8px_24px_-4px_rgba(0,0,0,0.2)] [&.active>svg]:drop-shadow-[0_0_8px_rgba(var(--primary),0.5)] ${isActive ? 'text-primary bg-primary/5' : 'text-muted-foreground hover:text-foreground hover:bg-foreground/5'}`}
+            className={({ isActive }) => `-translate-y-[1px] flex items-center gap-2 px-5 py-2 rounded-b-2xl text-xs font-bold transition-all duration-300 active:duration-75 ease-out outline-none select-none active:scale-95 bg-glass backdrop-blur-md border border-t-0 border-glass-border shadow-[0_8px_24px_-4px_rgba(0,0,0,0.2)] [&.active>svg]:drop-shadow-[0_0_8px_rgba(var(--primary),0.5)] ${isActive ? 'text-primary bg-primary/5' : 'text-muted-foreground hover:text-foreground hover:bg-foreground/5'}`}
           >
             <Database size={14} />
             {t('databases')}
           </NavLink>
           <NavLink 
             to="/tasks" 
-            className={({ isActive }) => `-translate-y-[1px] flex items-center gap-2 px-5 py-2 rounded-b-2xl text-xs font-bold transition-all duration-300 ease-out outline-none select-none active:scale-95 bg-glass backdrop-blur-md border border-t-0 border-glass-border shadow-[0_8px_24px_-4px_rgba(0,0,0,0.2)] [&.active>svg]:drop-shadow-[0_0_8px_rgba(var(--primary),0.5)] ${isActive ? 'text-primary bg-primary/5' : 'text-muted-foreground hover:text-foreground hover:bg-foreground/5'}`}
+            className={({ isActive }) => `-translate-y-[1px] flex items-center gap-2 px-5 py-2 rounded-b-2xl text-xs font-bold transition-all duration-300 active:duration-75 ease-out outline-none select-none active:scale-95 bg-glass backdrop-blur-md border border-t-0 border-glass-border shadow-[0_8px_24px_-4px_rgba(0,0,0,0.2)] [&.active>svg]:drop-shadow-[0_0_8px_rgba(var(--primary),0.5)] ${isActive ? 'text-primary bg-primary/5' : 'text-muted-foreground hover:text-foreground hover:bg-foreground/5'}`}
           >
             <CheckSquare size={14} />
             {t('tasks')}
@@ -47,7 +47,7 @@ export const Navbar: React.FC = () => {
         {/* DEV: language switcher */}
         <button 
           onClick={() => i18n.changeLanguage(lang === 'ru' ? 'en' : 'ru')}
-          className="-translate-y-[1px] px-4 py-2 rounded-b-2xl text-xs font-extrabold tracking-widest transition-all duration-300 ease-out outline-none select-none active:scale-95 bg-glass backdrop-blur-md border border-t-0 border-glass-border shadow-[0_8px_24px_-4px_rgba(0,0,0,0.2)] text-muted-foreground hover:text-foreground hover:bg-foreground/5"
+          className="-translate-y-[1px] px-4 py-2 rounded-b-2xl text-xs font-extrabold tracking-widest transition-all duration-300 active:duration-75 ease-out outline-none select-none active:scale-95 bg-glass backdrop-blur-md border border-t-0 border-glass-border shadow-[0_8px_24px_-4px_rgba(0,0,0,0.2)] text-muted-foreground hover:text-foreground hover:bg-foreground/5"
           title="Change language"
         >
           {lang === 'ru' ? 'EN' : 'RU'}
@@ -55,13 +55,13 @@ export const Navbar: React.FC = () => {
 
         <button
           onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-          className="-translate-y-[1px] p-2.5 rounded-b-2xl transition-all duration-300 ease-out outline-none select-none active:scale-95 bg-glass backdrop-blur-md border border-t-0 border-glass-border shadow-[0_8px_24px_-4px_rgba(0,0,0,0.2)] text-muted-foreground hover:text-foreground hover:bg-foreground/5"
+          className="-translate-y-[1px] p-2.5 rounded-b-2xl transition-all duration-300 active:duration-75 ease-out outline-none select-none active:scale-95 bg-glass backdrop-blur-md border border-t-0 border-glass-border shadow-[0_8px_24px_-4px_rgba(0,0,0,0.2)] text-muted-foreground hover:text-foreground hover:bg-foreground/5"
         >
           {theme === 'dark' ? <Sun size={15} /> : <Moon size={15} />}
         </button>
         <NavLink
           to="/profile"
-          className={({ isActive }) => `-translate-y-[1px] p-2.5 rounded-b-2xl transition-all duration-300 ease-out outline-none select-none active:scale-95 bg-glass backdrop-blur-md border border-t-0 border-glass-border shadow-[0_8px_24px_-4px_rgba(0,0,0,0.2)] [&.active>svg]:drop-shadow-[0_0_8px_rgba(var(--primary),0.5)] ${isActive ? 'text-primary bg-primary/5' : 'text-muted-foreground hover:text-foreground hover:bg-foreground/5'}`}
+          className={({ isActive }) => `-translate-y-[1px] p-2.5 rounded-b-2xl transition-all duration-300 active:duration-75 ease-out outline-none select-none active:scale-95 bg-glass backdrop-blur-md border border-t-0 border-glass-border shadow-[0_8px_24px_-4px_rgba(0,0,0,0.2)] [&.active>svg]:drop-shadow-[0_0_8px_rgba(var(--primary),0.5)] ${isActive ? 'text-primary bg-primary/5' : 'text-muted-foreground hover:text-foreground hover:bg-foreground/5'}`}
         >
           <User size={15} />
         </NavLink>
