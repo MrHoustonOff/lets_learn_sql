@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { createPortal } from 'react-dom';
 import { Activity, X, Info, AlertTriangle } from 'lucide-react';
 import { InfoTooltip } from '../../ui/InfoTooltip';
@@ -19,6 +20,7 @@ interface NodeDetailsProps {
 }
 
 export const NodeDetailsOverlay: React.FC<NodeDetailsProps> = ({ nodeId, onClose, rootTree, flatNodesMap, flatNodes, onNavigate }) => {
+  const { t } = useTranslation();
   // Закрытие по ESC
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -65,7 +67,7 @@ export const NodeDetailsOverlay: React.FC<NodeDetailsProps> = ({ nodeId, onClose
                 <h2 className="text-xl font-bold text-foreground">{nodeType}</h2>
               </div>
               <p className="text-sm text-muted-foreground mt-0.5">
-                {objectName ? `Объект: ${objectName}` : 'Операция'}
+                {objectName ? `${t('explain_ui.node_details_object')}: ${objectName}` : t('explain_ui.node_details_operation')}
                 {node["Plan Rows"] !== undefined && ` • Строк~: ${node["Plan Rows"]}`}
                 {node["Total Cost"] !== undefined && ` • Cost: ${node["Total Cost"]?.toFixed(2)}`}
               </p>
@@ -117,7 +119,7 @@ export const NodeDetailsOverlay: React.FC<NodeDetailsProps> = ({ nodeId, onClose
           {/* --- DATA FLOW BLOCK --- */}
           <div className="mb-4 border border-primary/20 bg-primary/5 rounded-lg p-4">
             <h4 className="text-xs font-bold text-primary uppercase mb-3 flex items-center gap-2">
-              Поток данных (Data Flow)
+              {t('explain_ui.data_flow')}
             </h4>
             <div className="flex flex-col gap-3 font-mono text-sm">
               {/* Вошло */}
@@ -146,9 +148,9 @@ export const NodeDetailsOverlay: React.FC<NodeDetailsProps> = ({ nodeId, onClose
                   <>
                     <div className="flex items-start gap-2">
                       <span className="text-muted-foreground w-24 shrink-0 mt-0.5 flex items-center">
-                        Вошло: <InfoTooltip text={explainFieldsDocs.fields.input_rows.ru} />
+                        {t('explain_ui.input_rows')}: <InfoTooltip text={explainFieldsDocs.fields.input_rows.ru} />
                       </span>
-                      <span className="text-foreground">~{Math.round(inputRows)} строк</span>
+                      <span className="text-foreground">~{Math.round(inputRows)}</span>
                     </div>
                     
                     {/* Условие */}
@@ -158,13 +160,13 @@ export const NodeDetailsOverlay: React.FC<NodeDetailsProps> = ({ nodeId, onClose
                       return (
                         <div className="flex items-start gap-2 relative">
                           <span className="text-muted-foreground w-24 shrink-0 mt-0.5 flex items-center">
-                            Условие: <InfoTooltip text={explainFieldsDocs.fields.condition.ru} />
+                            {t('explain_ui.condition')}: <InfoTooltip text={explainFieldsDocs.fields.condition.ru} />
                           </span>
                           <div className="flex flex-col gap-1">
                             <span className="text-amber-500 break-all bg-amber-500/10 px-2 py-0.5 rounded">{condition}</span>
                             {filteredRows > 0 && (
                               <span className="text-muted-foreground text-xs">
-                                Отсев: <span className="font-bold text-foreground">{selectivityPct}%</span> ({filteredRows} строк удалено)
+                                {selectivityPct}% ({filteredRows})
                               </span>
                             )}
                           </div>
@@ -174,13 +176,12 @@ export const NodeDetailsOverlay: React.FC<NodeDetailsProps> = ({ nodeId, onClose
 
                     <div className="flex items-start gap-2">
                       <span className="text-muted-foreground w-24 shrink-0 mt-0.5 flex items-center">
-                        Вышло: <InfoTooltip text={explainFieldsDocs.fields.output_rows.ru} />
+                        {t('explain_ui.output_rows')}: <InfoTooltip text={explainFieldsDocs.fields.output_rows.ru} />
                       </span>
                       <div className="flex items-center flex-wrap gap-2">
                         <span className="text-emerald-500 font-bold bg-emerald-500/10 px-2 py-0.5 rounded">
-                          {outputTotal} строк
+                          {outputTotal}
                         </span>
-                        <span className="text-muted-foreground text-xs">→ идут дальше</span>
                       </div>
                     </div>
                   </>
@@ -191,11 +192,11 @@ export const NodeDetailsOverlay: React.FC<NodeDetailsProps> = ({ nodeId, onClose
               {node['Output'] && Array.isArray(node['Output']) && (
                 <div className="flex items-start gap-2 mt-1 pt-3 border-t border-glass-border/50">
                   <span className="text-muted-foreground w-24 shrink-0 mt-0.5 flex items-center">
-                    Колонки: <InfoTooltip text={explainFieldsDocs.fields.columns.ru} />
+                    {t('explain_ui.columns')}: <InfoTooltip text={explainFieldsDocs.fields.columns.ru} />
                   </span>
                   <div className="flex flex-wrap gap-1">
                     {node['Output'].map((col: string, i: number) => (
-                      <span key={i} className="bg-black/10 dark:bg-white/10 px-1.5 py-0.5 rounded text-xs text-foreground/80 break-all">
+                      <span key={i} className="bg-muted/50 px-1.5 py-0.5 rounded text-xs text-foreground/80 break-all">
                         {col}
                       </span>
                     ))}
@@ -232,18 +233,18 @@ export const NodeDetailsOverlay: React.FC<NodeDetailsProps> = ({ nodeId, onClose
             return (
               <div className="mb-4 border border-glass-border bg-muted/30 rounded-lg p-4">
                 <h4 className="text-xs font-bold text-muted-foreground uppercase mb-3 flex items-center gap-2">
-                  Аналитика (Insights)
+                  {t('explain_ui.insights')}
                 </h4>
                 <div className="flex flex-col gap-3 font-mono text-sm">
                   
                   {actualTotalTime !== undefined && (
                     <div className="flex items-start gap-2">
                       <span className="text-muted-foreground w-32 shrink-0 mt-0.5 flex items-center">
-                        Время узла: <InfoTooltip text={explainFieldsDocs.fields.node_time.ru + " " + explainFieldsDocs.fields.time_per_row.ru} />
+                        {t('explain_ui.node_time')}: <InfoTooltip text={explainFieldsDocs.fields.node_time.ru + " " + explainFieldsDocs.fields.time_per_row.ru} />
                       </span>
                       <div className="flex flex-col gap-0.5">
-                        <span className="text-foreground">{actualTotalTime.toFixed(3)} ms {timePct && <span className="text-muted-foreground">({timePct}% от запроса)</span>}</span>
-                        {timePerRow && <span className="text-muted-foreground text-xs">{timePerRow} ms на строку</span>}
+                        <span className="text-foreground">{actualTotalTime.toFixed(3)} ms {timePct && <span className="text-muted-foreground">({timePct}%)</span>}</span>
+                        {timePerRow && <span className="text-muted-foreground text-xs">{timePerRow} ms/row</span>}
                       </div>
                     </div>
                   )}
@@ -251,11 +252,11 @@ export const NodeDetailsOverlay: React.FC<NodeDetailsProps> = ({ nodeId, onClose
                   {(sharedHits > 0 || sharedReads > 0) && (
                     <div className="flex items-start gap-2">
                       <span className="text-muted-foreground w-32 shrink-0 mt-0.5 flex items-center">
-                        Буферы: <InfoTooltip text={explainFieldsDocs.fields.buffers_hit.ru + " " + explainFieldsDocs.fields.buffers_read.ru} />
+                        {t('explain_ui.buffers')}: <InfoTooltip text={explainFieldsDocs.fields.buffers_hit.ru + " " + explainFieldsDocs.fields.buffers_read.ru} />
                       </span>
                       <div className="flex flex-col gap-0.5">
-                        {sharedHits > 0 && <span className="text-emerald-500">Hits: {sharedHits} <span className="text-muted-foreground text-xs">(прочитано из кэша)</span></span>}
-                        {sharedReads > 0 && <span className="text-destructive font-bold">Reads: {sharedReads} <span className="text-muted-foreground font-normal text-xs">(прочитано с диска ⚠)</span></span>}
+                        {sharedHits > 0 && <span className="text-emerald-500">Hits: {sharedHits} <span className="text-muted-foreground text-xs">(cache)</span></span>}
+                        {sharedReads > 0 && <span className="text-destructive font-bold">Reads: {sharedReads} <span className="text-muted-foreground font-normal text-xs">(disk ⚠)</span></span>}
                       </div>
                     </div>
                   )}
@@ -263,16 +264,16 @@ export const NodeDetailsOverlay: React.FC<NodeDetailsProps> = ({ nodeId, onClose
                   {peakMemory && (
                     <div className="flex items-start gap-2">
                       <span className="text-muted-foreground w-32 shrink-0 mt-0.5 flex items-center">
-                        Память: <InfoTooltip text={explainFieldsDocs.fields.peak_memory.ru} />
+                        {t('explain_ui.memory')}: <InfoTooltip text={explainFieldsDocs.fields.peak_memory.ru} />
                       </span>
-                      <span className="text-amber-500">{peakMemory} kB <span className="text-muted-foreground text-xs">(Peak Memory)</span></span>
+                      <span className="text-amber-500">{peakMemory} kB <span className="text-muted-foreground text-xs">(peak)</span></span>
                     </div>
                   )}
 
                   {accuracyWarning && (
                     <div className="flex items-start gap-2 mt-1 pt-3 border-t border-glass-border/50">
                       <span className="text-muted-foreground w-32 shrink-0 mt-0.5 flex items-center">
-                        Прогноз: <InfoTooltip text={explainFieldsDocs.fields.planner_accuracy.ru} />
+                        {t('explain_ui.planner_accuracy')}: <InfoTooltip text={explainFieldsDocs.fields.planner_accuracy.ru} />
                       </span>
                       <span className="text-destructive font-bold flex items-start gap-1">
                         <AlertTriangle size={14} className="mt-0.5 shrink-0" />
