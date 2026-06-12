@@ -241,13 +241,44 @@ export const MiniExplainPanel: React.FC = () => {
       </div>
 
       {/* Bottom Status Bar */}
-      <div className="shrink-0 h-10 border-t border-glass-border bg-hover flex items-center justify-between px-4 text-xs">
-        <div className="flex items-center gap-2 text-muted-foreground">
-          <CheckCircle2 size={14} className="text-emerald-500" />
-          <span className="font-medium">Запрос проанализирован</span>
-        </div>
-        <div className="text-muted-foreground font-mono">
-          Planning: {planning_time.toFixed(2)} ms
+      <div className="shrink-0 border-t border-glass-border bg-hover flex flex-col justify-center px-4 py-2 min-h-[40px] text-xs">
+        <div className="flex items-start justify-between w-full">
+          <div className="flex flex-col gap-1 w-full max-w-full">
+            {slot1.plan_parsed.diagnostics && slot1.plan_parsed.diagnostics.length > 0 ? (
+              slot1.plan_parsed.diagnostics.map((diag, idx) => {
+                let Icon = CheckCircle2;
+                let colorClass = "text-emerald-500";
+                
+                if (diag.severity === "warning") {
+                  Icon = AlertTriangle;
+                  colorClass = "text-warning";
+                } else if (diag.severity === "critical") {
+                  Icon = AlertTriangle;
+                  colorClass = "text-destructive";
+                } else if (diag.severity === "info") {
+                  Icon = Info;
+                  colorClass = "text-primary";
+                }
+
+                return (
+                  <div key={idx} className={`flex items-start gap-2 ${colorClass}`}>
+                    <Icon size={14} className="shrink-0 mt-0.5" />
+                    <span className="font-medium truncate" title={diag.message}>{diag.message}</span>
+                  </div>
+                );
+              })
+            ) : (
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <CheckCircle2 size={14} className="text-emerald-500" />
+                <span className="font-medium">Анализ завершен, замечаний нет</span>
+              </div>
+            )}
+          </div>
+          
+          <div className="text-muted-foreground font-mono whitespace-nowrap ml-4 flex flex-col items-end">
+            <div>Planning: {planning_time.toFixed(2)} ms</div>
+            <div>Execution: {slot1.plan_parsed.execution_time.toFixed(2)} ms</div>
+          </div>
         </div>
       </div>
     </div>

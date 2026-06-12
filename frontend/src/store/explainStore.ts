@@ -1,18 +1,31 @@
 import { create } from 'zustand';
 
-// Эти интерфейсы пока что-заглушки (mocks), 
-// мы расширим их, когда дойдем до шага интеграции с бэкендом.
-export interface ParsedPlanNode {
-  "Node Type": string;
+export interface FlatNode {
+  node_id: string;
+  step_number: number;
+  operation: string;
+  cost: number;
+  actual_time: number;
   cost_pct: number;
-  // ...остальные поля появятся позже
+}
+
+export interface Diagnostic {
+  severity: 'info' | 'warning' | 'critical' | 'success';
+  message: string;
+}
+
+export interface ParsedPlan {
+  tree: any;
+  flat_nodes: FlatNode[];
+  planning_time: number;
+  execution_time: number;
+  diagnostics: Diagnostic[];
 }
 
 export interface ExplainPlan {
   id: string;
   sql_text: string;
-  plan_parsed: ParsedPlanNode;
-  // ...остальные поля
+  plan_parsed: ParsedPlan;
 }
 
 export interface ExplainOptions {
