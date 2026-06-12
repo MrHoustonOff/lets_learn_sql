@@ -1,6 +1,5 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { createPortal } from 'react-dom';
 import { Info, AlertTriangle, Loader2, CheckCircle2, ArrowDown, ArrowUp, ArrowUpDown, X, ChevronLeft, ChevronRight, Copy, Check, ChevronDown, Activity } from 'lucide-react';
 import { useExplainStore, type FlatNode } from '../../../store/explainStore';
 
