@@ -194,31 +194,26 @@ const PlanTreeNode: React.FC<PlanTreeNodeProps> = ({
       </div>
 
       {/* Рендер детей */}
-      <div 
-        className={`relative overflow-hidden transition-all duration-300 ease-in-out`}
-        style={{ maxHeight: isCollapsed ? '0px' : '5000px', opacity: isCollapsed ? 0 : 1 }}
-      >
-        {children.length > 0 && (
-          <div className="relative mt-1">
-            {children.map((child: any, idx: number) => {
-              return (
-                <div key={idx}>
-                  {idx > 0 && <div className="ml-6 border-t border-glass-border/20 my-1" />}
-                  <PlanTreeNode 
-                    node={child} 
-                    flatNodesMap={flatNodesMap} 
-                    lineColorsMap={lineColorsMap}
-                    isLast={idx === children.length - 1} 
-                    onSelectNode={onSelectNode}
-                    clickedBranchId={clickedBranchId}
-                    setClickedBranchId={setClickedBranchId}
-                  />
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
+      {!isCollapsed && children.length > 0 && (
+        <div className="relative mt-1">
+          {children.map((child: any, idx: number) => {
+            return (
+              <div key={idx}>
+                {idx > 0 && <div className="ml-6 border-t border-glass-border/20 my-1" />}
+                <PlanTreeNode 
+                  node={child} 
+                  flatNodesMap={flatNodesMap} 
+                  lineColorsMap={lineColorsMap}
+                  isLast={idx === children.length - 1} 
+                  onSelectNode={onSelectNode}
+                  clickedBranchId={clickedBranchId}
+                  setClickedBranchId={setClickedBranchId}
+                />
+              </div>
+            );
+          })}
+        </div>
+      )}
 
       {isCollapsed && children.length > 0 && (() => {
         const metrics = getDescendantsMetrics(node);
