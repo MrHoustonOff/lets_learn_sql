@@ -212,7 +212,7 @@ const PlanTreeNode: React.FC<PlanTreeNodeProps> = ({
   const isDimmed = (activePipelineNodeIds.length > 0 || clickedBranchId) && !isHighlighted;
 
   return (
-    <div className={`relative group transition-colors duration-200 ${!isRoot ? 'pl-6' : ''} ${isHighlighted ? 'bg-primary/5 rounded-md ring-1 ring-primary/20' : ''} ${isDimmed ? 'opacity-40 grayscale-[50%]' : ''}`}>
+    <div className={`relative group transition-colors duration-200 ${!isRoot ? 'pl-6' : ''}`}>
       {/* Линии отступов для не-корневых узлов */}
       {!isRoot && (
         <>
@@ -224,7 +224,7 @@ const PlanTreeNode: React.FC<PlanTreeNodeProps> = ({
       )}
 
       <div 
-        className={`flex flex-col hover:bg-hover p-1 -mx-1 rounded relative z-10 cursor-pointer transition-colors ${clickedBranchId === nodeId ? 'ring-1 ring-primary/50 bg-primary/10' : ''}`}
+        className={`flex flex-col hover:bg-hover p-1 -mx-1 rounded relative z-10 cursor-pointer transition-colors ${clickedBranchId === nodeId ? 'ring-1 ring-primary/50 bg-primary/10' : ''} ${isHighlighted ? 'bg-primary/5 ring-1 ring-primary/20' : ''} ${isDimmed ? 'opacity-40 grayscale-[50%]' : ''}`}
         onClick={(e) => {
           e.stopPropagation();
           setActivePipelineNodeIds([]);
@@ -902,10 +902,8 @@ export const MiniExplainPanel: React.FC = () => {
                           onClick={() => {
                             setClickedBranchId(null);
                             setActivePipelineNodeIds(step.nodeIds);
-                            // Highlight the first node in the details panel, or just the first one if multiple
-                            if (step.nodeIds.length > 0) {
-                              setSelectedNodeId(step.nodeIds[0]);
-                            }
+                            // Highlight the node in the tree but do not open the details modal
+                            setSelectedNodeId(null);
                           }}
                           className={`px-2 py-0.5 rounded text-xs cursor-pointer transition-colors ${isActive ? 'bg-primary/20 text-primary font-medium' : 'bg-black/5 dark:bg-white/5 text-muted-foreground hover:bg-black/10 hover:dark:bg-white/10'}`}
                         >
