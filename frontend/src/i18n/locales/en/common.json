@@ -17,7 +17,7 @@
   "view_menu": {
     "layout": "Layout",
     "reset_proportions": "Reset window proportions",
-    "reset_proportions_tooltip": "Resets the sizes of all panels to their default ratios (e.g. 40/60). Window placement is preserved.",
+    "reset_proportions_tooltip": "Resets the sizes of all panels to a strict default ratio of 50/50. Window placement is preserved.",
     "reset_slots": "Default panels layout",
     "reset_slots_tooltip": "You can freely move windows around, and we save it instantly. This button returns each window to its original default location!"
   }

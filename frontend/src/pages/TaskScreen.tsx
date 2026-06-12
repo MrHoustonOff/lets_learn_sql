@@ -22,7 +22,7 @@ export const TaskScreen: React.FC = () => {
   const { defaultLayout: rightLayout, onLayoutChanged: rightOnLayout } = useDefaultLayout({ id: 'llpg_right_vertical_v4' });
 
   const handleResetProportions = () => {
-    mainGroupRef.current?.setLayout({ main_left: 40, main_right: 60 });
+    mainGroupRef.current?.setLayout({ main_left: 50, main_right: 50 });
     leftGroupRef.current?.setLayout({ left_top: 50, left_bottom: 50 });
     rightGroupRef.current?.setLayout({ right_top: 50, right_bottom: 50 });
   };
@@ -88,7 +88,7 @@ export const TaskScreen: React.FC = () => {
         >
         
         {/* ================= LEFT HALF ================= */}
-        <Panel id="main_left" defaultSize={40} minSize={20} className={`!overflow-visible transition-all duration-300 ${isLeftMaximized ? 'z-[100]' : ''}`}>
+        <Panel id="main_left" defaultSize={50} minSize={20} className={`!overflow-visible transition-all duration-300 ${isLeftMaximized ? 'z-[100]' : ''}`}>
           <PanelGroup groupRef={leftGroupRef} defaultLayout={leftLayout} onLayoutChanged={leftOnLayout} orientation="vertical" id="llpg_left_vertical_v4" className="!overflow-visible">
             
             {/* Top Left Slot */}
@@ -109,7 +109,7 @@ export const TaskScreen: React.FC = () => {
         <ResizeHandle direction="vertical" />
 
         {/* ================= RIGHT HALF ================= */}
-        <Panel id="main_right" defaultSize={60} minSize={30} className={`!overflow-visible transition-all duration-300 ${isRightMaximized ? 'z-[100]' : ''}`}>
+        <Panel id="main_right" defaultSize={50} minSize={30} className={`!overflow-visible transition-all duration-300 ${isRightMaximized ? 'z-[100]' : ''}`}>
           <PanelGroup groupRef={rightGroupRef} defaultLayout={rightLayout} onLayoutChanged={rightOnLayout} orientation="vertical" id="llpg_right_vertical_v4" className="!overflow-visible">
             
             {/* Top Right Slot */}
