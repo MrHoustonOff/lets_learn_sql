@@ -128,7 +128,7 @@ export const DBVisualizer: React.FC<DBVisualizerProps> = ({ schema, isMaximized 
       <div className="h-full w-full flex items-center justify-center bg-background text-muted-foreground">
         <div className="flex flex-col items-center gap-4">
           <div className="w-8 h-8 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
-          <div>{t('db_visualizer.loading')}</div>
+          <div>{t('db_visualizer:loading')}</div>
         </div>
       </div>
     );
@@ -139,7 +139,7 @@ export const DBVisualizer: React.FC<DBVisualizerProps> = ({ schema, isMaximized 
       <div className="h-full w-full flex items-center justify-center bg-background text-destructive">
         <div className="flex flex-col items-center gap-2 max-w-md text-center">
           <X size={32} />
-          <div className="font-semibold text-lg">{t('db_visualizer.load_error')}</div>
+          <div className="font-semibold text-lg">{t('db_visualizer:load_error')}</div>
           <div className="text-sm opacity-80">{error}</div>
         </div>
       </div>
@@ -147,7 +147,7 @@ export const DBVisualizer: React.FC<DBVisualizerProps> = ({ schema, isMaximized 
   }
 
   if (!activeSchema) {
-    return <div className="text-foreground p-4">{t('db_visualizer.no_schema')}</div>;
+    return <div className="text-foreground p-4">{t('db_visualizer:no_schema')}</div>;
   }
 
   return (
@@ -169,7 +169,7 @@ export const DBVisualizer: React.FC<DBVisualizerProps> = ({ schema, isMaximized 
             }`}
           >
             <Filter size={16} />
-            <span>{t('db_visualizer.filter_button')}</span>
+            <span>{t('db_visualizer:filter_button')}</span>
           </button>
           
           {/* Сама панель фильтров (появляется под кнопкой) */}
@@ -206,7 +206,7 @@ export const DBVisualizer: React.FC<DBVisualizerProps> = ({ schema, isMaximized 
           {onToggleMaximize && (
             <button 
               onClick={onToggleMaximize}
-              title={isMaximized ? t('sql_results.minimize') : t('sql_results.maximize')}
+              title={isMaximized ? t('sql_results:minimize') : t('sql_results:maximize')}
               className="p-2.5 rounded-xl hover:bg-hover transition-colors bg-glass backdrop-blur-md border border-glass-border shadow-sm"
             >
               {isMaximized ? <Minimize2 size={20} /> : <Maximize2 size={20} />}

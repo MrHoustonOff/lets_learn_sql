@@ -48,10 +48,10 @@ export const CoursesListPage: React.FC = () => {
 
   const getButtonConfig = (status: CourseMock['status']) => {
     switch (status) {
-      case 'not_started': return { text: t('courses_page.start'), variant: 'primary' };
-      case 'in_progress': return { text: t('courses_page.continue'), variant: 'primary' };
-      case 'completed': return { text: t('courses_page.retry'), variant: 'secondary' };
-      case 'no_course': return { text: t('courses_page.open'), variant: 'secondary' };
+      case 'not_started': return { text: t('courses_page:start'), variant: 'primary' };
+      case 'in_progress': return { text: t('courses_page:continue'), variant: 'primary' };
+      case 'completed': return { text: t('courses_page:retry'), variant: 'secondary' };
+      case 'no_course': return { text: t('courses_page:open'), variant: 'secondary' };
     }
   };
 
@@ -73,7 +73,7 @@ export const CoursesListPage: React.FC = () => {
                   {course.title}
                 </h2>
                 <div className="text-sm text-muted-foreground mb-4">
-                  {course.tasksCount} {t('courses_page.tasks')} {course.sectionsCount && `· ${course.sectionsCount} ${t('courses_page.sections')}`}
+                  {course.tasksCount} {t('courses_page:tasks')} {course.sectionsCount && `· ${course.sectionsCount} ${t('courses_page:sections')}`}
                 </div>
 
                 {course.status !== 'no_course' && (
@@ -122,7 +122,7 @@ export const CoursesListPage: React.FC = () => {
       <div className="flex items-center gap-4 border-t border-glass-border pt-8">
         <button className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-glass backdrop-blur-md border border-glass-border hover:bg-hover transition-colors text-sm font-medium">
           <Import size={16} />
-          {t('courses_page.import')}
+          {t('courses_page:import')}
         </button>
         
         <div className="relative group">
@@ -131,11 +131,11 @@ export const CoursesListPage: React.FC = () => {
             className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-glass backdrop-blur-md border border-glass-border opacity-50 cursor-not-allowed text-sm font-medium"
           >
             <Plus size={16} />
-            {t('courses_page.create')}
+            {t('courses_page:create')}
           </button>
           {/* Tooltip */}
           <div className="absolute -top-10 left-1/2 -translate-x-1/2 px-2 py-1 bg-black/80 dark:bg-white/90 text-white dark:text-black text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap">
-            {t('courses_page.coming_soon')}
+            {t('courses_page:coming_soon')}
           </div>
         </div>
       </div>

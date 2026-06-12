@@ -97,7 +97,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
           }`}
         >
           <LayoutList size={14} />
-          {t('db_visualizer.filter.tables')}
+          {t('db_visualizer:filter.tables')}
           {hiddenTables.size > 0 && <div className="w-1.5 h-1.5 rounded-full bg-warning" />}
         </button>
         <button
@@ -109,7 +109,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
           }`}
         >
           <Columns3 size={14} />
-          {t('db_visualizer.filter.columns')}
+          {t('db_visualizer:filter.columns')}
           {highlightedColumns.size > 0 && <div className="w-1.5 h-1.5 rounded-full bg-warning" />}
         </button>
       </div>
@@ -128,7 +128,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
               <Search className="absolute left-2.5 top-2.5 text-muted-foreground" size={14} />
               <input 
                 type="text" 
-                placeholder={t('db_visualizer.filter.search_tables')} 
+                placeholder={t('db_visualizer:filter.search_tables')} 
                 value={searchTables}
                 onChange={e => setSearchTables(e.target.value)}
                 className="w-full bg-hover border border-glass-border rounded-lg pl-8 pr-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-primary text-foreground placeholder:text-muted-foreground"
@@ -136,10 +136,10 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
             </div>
             <div className="flex items-center justify-between mb-3 px-1">
               <button onClick={handleShowAllTables} className="text-[10px] uppercase tracking-wider text-primary hover:text-primary/80 font-medium flex items-center gap-1 transition-colors">
-                <Eye size={12} /> {t('db_visualizer.filter.show_all')}
+                <Eye size={12} /> {t('db_visualizer:filter.show_all')}
               </button>
               <button onClick={handleHideAllTables} className="text-[10px] uppercase tracking-wider text-muted-foreground hover:text-foreground font-medium flex items-center gap-1 transition-colors">
-                <EyeOff size={12} /> {t('db_visualizer.filter.hide_all')}
+                <EyeOff size={12} /> {t('db_visualizer:filter.hide_all')}
               </button>
             </div>
             
@@ -162,7 +162,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
                 );
               })}
               {filteredTables.length === 0 && (
-                <div className="text-center py-6 text-xs text-muted-foreground">{t('db_visualizer.filter.not_found')}</div>
+                <div className="text-center py-6 text-xs text-muted-foreground">{t('db_visualizer:filter.not_found')}</div>
               )}
             </div>
           </div>
@@ -174,7 +174,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
               <Search className="absolute left-2.5 top-2.5 text-muted-foreground" size={14} />
               <input 
                 type="text" 
-                placeholder={t('db_visualizer.filter.search_columns')} 
+                placeholder={t('db_visualizer:filter.search_columns')} 
                 value={searchColumns}
                 onChange={e => setSearchColumns(e.target.value)}
                 className="w-full bg-hover border border-glass-border rounded-lg pl-8 pr-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-primary text-foreground placeholder:text-muted-foreground"
@@ -182,7 +182,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
             </div>
             <div className="flex items-center justify-end mb-3 px-1">
               <button onClick={handleResetColumns} className="text-[10px] uppercase tracking-wider text-warning hover:text-warning-text font-medium flex items-center gap-1 transition-colors">
-                <FilterX size={12} /> {t('db_visualizer.filter.reset_filter')}
+                <FilterX size={12} /> {t('db_visualizer:filter.reset_filter')}
               </button>
             </div>
             
@@ -209,7 +209,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
                 );
               })}
               {filteredColumns.length === 0 && (
-                <div className="text-center py-6 text-xs text-muted-foreground">{t('db_visualizer.filter.not_found')}</div>
+                <div className="text-center py-6 text-xs text-muted-foreground">{t('db_visualizer:filter.not_found')}</div>
               )}
             </div>
           </div>

@@ -132,8 +132,8 @@ const UniversalPlanTreeInner: React.FC<UniversalPlanTreeInnerProps> = ({ onClose
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [hoveredNodeId, setHoveredNodeId] = useState<string | null>(null);
   
-  const [nodes, setNodes, onNodesChange] = useNodesState([]);
-  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+  const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
+  const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
 
   const flatNodesMap = useMemo(() => {
     const map = new Map<string, FlatNode>();
@@ -413,8 +413,7 @@ const UniversalPlanTreeInner: React.FC<UniversalPlanTreeInnerProps> = ({ onClose
           maxZoom={2}
           nodesDraggable={false}
           nodesConnectable={false}
-          nodesSelectable={false}
-          edgesSelectable={false}
+          elementsSelectable={false}
           onPaneClick={onPaneClick}
           proOptions={{ hideAttribution: true }}
           className="bg-transparent"

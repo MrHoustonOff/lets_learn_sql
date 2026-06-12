@@ -1,11 +1,13 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useAppLang } from '../../i18n';
 import { useTheme } from '../theme-provider';
 import { Moon, Sun, User, BookOpen, CheckSquare, Database } from 'lucide-react';
 
 export const Navbar: React.FC = () => {
   const { t, i18n } = useTranslation();
+  const lang = useAppLang();
   const { theme, setTheme } = useTheme();
   return (
     <nav className="h-auto pt-2 pb-2 flex items-center justify-between px-2 z-50 bg-transparent pointer-events-none">
@@ -43,12 +45,12 @@ export const Navbar: React.FC = () => {
 
       <div className="flex items-center gap-1 pointer-events-auto p-0.5 rounded-lg border border-glass-border bg-glass backdrop-blur-md shadow-sm">
         {/* DEV: language switcher */}
-        <button
-          onClick={() => i18n.changeLanguage(i18n.language === 'ru' ? 'en' : 'ru')}
-          className="px-1.5 py-1 rounded-md text-[10px] font-bold tracking-widest transition-colors text-primary hover:bg-primary/10 border border-primary/30"
-          title="DEV: switch language"
+        <button 
+          onClick={() => i18n.changeLanguage(lang === 'ru' ? 'en' : 'ru')}
+          className="px-3 py-1.5 rounded-md text-xs font-bold tracking-wider text-muted-foreground hover:text-foreground hover:bg-hover transition-colors"
+          title="Change language"
         >
-          {i18n.language === 'ru' ? 'EN' : 'RU'}
+          {lang === 'ru' ? 'EN' : 'RU'}
         </button>
 
         <button

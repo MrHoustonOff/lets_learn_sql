@@ -35,7 +35,7 @@ export const SqlEditorPane: React.FC<SqlEditorPaneProps> = ({
   return (
     <div className={`h-full flex flex-col transition-all duration-300 ${isMaximized ? 'absolute inset-0 z-[100] bg-background rounded-2xl' : 'bg-transparent'}`}>
       <div className="h-10 border-b border-glass-border flex items-center justify-between px-3 shrink-0 bg-hover">
-        <span className="text-sm font-semibold text-foreground uppercase tracking-wider text-[11px] opacity-70">{t('sql_editor.title')}</span>
+        <span className="text-sm font-semibold text-foreground uppercase tracking-wider text-[11px] opacity-70">{t('sql_editor:title')}</span>
         <div className="flex gap-2">
           <button 
             onClick={() => executeQuery()}
@@ -43,19 +43,19 @@ export const SqlEditorPane: React.FC<SqlEditorPaneProps> = ({
             className="flex items-center gap-1.5 text-xs font-semibold bg-success/10 text-success hover:bg-success/20 px-3 py-1.5 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isLoading ? <Loader2 size={12} className="animate-spin" /> : <Play size={12} className="fill-current" />}
-            {t('sql_editor.run')} <span className="opacity-50 font-normal hidden sm:inline ml-1">(Ctrl+Enter)</span>
+            {t('sql_editor:run')} <span className="opacity-50 font-normal hidden sm:inline ml-1">(Ctrl+Enter)</span>
           </button>
           <button 
             className="flex items-center gap-1.5 text-xs font-semibold bg-warning/10 text-warning-text hover:bg-warning/20 px-3 py-1.5 rounded-md transition-colors"
           >
             <Zap size={12} className="fill-current" />
-            {t('sql_editor.explain')}
+            {t('sql_editor:explain')}
           </button>
           <div className="w-px h-4 bg-glass-border mx-1" />
           <button 
             onClick={handleToggleMaximize}
             className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-hover rounded-md transition-colors"
-            title={isMaximized ? t('sql_editor.collapse') : t('sql_editor.expand')}
+            title={isMaximized ? t('sql_editor:collapse') : t('sql_editor:expand')}
           >
             {isMaximized ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
           </button>

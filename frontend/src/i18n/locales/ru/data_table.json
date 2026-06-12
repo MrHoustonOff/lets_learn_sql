@@ -1,0 +1,17 @@
+{
+  "search_in": "Поиск в {{col}}...",
+  "select_all": "(Select All)",
+  "select_results": "(Select результаты: {{count}})",
+  "shown_limit": "Показано {{max}} из {{total}}. Используйте поиск.",
+  "no_results": "Ничего не найдено",
+  "shown_count": "Показано в таблице: {{count}}",
+  "shown_filtered_count": "Показано в таблице: {{filtered}} из {{total}}",
+  "limit_exceeded": "(Лимит превышен: сервер отдал первые {{limit}} из {{total}} строк)",
+  "execution_time": "Время: {{time}} мс",
+  "zoom_out": "Уменьшить (Zoom Out)",
+  "zoom_level": "Масштаб таблицы",
+  "zoom_in": "Увеличить (Zoom In)",
+  "zoom_reset": "Сбросить масштаб (100%)",
+  "no_data": "Нет данных",
+  "column_filter": "Фильтр по колонке"
+}

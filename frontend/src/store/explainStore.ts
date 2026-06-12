@@ -45,6 +45,9 @@ interface ExplainState {
   // Залоченный план-эталон
   locked: ExplainPlan | null;
 
+  isLoading: boolean;
+  error: string | null;
+
   // Actions
   fetchExplain: (sql: string, database?: string) => Promise<void>;
 }

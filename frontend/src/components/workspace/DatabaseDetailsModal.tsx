@@ -75,20 +75,20 @@ export const DatabaseDetailsModal: React.FC<DatabaseDetailsModalProps> = ({ isOp
             {/* Left Panel: Info & Actions */}
             <Panel defaultSize={30} minSize={20} className="bg-glass/50 backdrop-blur-sm p-6 flex flex-col gap-8 primary-scrollbar overflow-y-auto">
                   <div className="space-y-4">
-                    <h3 className="text-lg font-semibold border-b border-glass-border pb-2">{t('db_details.info')}</h3>
+                    <h3 className="text-lg font-semibold border-b border-glass-border pb-2">{t('db_details:info')}</h3>
                     <div>
-                      <div className="text-xs text-muted-foreground uppercase tracking-wider mb-1">{t('db_details.name')}</div>
+                      <div className="text-xs text-muted-foreground uppercase tracking-wider mb-1">{t('db_details:name')}</div>
                       <div className="font-medium text-foreground">{database.name}</div>
                     </div>
                     <div>
-                      <div className="text-xs text-muted-foreground uppercase tracking-wider mb-1">{t('db_details.tech_name')}</div>
+                      <div className="text-xs text-muted-foreground uppercase tracking-wider mb-1">{t('db_details:tech_name')}</div>
                       <div className="font-mono text-sm px-2 py-1 bg-black/5 dark:bg-white/5 border border-glass-border rounded-md inline-block text-primary">
                         {database.technicalName}
                       </div>
                     </div>
                     {database.description && (
                       <div>
-                        <div className="text-xs text-muted-foreground uppercase tracking-wider mb-1">{t('db_details.description')}</div>
+                        <div className="text-xs text-muted-foreground uppercase tracking-wider mb-1">{t('db_details:description')}</div>
                         <div className="text-sm text-foreground/80 leading-relaxed">
                           {database.description}
                         </div>
@@ -97,18 +97,18 @@ export const DatabaseDetailsModal: React.FC<DatabaseDetailsModalProps> = ({ isOp
                   </div>
 
                   <div className="space-y-4 mt-auto">
-                    <h3 className="text-lg font-semibold border-b border-glass-border pb-2">{t('db_details.actions')}</h3>
+                    <h3 className="text-lg font-semibold border-b border-glass-border pb-2">{t('db_details:actions')}</h3>
                     <button className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl font-medium text-sm transition-colors border border-glass-border bg-glass hover:bg-hover text-foreground">
                       <Download size={16} />
-                      {t('db_details.download_dump')}
+                      {t('db_details:download_dump')}
                     </button>
                     <div className="group relative">
                       <button className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl font-medium text-sm transition-colors border border-destructive/20 bg-destructive/10 text-destructive hover:bg-destructive hover:text-destructive-foreground">
                         <Trash2 size={16} />
-                        {t('db_details.delete_db')}
+                        {t('db_details:delete_db')}
                       </button>
                       <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 w-48 p-2 bg-popover text-popover-foreground text-xs rounded-lg border border-border shadow-lg opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50 text-center">
-                        {t('db_details.delete_db_warning')}
+                        {t('db_details:delete_db_warning')}
                       </div>
                     </div>
                   </div>
@@ -130,14 +130,14 @@ export const DatabaseDetailsModal: React.FC<DatabaseDetailsModalProps> = ({ isOp
                     className={`flex items-center gap-2 pb-3 px-1 border-b-2 text-sm font-medium transition-colors ${activeTab === 'schema' ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground hover:border-glass-border'}`}
                   >
                     <Database size={16} />
-                    {t('db_details.db_schema')}
+                    {t('db_details:db_schema')}
                   </button>
                   <button
                     onClick={() => setActiveTab('editor')}
                     className={`flex items-center gap-2 pb-3 px-1 border-b-2 text-sm font-medium transition-colors ${activeTab === 'editor' ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground hover:border-glass-border'}`}
                   >
                     <Code2 size={16} />
-                    {t('db_details.sql_editor')}
+                    {t('db_details:sql_editor')}
                   </button>
                 </div>
 

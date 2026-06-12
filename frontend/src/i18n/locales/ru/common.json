@@ -1,0 +1,16 @@
+{
+  "courses": "Курсы",
+  "databases": "Базы данных",
+  "tasks": "Задачи",
+  "settings": "Настройки",
+  "profile": "Профиль",
+  "task": "Задача",
+  "solution": "Решение",
+  "run": "Запуск",
+  "explain": "Explain",
+  "result": "Результат",
+  "full_analysis": "Полный анализ",
+  "course_toc": "Оглавление курса",
+  "overall_progress": "Общий прогресс",
+  "close": "Закрыть"
+}

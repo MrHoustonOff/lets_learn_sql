@@ -6,8 +6,7 @@ import { InfoTooltip } from '../../ui/InfoTooltip';
 import { type FlatNode } from '../../../store/explainStore';
 import { findNodeById, getCostColor } from './utils';
 
-import pgExplainDocs from '../../../i18n/pg_explain_docs.json';
-import explainFieldsDocs from '../../../i18n/explain_fields_i18n.json';
+import { useExplainNodeDoc, useExplainFieldsDocRaw } from '../../../i18n/content/useExplainContent';
 import { NodePropertiesList } from './parts/NodePropertiesList';
 
 interface NodeDetailsProps {
@@ -20,8 +19,8 @@ interface NodeDetailsProps {
 }
 
 export const NodeDetailsOverlay: React.FC<NodeDetailsProps> = ({ nodeId, onClose, rootTree, flatNodesMap, flatNodes, onNavigate }) => {
-  const { t, i18n } = useTranslation();
-  const lang = i18n.language === 'en' ? 'en' : 'ru';
+  const { t } = useTranslation();
+  const explainFieldsDocs = useExplainFieldsDocRaw();
   // Закрытие по ESC
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -47,6 +46,7 @@ export const NodeDetailsOverlay: React.FC<NodeDetailsProps> = ({ nodeId, onClose
   const objectName = index || relation;
   const filter = node["Filter"] || node["Index Cond"] || node["Hash Cond"];
   const width = node["Plan Width"];
+  const explainNodeDoc = useExplainNodeDoc(nodeType);
 
   return createPortal(
     <div 
@@ -68,8 +68,8 @@ export const NodeDetailsOverlay: React.FC<NodeDetailsProps> = ({ nodeId, onClose
                 <h2 className="text-xl font-bold text-foreground">{nodeType}</h2>
               </div>
               <p className="text-sm text-muted-foreground mt-0.5">
-                {objectName ? `${t('explain_ui.node_details_object')}: ${objectName}` : t('explain_ui.node_details_operation')}
-                {node["Plan Rows"] !== undefined && ` • ${t('explain_ui.rows_est')}: ${node["Plan Rows"]}`}
+                {objectName ? `${t('explain_ui:node_details_object')}: ${objectName}` : t('explain_ui:node_details_operation')}
+                {node["Plan Rows"] !== undefined && ` • ${t('explain_ui:rows_est')}: ${node["Plan Rows"]}`}
                 {node["Total Cost"] !== undefined && ` • Cost: ${node["Total Cost"]?.toFixed(2)}`}
               </p>
             </div>
@@ -92,26 +92,26 @@ export const NodeDetailsOverlay: React.FC<NodeDetailsProps> = ({ nodeId, onClose
           <div className="mb-4 bg-primary/5 border border-primary/20 rounded-lg p-3 text-sm text-foreground/90 leading-relaxed flex items-start gap-2">
             <Info size={16} className="text-primary shrink-0 mt-0.5" />
             <span>
-              {((pgExplainDocs as any)[nodeType] && (pgExplainDocs as any)[nodeType][lang]) || explainFieldsDocs.general.no_description[lang]}
+              {explainNodeDoc}
             </span>
           </div>
 
           <div className="grid grid-cols-3 gap-4 mb-4 font-mono text-sm">
             <div className="flex flex-col">
               <span className="text-muted-foreground text-xs uppercase flex items-center">
-                cost <InfoTooltip text={explainFieldsDocs.fields.cost[lang]} />
+                cost <InfoTooltip text={explainFieldsDocs.get('cost')} />
               </span>
               <span>{node["Total Cost"]?.toFixed(2)}</span>
             </div>
             <div className="flex flex-col">
               <span className="text-muted-foreground text-xs uppercase flex items-center">
-                rows~ <InfoTooltip text={explainFieldsDocs.fields.rows[lang]} />
+                rows~ <InfoTooltip text={explainFieldsDocs.get('rows')} />
               </span>
               <span>{node["Plan Rows"]}</span>
             </div>
             <div className="flex flex-col">
               <span className="text-muted-foreground text-xs uppercase flex items-center">
-                width <InfoTooltip text={explainFieldsDocs.fields.width[lang]} />
+                width <InfoTooltip text={explainFieldsDocs.get('width')} />
               </span>
               <span>{width ? `${width} bytes` : '—'}</span>
             </div>
@@ -120,7 +120,7 @@ export const NodeDetailsOverlay: React.FC<NodeDetailsProps> = ({ nodeId, onClose
           {/* --- DATA FLOW BLOCK --- */}
           <div className="mb-4 border border-primary/20 bg-primary/5 rounded-lg p-4">
             <h4 className="text-xs font-bold text-primary uppercase mb-3 flex items-center gap-2">
-              {t('explain_ui.data_flow')}
+              {t('explain_ui:data_flow')}
             </h4>
             <div className="flex flex-col gap-3 font-mono text-sm">
               {/* Вошло */}
@@ -149,7 +149,7 @@ export const NodeDetailsOverlay: React.FC<NodeDetailsProps> = ({ nodeId, onClose
                   <>
                     <div className="flex items-start gap-2">
                       <span className="text-muted-foreground w-24 shrink-0 mt-0.5 flex items-center">
-                        {t('explain_ui.input_rows')}: <InfoTooltip text={explainFieldsDocs.fields.input_rows[lang]} />
+                        {t('explain_ui:input_rows')}: <InfoTooltip text={explainFieldsDocs.get('input_rows')} />
                       </span>
                       <span className="text-foreground">~{Math.round(inputRows)}</span>
                     </div>
@@ -161,7 +161,7 @@ export const NodeDetailsOverlay: React.FC<NodeDetailsProps> = ({ nodeId, onClose
                       return (
                         <div className="flex items-start gap-2 relative">
                           <span className="text-muted-foreground w-24 shrink-0 mt-0.5 flex items-center">
-                            {t('explain_ui.condition')}: <InfoTooltip text={explainFieldsDocs.fields.condition[lang]} />
+                            {t('explain_ui:condition')}: <InfoTooltip text={explainFieldsDocs.get('condition')} />
                           </span>
                           <div className="flex flex-col gap-1">
                             <span className="text-amber-500 break-all bg-amber-500/10 px-2 py-0.5 rounded">{condition}</span>
@@ -177,7 +177,7 @@ export const NodeDetailsOverlay: React.FC<NodeDetailsProps> = ({ nodeId, onClose
 
                     <div className="flex items-start gap-2">
                       <span className="text-muted-foreground w-24 shrink-0 mt-0.5 flex items-center">
-                        {t('explain_ui.output_rows')}: <InfoTooltip text={explainFieldsDocs.fields.output_rows[lang]} />
+                        {t('explain_ui:output_rows')}: <InfoTooltip text={explainFieldsDocs.get('output_rows')} />
                       </span>
                       <div className="flex items-center flex-wrap gap-2">
                         <span className="text-emerald-500 font-bold bg-emerald-500/10 px-2 py-0.5 rounded">
@@ -193,7 +193,7 @@ export const NodeDetailsOverlay: React.FC<NodeDetailsProps> = ({ nodeId, onClose
               {node['Output'] && Array.isArray(node['Output']) && (
                 <div className="flex items-start gap-2 mt-1 pt-3 border-t border-glass-border/50">
                   <span className="text-muted-foreground w-24 shrink-0 mt-0.5 flex items-center">
-                    {t('explain_ui.columns')}: <InfoTooltip text={explainFieldsDocs.fields.columns[lang]} />
+                    {t('explain_ui:columns')}: <InfoTooltip text={explainFieldsDocs.get('columns')} />
                   </span>
                   <div className="flex flex-wrap gap-1">
                     {node['Output'].map((col: string, i: number) => (
@@ -225,7 +225,7 @@ export const NodeDetailsOverlay: React.FC<NodeDetailsProps> = ({ nodeId, onClose
             if (actualRows !== null && planRows !== undefined && planRows > 0) {
               const ratio = actualRows > planRows ? actualRows / planRows : planRows / actualRows;
               if (ratio >= 10) {
-                accuracyWarning = t('explain_ui.planner_accuracy_warning', { ratio: Math.round(ratio), expected: planRows, actual: Math.round(actualRows) });
+                accuracyWarning = t('explain_ui:planner_accuracy_warning', { ratio: Math.round(ratio), expected: planRows, actual: Math.round(actualRows) });
               }
             }
 
@@ -234,14 +234,14 @@ export const NodeDetailsOverlay: React.FC<NodeDetailsProps> = ({ nodeId, onClose
             return (
               <div className="mb-4 border border-glass-border bg-muted/30 rounded-lg p-4">
                 <h4 className="text-xs font-bold text-muted-foreground uppercase mb-3 flex items-center gap-2">
-                  {t('explain_ui.insights')}
+                  {t('explain_ui:insights')}
                 </h4>
                 <div className="flex flex-col gap-3 font-mono text-sm">
                   
                   {actualTotalTime !== undefined && (
                     <div className="flex items-start gap-2">
                       <span className="text-muted-foreground w-32 shrink-0 mt-0.5 flex items-center">
-                        {t('explain_ui.node_time')}: <InfoTooltip text={explainFieldsDocs.fields.node_time[lang] + " " + explainFieldsDocs.fields.time_per_row[lang]} />
+                        {t('explain_ui:node_time')}: <InfoTooltip text={explainFieldsDocs.get('node_time') + " " + explainFieldsDocs.get('time_per_row')} />
                       </span>
                       <div className="flex flex-col gap-0.5">
                         <span className="text-foreground">{actualTotalTime.toFixed(3)} ms {timePct && <span className="text-muted-foreground">({timePct}%)</span>}</span>
@@ -253,7 +253,7 @@ export const NodeDetailsOverlay: React.FC<NodeDetailsProps> = ({ nodeId, onClose
                   {(sharedHits > 0 || sharedReads > 0) && (
                     <div className="flex items-start gap-2">
                       <span className="text-muted-foreground w-32 shrink-0 mt-0.5 flex items-center">
-                        {t('explain_ui.buffers')}: <InfoTooltip text={explainFieldsDocs.fields.buffers_hit[lang] + " " + explainFieldsDocs.fields.buffers_read[lang]} />
+                        {t('explain_ui:buffers')}: <InfoTooltip text={explainFieldsDocs.get('buffers_hit') + " " + explainFieldsDocs.get('buffers_read')} />
                       </span>
                       <div className="flex flex-col gap-0.5">
                         {sharedHits > 0 && <span className="text-emerald-500">Hits: {sharedHits} <span className="text-muted-foreground text-xs">(cache)</span></span>}
@@ -265,7 +265,7 @@ export const NodeDetailsOverlay: React.FC<NodeDetailsProps> = ({ nodeId, onClose
                   {peakMemory && (
                     <div className="flex items-start gap-2">
                       <span className="text-muted-foreground w-32 shrink-0 mt-0.5 flex items-center">
-                        {t('explain_ui.memory')}: <InfoTooltip text={explainFieldsDocs.fields.peak_memory[lang]} />
+                        {t('explain_ui:memory')}: <InfoTooltip text={explainFieldsDocs.get('peak_memory')} />
                       </span>
                       <span className="text-amber-500">{peakMemory} kB <span className="text-muted-foreground text-xs">(peak)</span></span>
                     </div>
@@ -274,7 +274,7 @@ export const NodeDetailsOverlay: React.FC<NodeDetailsProps> = ({ nodeId, onClose
                   {accuracyWarning && (
                     <div className="flex items-start gap-2 mt-1 pt-3 border-t border-glass-border/50">
                       <span className="text-muted-foreground w-32 shrink-0 mt-0.5 flex items-center">
-                        {t('explain_ui.planner_accuracy')}: <InfoTooltip text={explainFieldsDocs.fields.planner_accuracy[lang]} />
+                        {t('explain_ui:planner_accuracy')}: <InfoTooltip text={explainFieldsDocs.get('planner_accuracy')} />
                       </span>
                       <span className="text-destructive font-bold flex items-start gap-1">
                         <AlertTriangle size={14} className="mt-0.5 shrink-0" />

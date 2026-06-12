@@ -1,0 +1,17 @@
+{
+  "search_in": "Search in {{col}}...",
+  "select_all": "(Select All)",
+  "select_results": "(Select results: {{count}})",
+  "shown_limit": "Showing {{max}} of {{total}}. Use search to filter.",
+  "no_results": "No results found",
+  "shown_count": "Shown in table: {{count}}",
+  "shown_filtered_count": "Shown in table: {{filtered}} of {{total}}",
+  "limit_exceeded": "(Limit exceeded: server returned first {{limit}} of {{total}} rows)",
+  "execution_time": "Time: {{time}} ms",
+  "zoom_out": "Zoom Out",
+  "zoom_level": "Table Zoom",
+  "zoom_in": "Zoom In",
+  "zoom_reset": "Reset Zoom (100%)",
+  "no_data": "No data",
+  "column_filter": "Filter by column"
+}

@@ -1,0 +1,12 @@
+{
+  "info": "Information",
+  "name": "Name",
+  "tech_name": "Technical Name",
+  "description": "Description",
+  "actions": "Actions",
+  "download_dump": "Download pg_dump",
+  "delete_db": "Delete DB",
+  "delete_db_warning": "Caution! Deleting this database may break tasks referencing it.",
+  "db_schema": "DB Schema",
+  "sql_editor": "SQL Editor"
+}

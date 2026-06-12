@@ -1,0 +1,13 @@
+{
+  "import": "Импортировать .llpg",
+  "create": "Создать курс",
+  "coming_soon": "Скоро",
+  "tasks": "задач",
+  "sections": "разделов",
+  "start": "Начать →",
+  "continue": "Продолжить →",
+  "retry": "Повторить →",
+  "open": "Открыть →",
+  "back_to_courses": "Курсы (Esc)",
+  "solve": "Решить"
+}

@@ -249,7 +249,7 @@ export const PipelineView: React.FC<PipelineViewProps> = ({
     <div className="mb-3">
       <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground/50 uppercase tracking-wider mb-2 select-none">
         <Info size={12} className="shrink-0" />
-        <span>{t('explain_ui.pipeline_hint')}</span>
+        <span>{t('explain_ui:pipeline_hint')}</span>
       </div>
       {pipelineData.mode === 'simple' ? (
         <div className="flex flex-wrap items-center gap-1 px-1">

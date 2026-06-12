@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Handle, Position, useUpdateNodeInternals, useNodeId } from '@xyflow/react';
 import type { TableSchema } from '../types';
 import { Database, ChevronDown, ChevronUp } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { ColumnRow } from './ColumnRow';
 
 interface TableNodeProps {
@@ -14,6 +15,7 @@ interface TableNodeProps {
 }
 
 export const TableNode: React.FC<TableNodeProps> = ({ data, dragging }) => {
+  const { t } = useTranslation();
   const { table, highlightedColumns } = data;
   const nodeId = useNodeId();
   const updateNodeInternals = useUpdateNodeInternals();
@@ -94,11 +96,11 @@ export const TableNode: React.FC<TableNodeProps> = ({ data, dragging }) => {
           >
             {isExpanded ? (
               <>
-                <ChevronUp size={14} /> Свернуть
+                <ChevronUp size={14} /> {t('db_visualizer:collapse')}
               </>
             ) : (
               <>
-                <ChevronDown size={14} /> Еще {table.columns.length - 10} столбцов
+                <ChevronDown size={14} /> {t('db_visualizer:more_columns', { count: table.columns.length - 10 })}
               </>
             )}
           </button>

@@ -1,0 +1,13 @@
+{
+  "import": "Import .llpg",
+  "create": "Create Course",
+  "coming_soon": "Coming Soon",
+  "tasks": "tasks",
+  "sections": "sections",
+  "start": "Start →",
+  "continue": "Continue →",
+  "retry": "Repeat →",
+  "open": "Open →",
+  "back_to_courses": "Courses (Esc)",
+  "solve": "Solve"
+}

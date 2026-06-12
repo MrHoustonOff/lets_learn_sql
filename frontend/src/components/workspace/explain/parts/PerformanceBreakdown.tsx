@@ -67,7 +67,7 @@ export const PerformanceBreakdown: React.FC<PerformanceBreakdownProps> = ({ setS
             </h3>
           </div>
           <div onClick={(e) => e.stopPropagation()}>
-            <InfoTooltip text={t('explain_ui.perf_breakdown_tooltip')} />
+            <InfoTooltip text={t('explain_ui:perf_breakdown_tooltip')} />
           </div>
         </div>
 
@@ -96,10 +96,10 @@ export const PerformanceBreakdown: React.FC<PerformanceBreakdownProps> = ({ setS
           <thead className="bg-muted/50 border-b border-glass-border">
             <tr>
               <th className="px-3 py-2 text-left text-xs font-medium text-muted-foreground">
-                {t('explain_ui.col_operation')}
+                {t('explain_ui:col_operation')}
               </th>
               <th className="px-3 py-2 text-left text-xs font-medium text-muted-foreground w-1/2">
-                {t('explain_ui.col_impact')}
+                {t('explain_ui:col_impact')}
               </th>
               <th 
                 className="px-3 py-2 text-right text-xs font-medium text-muted-foreground hover:text-foreground cursor-pointer transition-colors w-28"

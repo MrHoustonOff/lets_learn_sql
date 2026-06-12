@@ -1,0 +1,8 @@
+{
+  "minimize": "Minimize",
+  "maximize": "Maximize",
+  "running": "Running query...",
+  "error": "Execution Error",
+  "empty": "Write an SQL query and click Run",
+  "success_empty": "Query executed successfully, but returned 0 rows."
+}

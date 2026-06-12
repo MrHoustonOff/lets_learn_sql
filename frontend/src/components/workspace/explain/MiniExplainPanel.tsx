@@ -7,8 +7,7 @@ import { ExplainModal } from '../ExplainModal';
 
 import { NodeDetailsOverlay } from './NodeDetailsOverlay';
 
-import pgExplainDocs from '../../../i18n/pg_explain_docs.json';
-import explainFieldsDocs from '../../../i18n/explain_fields_i18n.json';
+import { useExplainFieldsDocRaw } from '../../../i18n/content/useExplainContent';
 
 import { InfoTooltip } from '../../ui/InfoTooltip';
 import { PlanTree } from './parts/PlanTextTree';
@@ -25,8 +24,9 @@ import { PerformanceBreakdown } from './parts/PerformanceBreakdown';
 
 
 export const MiniExplainPanel: React.FC = () => {
-  const { t, i18n } = useTranslation();
-  const lang = i18n.language === 'en' ? 'en' : 'ru';
+  const { t } = useTranslation();
+  const explainFieldsDocs = useExplainFieldsDocRaw();
+
   const { slot1, isLoading } = useExplainStore();
   
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
@@ -43,7 +43,7 @@ export const MiniExplainPanel: React.FC = () => {
     return (
       <div className="flex flex-col h-full items-center justify-center text-muted-foreground bg-background">
         <Loader2 size={32} className="animate-spin text-primary mb-4" />
-        <p>{t('explain_ui.loading')}</p>
+        <p>{t('explain_ui:loading')}</p>
       </div>
     );
   }
@@ -52,7 +52,7 @@ export const MiniExplainPanel: React.FC = () => {
     return (
       <div className="flex flex-col h-full items-center justify-center text-muted-foreground bg-background">
         <Info size={32} className="mb-4 opacity-50" />
-        <p>{t('explain_ui.empty')}</p>
+        <p>{t('explain_ui:empty')}</p>
       </div>
     );
   }
@@ -92,7 +92,7 @@ export const MiniExplainPanel: React.FC = () => {
                 </h3>
               </div>
               <div onClick={(e) => e.stopPropagation()}>
-                <InfoTooltip text={explainFieldsDocs.fields.plan_tree[lang]} />
+                <InfoTooltip text={explainFieldsDocs.get('plan_tree')} />
               </div>
             </div>
             
@@ -101,7 +101,7 @@ export const MiniExplainPanel: React.FC = () => {
               className="flex items-center gap-1.5 text-xs font-semibold text-primary hover:bg-primary/10 px-2 py-1 rounded transition-colors"
             >
               <Network size={12} />
-              {t('explain_ui.graph_view')}
+              {t('explain_ui:graph_view')}
             </button>
           </div>
           
@@ -167,7 +167,7 @@ export const MiniExplainPanel: React.FC = () => {
             ) : (
               <div className="flex items-center gap-2 text-muted-foreground">
                 <CheckCircle2 size={14} className="text-emerald-500" />
-                <span className="font-medium">{t('explain_ui.no_issues')}</span>
+                <span className="font-medium">{t('explain_ui:no_issues')}</span>
               </div>
             )}
           </div>

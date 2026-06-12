@@ -58,10 +58,10 @@ export const ViewMenu: React.FC<ViewMenuProps> = ({
             ? 'bg-black/10 dark:bg-white/10 border-glass-border text-foreground'
             : 'bg-glass backdrop-blur-md border-glass-border hover:bg-black/5 dark:hover:bg-white/5 text-foreground'
         }`}
-        title={t('db_visualizer.view_menu.settings_title')}
+        title={t('db_visualizer:view_menu.settings_title')}
       >
         <Eye size={16} />
-        <span>{t('db_visualizer.view_menu.view')}</span>
+        <span>{t('db_visualizer:view_menu.view')}</span>
       </button>
       {/* Выпадающее меню */}
       <div 
@@ -79,7 +79,7 @@ export const ViewMenu: React.FC<ViewMenuProps> = ({
             ) : (
               <BookOpenText size={16} className="text-muted-foreground" />
             )}
-            <span className="flex-1">{t('db_visualizer.view_menu.show_legend')}</span>
+            <span className="flex-1">{t('db_visualizer:view_menu.show_legend')}</span>
             <div className={`w-8 h-4 rounded-full relative transition-colors ${showLegend ? 'bg-primary' : 'bg-black/20 dark:bg-white/20'}`}>
               <div className={`absolute top-0.5 w-3 h-3 rounded-full bg-white transition-all shadow-sm ${showLegend ? 'left-4' : 'left-0.5'}`} />
             </div>
@@ -95,7 +95,7 @@ export const ViewMenu: React.FC<ViewMenuProps> = ({
             ) : (
               <Move size={16} className="text-muted-foreground" />
             )}
-            <span className="flex-1">{t('db_visualizer.view_menu.show_toolbar')}</span>
+            <span className="flex-1">{t('db_visualizer:view_menu.show_toolbar')}</span>
             <div className={`w-8 h-4 rounded-full relative transition-colors ${showToolbar ? 'bg-primary' : 'bg-black/20 dark:bg-white/20'}`}>
               <div className={`absolute top-0.5 w-3 h-3 rounded-full bg-white transition-all shadow-sm ${showToolbar ? 'left-4' : 'left-0.5'}`} />
             </div>
@@ -103,7 +103,7 @@ export const ViewMenu: React.FC<ViewMenuProps> = ({
 
           <div className="h-px bg-glass-border my-1" />
           <div className="px-2 py-1">
-            <span className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider pl-1">{t('db_visualizer.relations')}</span>
+            <span className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider pl-1">{t('db_visualizer:relations')}</span>
           </div>
 
           {/* Переключатель связей */}
@@ -116,7 +116,7 @@ export const ViewMenu: React.FC<ViewMenuProps> = ({
             ) : (
               <EyeOff size={16} className="text-muted-foreground" />
             )}
-            <span className="flex-1">{t('db_visualizer.view_menu.show_relations')}</span>
+            <span className="flex-1">{t('db_visualizer:view_menu.show_relations')}</span>
             <div className={`w-8 h-4 rounded-full relative transition-colors ${showRelations ? 'bg-primary' : 'bg-black/20 dark:bg-white/20'}`}>
               <div className={`absolute top-0.5 w-3 h-3 rounded-full bg-white transition-all shadow-sm ${showRelations ? 'left-4' : 'left-0.5'}`} />
             </div>
@@ -132,7 +132,7 @@ export const ViewMenu: React.FC<ViewMenuProps> = ({
             ) : (
               <CircleDot size={16} className="text-muted-foreground" />
             )}
-            <span className="flex-1">{t('db_visualizer.view_menu.show_markers')}</span>
+            <span className="flex-1">{t('db_visualizer:view_menu.show_markers')}</span>
             <div className={`w-8 h-4 rounded-full relative transition-colors ${showMarkers ? 'bg-primary' : 'bg-black/20 dark:bg-white/20'}`}>
               <div className={`absolute top-0.5 w-3 h-3 rounded-full bg-white transition-all shadow-sm ${showMarkers ? 'left-4' : 'left-0.5'}`} />
             </div>
@@ -140,7 +140,7 @@ export const ViewMenu: React.FC<ViewMenuProps> = ({
 
           {/* Переключатель формы линий */}
           <div className={`px-3 py-2 space-y-2 ${!showRelations ? 'opacity-50 pointer-events-none' : ''}`}>
-            <span className="text-xs text-muted-foreground font-medium">{t('db_visualizer.view_menu.edge_form')}</span>
+            <span className="text-xs text-muted-foreground font-medium">{t('db_visualizer:view_menu.edge_form')}</span>
             <div className="flex gap-1 p-1 bg-black/5 dark:bg-white/5 rounded-lg border border-glass-border">
               <button
                 onClick={() => onChangeEdgeStyle('bezier')}
@@ -151,7 +151,7 @@ export const ViewMenu: React.FC<ViewMenuProps> = ({
                 }`}
               >
                 <Spline size={14} />
-                {t('db_visualizer.view_menu.bezier')}
+                {t('db_visualizer:view_menu.bezier')}
               </button>
               <button
                 onClick={() => onChangeEdgeStyle('smoothstep')}
@@ -162,14 +162,14 @@ export const ViewMenu: React.FC<ViewMenuProps> = ({
                 }`}
               >
                 <Waypoints size={14} />
-                {t('db_visualizer.view_menu.smoothstep')}
+                {t('db_visualizer:view_menu.smoothstep')}
               </button>
             </div>
           </div>
 
           {/* Переключатель анимации линий */}
           <div className={`px-3 py-2 space-y-2 ${!showRelations ? 'opacity-50 pointer-events-none' : ''}`}>
-            <span className="text-xs text-muted-foreground font-medium">{t('db_visualizer.view_menu.edge_style')}</span>
+            <span className="text-xs text-muted-foreground font-medium">{t('db_visualizer:view_menu.edge_style')}</span>
             <div className="flex gap-1 p-1 bg-black/5 dark:bg-white/5 rounded-lg border border-glass-border">
               <button
                 onClick={() => onChangeAnimateEdges(true)}
@@ -180,7 +180,7 @@ export const ViewMenu: React.FC<ViewMenuProps> = ({
                 }`}
               >
                 <Activity size={14} />
-                {t('db_visualizer.view_menu.animated')}
+                {t('db_visualizer:view_menu.animated')}
               </button>
               <button
                 onClick={() => onChangeAnimateEdges(false)}
@@ -191,7 +191,7 @@ export const ViewMenu: React.FC<ViewMenuProps> = ({
                 }`}
               >
                 <Minus size={14} />
-                {t('db_visualizer.view_menu.solid')}
+                {t('db_visualizer:view_menu.solid')}
               </button>
             </div>
           </div>
@@ -208,7 +208,7 @@ export const ViewMenu: React.FC<ViewMenuProps> = ({
               className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-primary/10 transition-colors text-sm text-left w-full text-foreground font-medium mb-1"
             >
               <Activity size={16} className="text-primary" />
-              <span className="flex-1">{t('db_visualizer.view_menu.save_layout')}</span>
+              <span className="flex-1">{t('db_visualizer:view_menu.save_layout')}</span>
             </button>
           )}
 
@@ -220,7 +220,7 @@ export const ViewMenu: React.FC<ViewMenuProps> = ({
             className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 transition-colors text-sm text-left w-full text-muted-foreground hover:text-foreground"
           >
             <RotateCcw size={16} />
-            <span className="flex-1">{t('db_visualizer.view_menu.reset_layout')}</span>
+            <span className="flex-1">{t('db_visualizer:view_menu.reset_layout')}</span>
           </button>
       </div>
     </div>

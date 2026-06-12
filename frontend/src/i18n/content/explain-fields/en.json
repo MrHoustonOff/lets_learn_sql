@@ -1,0 +1,22 @@
+{
+  "general": {
+    "no_description": "No description available"
+  },
+  "fields": {
+    "cost": "Estimated execution cost. First number is startup cost (before first row), second is total cost. A relative value the planner uses to compare alternative plans. Depends on table statistics and cost settings.",
+    "rows": "Estimated number of rows the planner expected this node to return.",
+    "width": "Estimated average width of rows output by this plan node, in bytes.",
+    "input_rows": "Total number of rows entering this node from child operations (or read before filtering).",
+    "condition": "Filter or join condition. Rows not matching this condition are discarded.",
+    "output_rows": "Actual number of rows this node produced and passed up. Calculated as Actual Rows * Actual Loops.",
+    "columns": "Data schema (columns) output by this node after all transformations.",
+    "node_time": "Total actual time spent executing this specific node (Actual Total Time).",
+    "time_per_row": "Average time spent processing a single output row.",
+    "buffers_hit": "Number of data pages (8KB each) found in shared_buffers (PostgreSQL cache) without disk access. Higher is better.",
+    "buffers_read": "Number of data pages physically read from disk. This is a slow operation indicating a cache miss.",
+    "peak_memory": "Maximum amount of RAM this node (e.g. Sort or Hash) consumed during execution.",
+    "planner_accuracy": "How much the actual row count differed from what the planner estimated. The planner picks join strategies and scan types based on row estimates, so large divergence often leads to suboptimal plans.",
+    "cost_breakdown": "Impact of operations on total query cost.\n\nShows what percentage of total cost (or time) each node consumed.\nUse this to quickly find the bottleneck in your query.",
+    "plan_tree": "Query execution hierarchy.\n\nThe tree shows operation nesting. Leaf nodes (those without children) run first — they read the data. Parent nodes receive results from their children and process them further.\nUse the tree to understand how tables are joined, where rows are filtered, and which operations cost the most."
+  }
+}

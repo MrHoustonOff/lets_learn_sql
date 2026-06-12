@@ -72,7 +72,7 @@ export const CourseDetailsPage: React.FC = () => {
           className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-6 font-medium text-sm"
         >
           <ArrowLeft size={16} />
-          {t('courses_page.back_to_courses')}
+          {t('courses_page:back_to_courses')}
         </button>
 
         <div className="mb-10">
@@ -96,9 +96,9 @@ export const CourseDetailsPage: React.FC = () => {
               ))}
             </div>
             <span className="text-glass-border">|</span>
-            <span>{courseData.totalTasks} {t('courses_page.tasks')}</span>
+            <span>{courseData.totalTasks} {t('courses_page:tasks')}</span>
             <span className="text-glass-border">|</span>
-            <span>{courseData.totalSections} {t('courses_page.sections')}</span>
+            <span>{courseData.totalSections} {t('courses_page:sections')}</span>
           </div>
         </div>
 
@@ -154,7 +154,7 @@ export const CourseDetailsPage: React.FC = () => {
                   </div>
 
                   <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 text-xs font-medium bg-primary/10 text-primary hover:bg-primary/20 px-3 py-1.5 rounded-lg pointer-events-none">
-                    {t('courses_page.solve')} <ArrowRight size={14} />
+                    {t('courses_page:solve')} <ArrowRight size={14} />
                   </div>
                 </li>
               ))}

@@ -105,7 +105,7 @@ const ColumnFilterPopover = ({
           <input 
             type="text"
             autoFocus
-            placeholder={t('data_table.search_in', { col: colName })}
+            placeholder={t('data_table:search_in', { col: colName })}
             value={search}
             onChange={e => setSearch(e.target.value)}
             className="w-full bg-background border border-glass-border rounded-md pl-7 pr-2 py-1.5 text-xs outline-none focus:border-primary transition-colors text-foreground font-normal"
@@ -121,7 +121,7 @@ const ColumnFilterPopover = ({
                 onChange={toggleAll}
                 className="rounded border-glass-border text-primary focus:ring-primary accent-primary w-3.5 h-3.5 cursor-pointer"
               />
-              {t('data_table.select_all')}
+              {t('data_table:select_all')}
             </label>
           )}
           {search && displayValues.length > 0 && (
@@ -132,7 +132,7 @@ const ColumnFilterPopover = ({
                 onChange={toggleAll}
                 className="rounded border-glass-border text-primary focus:ring-primary accent-primary w-3.5 h-3.5 cursor-pointer"
               />
-              {t('data_table.select_results', { count: displayValues.length })}
+              {t('data_table:select_results', { count: displayValues.length })}
             </label>
           )}
           
@@ -151,11 +151,11 @@ const ColumnFilterPopover = ({
           ))}
           {isTruncated && (
             <div className="text-center text-[10px] text-muted-foreground py-1.5 mt-1 border-t border-glass-border/30 bg-muted/30 rounded">
-              {t('data_table.shown_limit', { max: MAX_RENDER, total: displayValues.length })}
+              {t('data_table:shown_limit', { max: MAX_RENDER, total: displayValues.length })}
             </div>
           )}
           {displayValues.length === 0 && (
-            <div className="text-center text-xs text-muted-foreground py-2 opacity-50">{t('data_table.no_results')}</div>
+            <div className="text-center text-xs text-muted-foreground py-2 opacity-50">{t('data_table:no_results')}</div>
           )}
         </div>
       </div>
@@ -261,11 +261,11 @@ export const DataTable: React.FC<DataTableProps> = ({ columns, rows, className =
             <Database size={14} className="text-primary" />
             <span>
               {filteredRows.length !== rows.length 
-                ? t('data_table.shown_filtered_count', { filtered: filteredRows.length, total: rows.length })
-                : t('data_table.shown_count', { count: rows.length })}
+                ? t('data_table:shown_filtered_count', { filtered: filteredRows.length, total: rows.length })
+                : t('data_table:shown_count', { count: rows.length })}
               {isTruncated && totalRowCount !== undefined && (
                 <span className="text-warning-text ml-1 opacity-100 font-semibold">
-                  {t('data_table.limit_exceeded', { limit: rows.length, total: totalRowCount })}
+                  {t('data_table:limit_exceeded', { limit: rows.length, total: totalRowCount })}
                 </span>
               )}
             </span>
@@ -273,7 +273,7 @@ export const DataTable: React.FC<DataTableProps> = ({ columns, rows, className =
           {executionTimeMs !== undefined && (
             <div className="flex items-center gap-1.5">
               <Clock size={14} className="text-primary" />
-              <span>{t('data_table.execution_time', { time: executionTimeMs.toFixed(1) })}</span>
+              <span>{t('data_table:execution_time', { time: executionTimeMs.toFixed(1) })}</span>
             </div>
           )}
         </div>
@@ -283,7 +283,7 @@ export const DataTable: React.FC<DataTableProps> = ({ columns, rows, className =
           <button 
             onClick={handleZoomOut}
             className="text-muted-foreground hover:text-foreground p-1 transition-colors rounded-md hover:bg-black/5 dark:hover:bg-white/5"
-            title={t('data_table.zoom_out')}
+            title={t('data_table:zoom_out')}
           >
             <ZoomOut size={14} />
           </button>
@@ -295,12 +295,12 @@ export const DataTable: React.FC<DataTableProps> = ({ columns, rows, className =
             value={scale}
             onChange={(e) => setScale(parseFloat(e.target.value))}
             className="w-20 sm:w-24 accent-primary cursor-pointer h-1.5 bg-glass-border rounded-full appearance-none outline-none"
-            title={t('data_table.zoom_level')}
+            title={t('data_table:zoom_level')}
           />
           <button 
             onClick={handleZoomIn}
             className="text-muted-foreground hover:text-foreground p-1 transition-colors rounded-md hover:bg-black/5 dark:hover:bg-white/5"
-            title={t('data_table.zoom_in')}
+            title={t('data_table:zoom_in')}
           >
             <ZoomIn size={14} />
           </button>
@@ -310,7 +310,7 @@ export const DataTable: React.FC<DataTableProps> = ({ columns, rows, className =
               onClick={() => setScale(1)}
               disabled={scale === 1}
               className={`p-1 transition-colors rounded-md ${scale === 1 ? 'opacity-30 cursor-default' : 'hover:bg-black/5 dark:hover:bg-white/5 hover:text-foreground'} text-muted-foreground`}
-              title={t('data_table.zoom_reset')}
+              title={t('data_table:zoom_reset')}
             >
               <RotateCcw size={12} />
             </button>
@@ -325,7 +325,7 @@ export const DataTable: React.FC<DataTableProps> = ({ columns, rows, className =
       {rows.length === 0 ? (
         <div className="flex-1 flex flex-col items-center justify-center text-muted-foreground opacity-50 border border-dashed border-glass-border rounded-xl">
           <Database size={32} className="mb-2" />
-          <p>{t('data_table.no_data')}</p>
+          <p>{t('data_table:no_data')}</p>
         </div>
       ) : (
         <div 
@@ -366,7 +366,7 @@ export const DataTable: React.FC<DataTableProps> = ({ columns, rows, className =
                           className={`p-1 rounded transition-colors ml-2 shrink-0 ${
                             filters[i] ? 'text-primary bg-primary/10' : 'text-muted-foreground opacity-0 group-hover:opacity-100 hover:bg-black/10 dark:hover:bg-white/10'
                           }`}
-                          title={t('data_table.column_filter')}
+                          title={t('data_table:column_filter')}
                         >
                           <Filter size={12} />
                         </button>

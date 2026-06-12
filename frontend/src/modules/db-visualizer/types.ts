@@ -1,4 +1,5 @@
 export interface DatabaseSchema {
+  name?: string;
   tables: TableSchema[];
 }
 

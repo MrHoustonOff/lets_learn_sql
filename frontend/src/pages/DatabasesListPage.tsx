@@ -31,7 +31,7 @@ export const DatabasesListPage: React.FC = () => {
         <h1 className="text-3xl font-bold">{t('databases')}</h1>
         <button className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl transition-colors font-medium shadow-sm">
           <Plus size={18} />
-          {t('db_list.connect_db')}
+          {t('db_list:connect_db')}
         </button>
       </div>
 
@@ -70,7 +70,7 @@ export const DatabasesListPage: React.FC = () => {
               </p>
             ) : (
               <p className="text-sm text-muted-foreground/50 italic relative z-10 mt-auto">
-                {t('db_list.no_description')}
+                {t('db_list:no_description')}
               </p>
             )}
 
