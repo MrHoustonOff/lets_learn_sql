@@ -15,7 +15,7 @@ export const GlobalLayout: React.FC = () => {
       {/* Main Content (Task Screen or other pages) */}
       <div className="flex-1 flex flex-col relative z-10 w-full h-full">
         <Navbar />
-        <main className="flex-1 overflow-hidden relative">
+        <main className="flex-1 relative">
           <Outlet />
         </main>
       </div>
