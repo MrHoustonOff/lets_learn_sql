@@ -16,6 +16,9 @@
   "view": "View",
   "view_menu": {
     "layout": "Layout",
+    "editor": "Code Editor",
+    "font_size": "Font size",
+    "word_wrap": "Word wrap",
     "reset_proportions": "Reset window proportions",
     "reset_proportions_tooltip": "Resets the sizes of all panels to a strict default ratio of 50/50. Window placement is preserved.",
     "reset_slots": "Default panels layout",

@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { AppWindow, RefreshCw, LayoutTemplate } from 'lucide-react';
+import { AppWindow, RefreshCw, LayoutTemplate, Type, Minus, Plus, WrapText, Check } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useUIStore } from '../../store/uiStore';
 import { InfoTooltip } from '../ui/InfoTooltip';
@@ -12,7 +12,7 @@ export const ViewMenu: React.FC<ViewMenuProps> = ({ onResetProportions }) => {
   const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
-  const { resetSlots } = useUIStore();
+  const { resetSlots, editorFontSize, setEditorFontSize, editorWordWrap, setEditorWordWrap } = useUIStore();
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -70,6 +70,49 @@ export const ViewMenu: React.FC<ViewMenuProps> = ({ onResetProportions }) => {
             <div onClick={(e) => e.stopPropagation()} className="flex-shrink-0 ml-2">
               <InfoTooltip text={t('view_menu.reset_slots_tooltip')} />
             </div>
+          </button>
+
+          <div className="w-full h-px bg-glass-border my-1" />
+          <div className="px-2 py-1.5">
+            <span className="text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground/70">
+              {t('view_menu.editor', 'Editor')}
+            </span>
+          </div>
+
+          <div className="w-full flex items-center justify-between px-2.5 py-2">
+            <div className="flex items-center gap-2.5 text-xs font-semibold text-foreground">
+              <Type size={14} className="text-muted-foreground" />
+              {t('view_menu.font_size', 'Font size')}
+            </div>
+            <div className="flex items-center gap-1">
+              <button 
+                onClick={(e) => { e.stopPropagation(); setEditorFontSize(Math.max(10, editorFontSize - 1)); }} 
+                className="p-1 hover:bg-white/10 dark:hover:bg-white/10 rounded transition-colors text-muted-foreground hover:text-foreground"
+              >
+                <Minus size={14} />
+              </button>
+              <span className="w-5 text-center text-xs font-mono">{editorFontSize}</span>
+              <button 
+                onClick={(e) => { e.stopPropagation(); setEditorFontSize(Math.min(30, editorFontSize + 1)); }} 
+                className="p-1 hover:bg-white/10 dark:hover:bg-white/10 rounded transition-colors text-muted-foreground hover:text-foreground"
+              >
+                <Plus size={14} />
+              </button>
+            </div>
+          </div>
+
+          <button 
+            onClick={(e) => {
+              e.stopPropagation();
+              setEditorWordWrap(!editorWordWrap);
+            }}
+            className="w-full flex items-center justify-between px-2.5 py-2 rounded-lg text-xs font-semibold text-foreground hover:bg-white/10 dark:hover:bg-white/10 transition-colors outline-none group"
+          >
+            <div className="flex items-center gap-2.5">
+              <WrapText size={14} className="text-muted-foreground group-hover:text-primary transition-colors" />
+              {t('view_menu.word_wrap', 'Word wrap')}
+            </div>
+            {editorWordWrap && <Check size={14} className="text-primary" />}
           </button>
         </div>
       )}

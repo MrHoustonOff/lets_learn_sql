@@ -1,7 +1,7 @@
 import React from 'react';
 import CodeMirror from '@uiw/react-codemirror';
 import { sql } from '@codemirror/lang-sql';
-import { keymap } from '@codemirror/view';
+import { keymap, EditorView } from '@codemirror/view';
 import { Play, Maximize2, Minimize2, Loader2 } from 'lucide-react';
 import { useTheme } from '../../components/theme-provider';
 import { useUIStore, type SlotId } from '../../store/uiStore';
@@ -23,7 +23,12 @@ export const SqlEditorPane: React.FC<SqlEditorPaneProps> = ({
   const { t } = useTranslation();
   const { sql: query, setSql: setQuery, executeQuery, isLoading } = useQueryStore();
   const { theme } = useTheme();
-  const { maximizedPane, setMaximizedPane } = useUIStore();
+  const { 
+    maximizedPane, 
+    setMaximizedPane,
+    editorFontSize,
+    editorWordWrap
+  } = useUIStore();
   
   const isMaximized = propIsMaximized !== undefined ? propIsMaximized : maximizedPane === 'editor';
   
@@ -72,10 +77,12 @@ export const SqlEditorPane: React.FC<SqlEditorPaneProps> = ({
                 executeQuery();
                 return true;
               }
-            }])
+            }]),
+            ...(editorWordWrap ? [EditorView.lineWrapping] : [])
           ]}
           onChange={(val) => setQuery(val)}
-          className="h-full text-[14px]"
+          className="h-full"
+          style={{ fontSize: `${editorFontSize}px` }}
           basicSetup={{
             lineNumbers: true,
             highlightActiveLineGutter: true,

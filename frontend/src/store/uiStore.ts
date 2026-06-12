@@ -10,10 +10,14 @@ interface UIState {
   maximizedPane: MaximizedPane;
   slots: Record<SlotId, PaneType>;
   draggingSlot: SlotId | null;
+  editorFontSize: number;
+  editorWordWrap: boolean;
   toggleCourseToc: () => void;
   setCourseTocOpen: (isOpen: boolean) => void;
   setMaximizedPane: (pane: MaximizedPane) => void;
   setDraggingSlot: (slot: SlotId | null) => void;
+  setEditorFontSize: (size: number | ((prev: number) => number)) => void;
+  setEditorWordWrap: (wrap: boolean) => void;
   swapSlots: (slotA: SlotId, slotB: SlotId) => void;
   resetSlots: () => void;
 }
@@ -32,10 +36,16 @@ export const useUIStore = create<UIState>()(
       maximizedPane: null,
       slots: defaultSlots,
       draggingSlot: null,
+      editorFontSize: 14,
+      editorWordWrap: true,
       toggleCourseToc: () => set((state) => ({ isCourseTocOpen: !state.isCourseTocOpen })),
       setCourseTocOpen: (isOpen) => set({ isCourseTocOpen: isOpen }),
       setMaximizedPane: (pane) => set({ maximizedPane: pane }),
       setDraggingSlot: (slot) => set({ draggingSlot: slot }),
+      setEditorFontSize: (size) => set((state) => ({ 
+        editorFontSize: typeof size === 'function' ? size(state.editorFontSize) : size 
+      })),
+      setEditorWordWrap: (wrap) => set({ editorWordWrap: wrap }),
       swapSlots: (slotA, slotB) => set((state) => {
         const newSlots = { ...state.slots };
         const temp = newSlots[slotA];
@@ -50,6 +60,8 @@ export const useUIStore = create<UIState>()(
       partialize: (state) => ({
         slots: state.slots,
         maximizedPane: state.maximizedPane,
+        editorFontSize: state.editorFontSize,
+        editorWordWrap: state.editorWordWrap,
       }),
     }
   )
