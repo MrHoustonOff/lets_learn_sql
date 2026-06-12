@@ -123,7 +123,7 @@ export const TaskScreen: React.FC = () => {
           defaultLayout={mainLayout}
           onLayoutChanged={mainOnLayout}
           orientation="horizontal" 
-          id="llpg_main_horizontal_v5" 
+          id="llpg_main_horizontal_v7" 
           className="h-full w-full relative z-10"
         >
         
