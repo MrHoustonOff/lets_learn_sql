@@ -16,6 +16,18 @@ module.exports = {
       },
     },
     extend: {
+      zIndex: {
+        base: "0",
+        layout: "10",
+        resize: "20",
+        overlay: "30",
+        drawer: "40",
+        dropdown: "50",
+        menu: "60",
+        popover: "80",
+        modal: "100",
+        tooltip: "120"
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
