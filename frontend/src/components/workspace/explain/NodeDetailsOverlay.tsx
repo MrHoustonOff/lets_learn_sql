@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { Activity, X, Info, ChevronDown, ChevronRight, Check, Copy, AlertTriangle } from 'lucide-react';
+import { Activity, X, Info, AlertTriangle } from 'lucide-react';
 import { InfoTooltip } from '../../ui/InfoTooltip';
 import { type FlatNode } from '../../../store/explainStore';
 import { findNodeById, getCostColor } from './utils';
 
 import pgExplainDocs from '../../../i18n/pg_explain_docs.json';
 import explainFieldsDocs from '../../../i18n/explain_fields_i18n.json';
+import { NodePropertiesList } from './parts/NodePropertiesList';
 
 interface NodeDetailsProps {
   nodeId: string;
@@ -43,21 +44,6 @@ export const NodeDetailsOverlay: React.FC<NodeDetailsProps> = ({ nodeId, onClose
   const objectName = index || relation;
   const filter = node["Filter"] || node["Index Cond"] || node["Hash Cond"];
   const width = node["Plan Width"];
-
-  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
-  const [copiedKey, setCopiedKey] = useState<string | null>(null);
-
-  const handleCopy = (key: string, value: any) => {
-    const copyText = `Операция: ${nodeType}\n${key}: ${String(value)}`;
-    navigator.clipboard.writeText(copyText);
-    setCopiedKey(key);
-    setTimeout(() => setCopiedKey(null), 2000);
-  };
-
-  const dynamicProps = Object.entries(node).filter(([key, value]) => {
-    const ignoredKeys = ['Node Type', 'Relation Name', 'Index Name', 'Total Cost', 'Plan Rows', 'Plan Width', 'Plans', 'node_id', 'Parent Relationship', 'Startup Cost', 'Alias'];
-    return !ignoredKeys.includes(key) && typeof value !== 'object' && value !== undefined && value !== null;
-  });
 
   return createPortal(
     <div 
@@ -300,39 +286,7 @@ export const NodeDetailsOverlay: React.FC<NodeDetailsProps> = ({ nodeId, onClose
             );
           })()}
 
-          {/* Дополнительные параметры (Сворачиваемый блок) */}
-          {dynamicProps.length > 0 && (
-            <div className="border border-glass-border rounded-lg overflow-hidden">
-              <button 
-                onClick={() => setIsDetailsOpen(!isDetailsOpen)}
-                className="flex items-center justify-between bg-muted/30 hover:bg-muted/50 px-4 py-2.5 transition-colors w-full text-left"
-              >
-                <div className="flex items-center gap-2 text-xs font-bold text-foreground uppercase">
-                  {isDetailsOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
-                  Детали операции ({dynamicProps.length})
-                </div>
-              </button>
-              
-              {isDetailsOpen && (
-                <div className="flex flex-col text-sm font-mono bg-background/30">
-                  {dynamicProps.map(([key, value]) => (
-                    <div 
-                      key={key} 
-                      onClick={() => handleCopy(key, value)}
-                      className="flex items-start gap-4 px-4 py-2.5 border-t border-glass-border/30 cursor-pointer even:bg-black/[0.02] dark:even:bg-white/[0.02] group"
-                      title="Нажмите, чтобы скопировать значение"
-                    >
-                      <span className="text-muted-foreground whitespace-nowrap min-w-[150px] mt-0.5">{key}:</span>
-                      <span className="text-foreground break-all flex-1">{String(value)}</span>
-                      <div className="opacity-0 group-hover:opacity-100 text-muted-foreground shrink-0 mt-0.5">
-                        {copiedKey === key ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
+          <NodePropertiesList node={node} />
 
         </div>
       </div>
