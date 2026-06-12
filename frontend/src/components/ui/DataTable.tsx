@@ -150,7 +150,7 @@ const ColumnFilterPopover = ({
             </label>
           ))}
           {isTruncated && (
-            <div className="text-center text-[10px] text-muted-foreground py-1.5 mt-1 border-t border-glass-border bg-muted/30 rounded">
+            <div className="text-center text-2xs text-muted-foreground py-1.5 mt-1 border-t border-glass-border bg-muted/30 rounded">
               {t('data_table:shown_limit', { max: MAX_RENDER, total: displayValues.length })}
             </div>
           )}
@@ -314,7 +314,7 @@ export const DataTable: React.FC<DataTableProps> = ({ columns, rows, className =
             >
               <RotateCcw size={12} />
             </button>
-            <span className="text-[10px] w-8 text-right font-mono text-muted-foreground">
+            <span className="text-2xs w-8 text-right font-mono text-muted-foreground">
               {Math.round(scale * 100)}%
             </span>
           </div>
@@ -424,11 +424,11 @@ export const DataTable: React.FC<DataTableProps> = ({ columns, rows, className =
                         }}
                       >
                         {cType === 'null' ? (
-                          <span className="inline-flex items-center px-1.5 py-0.5 rounded-md bg-muted text-muted-foreground/50 text-[0.85em] font-semibold tracking-widest uppercase shadow-sm border border-glass-border">
+                          <span className="inline-flex items-center px-1.5 py-0.5 rounded-md bg-muted text-muted-foreground/50 text-mini font-semibold tracking-widest uppercase shadow-sm border border-glass-border">
                             NULL
                           </span>
                         ) : cType === 'boolean' ? (
-                          <span className={`inline-flex items-center px-1.5 py-0.5 rounded-md text-[0.85em] font-bold uppercase shadow-sm border ${
+                          <span className={`inline-flex items-center px-1.5 py-0.5 rounded-md text-mini font-bold uppercase shadow-sm border ${
                             cell ? 'bg-success/10 text-success border-success/20' : 'bg-destructive/10 text-destructive border-destructive/20'
                           }`}>
                             {cell ? 'true' : 'false'}

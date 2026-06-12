@@ -135,10 +135,10 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
               />
             </div>
             <div className="flex items-center justify-between mb-3 px-1">
-              <button onClick={handleShowAllTables} className="text-[10px] uppercase tracking-wider text-primary hover:text-primary/80 font-medium flex items-center gap-1 transition-colors">
+              <button onClick={handleShowAllTables} className="text-2xs uppercase tracking-wider text-primary hover:text-primary/80 font-medium flex items-center gap-1 transition-colors">
                 <Eye size={12} /> {t('db_visualizer:filter.show_all')}
               </button>
-              <button onClick={handleHideAllTables} className="text-[10px] uppercase tracking-wider text-muted-foreground hover:text-foreground font-medium flex items-center gap-1 transition-colors">
+              <button onClick={handleHideAllTables} className="text-2xs uppercase tracking-wider text-muted-foreground hover:text-foreground font-medium flex items-center gap-1 transition-colors">
                 <EyeOff size={12} /> {t('db_visualizer:filter.hide_all')}
               </button>
             </div>
@@ -181,7 +181,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
               />
             </div>
             <div className="flex items-center justify-end mb-3 px-1">
-              <button onClick={handleResetColumns} className="text-[10px] uppercase tracking-wider text-warning hover:text-warning-text font-medium flex items-center gap-1 transition-colors">
+              <button onClick={handleResetColumns} className="text-2xs uppercase tracking-wider text-warning hover:text-warning-text font-medium flex items-center gap-1 transition-colors">
                 <FilterX size={12} /> {t('db_visualizer:filter.reset_filter')}
               </button>
             </div>

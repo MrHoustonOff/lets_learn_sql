@@ -105,7 +105,7 @@ export const ViewMenu: React.FC<ViewMenuProps> = ({
 
           <div className="h-px bg-glass-border my-1" />
           <div className="px-2 py-1">
-            <span className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider pl-1">{t('db_visualizer:relations')}</span>
+            <span className="text-2xs text-muted-foreground font-semibold uppercase tracking-wider pl-1">{t('db_visualizer:relations')}</span>
           </div>
 
           {/* Переключатель связей */}

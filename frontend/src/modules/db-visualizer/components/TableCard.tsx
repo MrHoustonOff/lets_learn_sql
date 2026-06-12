@@ -16,7 +16,7 @@ export const TableCard: React.FC<TableCardProps> = ({ table }) => {
         <Database size={16} className="text-emerald-500 dark:text-emerald-400" />
         <h3 className="font-semibold text-foreground tracking-wide">{table.name}</h3>
         {table.schema !== 'public' && (
-          <span className="ml-auto text-[10px] uppercase tracking-wider bg-badge text-badge-foreground px-2 py-0.5 rounded-full">
+          <span className="ml-auto text-2xs uppercase tracking-wider bg-badge text-badge-foreground px-2 py-0.5 rounded-full">
             {table.schema}
           </span>
         )}
@@ -34,7 +34,7 @@ export const TableCard: React.FC<TableCardProps> = ({ table }) => {
         <div className="px-4 py-3 border-t border-glass-border bg-black/5 dark:bg-black/20 rounded-b-xl text-xs text-muted-foreground">
           {table.indexes.length > 0 && (
             <div className="mb-2 last:mb-0">
-              <span className="uppercase tracking-wider text-[10px] opacity-70 mb-1 block">Indexes</span>
+              <span className="uppercase tracking-wider text-2xs opacity-70 mb-1 block">Indexes</span>
               <ul className="space-y-1">
                 {table.indexes.map(idx => (
                   <li key={idx.name} className="flex gap-2 font-mono">

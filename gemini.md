@@ -27,3 +27,18 @@
 - `z-modal` (100) — Модальные окна и развернутые (maximized) панели
 - `z-modal-top` (110) — Модальные окна поверх других модалок
 - `z-tooltip` (120) — Тултипы (всегда поверх всего)
+
+## 3. Стандартизация размеров шрифтов (Typography)
+
+Мы используем жесткую шкалу размеров шрифтов через Tailwind конфигурацию, чтобы поддерживать консистентность интерфейса. 
+**ЗАПРЕЩЕНО** использовать произвольные inline-значения шрифтов вроде `text-[10px]`, `text-[11px]`, `text-[13px]`, `text-[9px]`, `text-[0.85em]` или `text-[0.8rem]`.
+Используйте только следующие классы:
+
+- `text-micro` — 9px (line-height: 12px)
+- `text-2xs` — 10px (line-height: 14px)
+- `text-mini` — 11px (line-height: 16px)
+- `text-xs` — 12px (стандартный Tailwind, line-height: 16px)
+- `text-tiny` — 13px (line-height: 18px)
+- `text-sm` — 14px (стандартный Tailwind, line-height: 20px)
+- `text-base` — 16px (стандартный Tailwind, line-height: 24px)
+

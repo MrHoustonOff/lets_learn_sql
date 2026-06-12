@@ -56,7 +56,7 @@ export const DatabasesListPage: React.FC = () => {
                 <div className="text-xs text-muted-foreground font-mono truncate mt-1 flex items-center gap-2">
                   <span>{db.technicalName}</span>
                   {db.isDefault && (
-                    <span className="px-1.5 py-0.5 rounded-md bg-primary/20 text-primary text-[10px] uppercase font-bold tracking-wider">
+                    <span className="px-1.5 py-0.5 rounded-md bg-primary/20 text-primary text-2xs uppercase font-bold tracking-wider">
                       Default
                     </span>
                   )}

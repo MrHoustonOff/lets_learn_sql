@@ -30,6 +30,12 @@ module.exports = {
         "modal-top": "110",
         tooltip: "120"
       },
+      fontSize: {
+        micro: ['9px', { lineHeight: '12px' }],
+        '2xs': ['10px', { lineHeight: '14px' }],
+        mini: ['11px', { lineHeight: '16px' }],
+        tiny: ['13px', { lineHeight: '18px' }],
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",

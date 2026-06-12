@@ -106,7 +106,7 @@ export const TaskPane: React.FC<TaskPaneProps> = ({ slotId }) => {
             <h3 className="mt-0 mb-4 text-lg font-bold">{t('task_pane:mock_solution_title')}</h3>
             <p>{t('task_pane:mock_solution_description')}</p>
             <pre className="bg-hover p-4 rounded-xl mt-4 border border-glass-border/50 shadow-inner">
-              <code className="text-success font-mono text-[13px]">
+              <code className="text-success font-mono text-tiny">
                 SELECT * FROM public.customers;
               </code>
             </pre>

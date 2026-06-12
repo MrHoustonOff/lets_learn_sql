@@ -60,7 +60,7 @@ export const SqlEditorPane: React.FC<SqlEditorPaneProps> = ({
   const content = (
     <div className={`h-full flex flex-col transition-all duration-300 min-h-0 min-w-0 ${isMaximized ? 'fixed inset-4 z-modal bg-background rounded-2xl shadow-2xl border border-glass-border overflow-hidden' : 'bg-transparent overflow-hidden'}`}>
       <div className="h-10 border-b border-glass-border flex items-center justify-between px-3 shrink-0 bg-hover relative z-layout min-w-0">
-        <span className="text-sm font-semibold text-foreground uppercase tracking-wider text-[11px] opacity-70 truncate mr-2 min-w-0 shrink">{t('sql_editor:title')}</span>
+        <span className="text-mini font-semibold text-foreground uppercase tracking-wider opacity-70 truncate mr-2 min-w-0 shrink">{t('sql_editor:title')}</span>
         <div className="flex items-center gap-1.5 shrink min-w-0 ml-auto">
           <button 
             onClick={() => executeQuery()}

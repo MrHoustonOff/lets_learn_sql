@@ -44,7 +44,7 @@ export const ViewMenu: React.FC<ViewMenuProps> = ({ onResetProportions }) => {
       {isOpen && (
         <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-64 rounded-xl border border-glass-border bg-glass backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.3)] p-1.5 flex flex-col gap-1 z-dropdown">
           <div className="px-2 py-1.5">
-            <span className="text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground/70">
+            <span className="text-2xs font-extrabold uppercase tracking-widest text-muted-foreground/70">
               {t('view_menu.layout', 'Layout')}
             </span>
           </div>
@@ -74,7 +74,7 @@ export const ViewMenu: React.FC<ViewMenuProps> = ({ onResetProportions }) => {
 
           <div className="w-full h-px bg-glass-border my-1" />
           <div className="px-2 py-1.5">
-            <span className="text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground/70">
+            <span className="text-2xs font-extrabold uppercase tracking-widest text-muted-foreground/70">
               {t('view_menu.editor', 'Editor')}
             </span>
           </div>

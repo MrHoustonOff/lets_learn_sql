@@ -27,9 +27,9 @@ export const ColumnRow: React.FC<ColumnRowProps> = ({ column, isHighlighted }) =
         {column.type}
       </div>
       {column.nullable ? (
-        <div className="text-[10px] opacity-60 uppercase tracking-wider w-8 text-center">null</div>
+        <div className="text-2xs opacity-60 uppercase tracking-wider w-8 text-center">null</div>
       ) : (
-        <div className="text-[10px] opacity-80 uppercase tracking-wider w-8 text-center font-bold">req</div>
+        <div className="text-2xs opacity-80 uppercase tracking-wider w-8 text-center font-bold">req</div>
       )}
     </div>
   );

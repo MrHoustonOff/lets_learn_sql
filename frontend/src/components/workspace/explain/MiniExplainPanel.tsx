@@ -89,7 +89,7 @@ export const MiniExplainPanel: React.FC = () => {
               <div className="flex items-center justify-between mb-1 select-none">
                 <div className="flex items-center gap-2">
                   <HeaderIcon className={`${headerIconColor} shrink-0`} size={16} />
-                  <h3 className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
+                  <h3 className="text-mini font-bold text-muted-foreground uppercase tracking-wider">
                     {t('explain_ui:diagnostics_title')}
                   </h3>
                 </div>
