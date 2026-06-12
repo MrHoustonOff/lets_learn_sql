@@ -1,0 +1,62 @@
+{
+  "general": {
+    "no_description": {
+      "ru": "Нет описания",
+      "en": "No description available"
+    }
+  },
+  "fields": {
+    "cost": {
+      "ru": "Оценка стоимости выполнения. Первая цифра — стартовая стоимость (до получения первой строки), вторая — общая стоимость. Условная величина, которую планировщик использует для сравнения альтернативных планов. Зависит от статистики таблиц и настроек стоимостей.",
+      "en": "Estimated execution cost. First number is startup cost (before first row), second is total cost. A relative value the planner uses to compare alternative plans. Depends on table statistics and cost settings."
+    },
+    "rows": {
+      "ru": "Приблизительное (ожидаемое) количество строк, которое этот узел должен был вернуть по мнению планировщика.",
+      "en": "Estimated number of rows the planner expected this node to return."
+    },
+    "width": {
+      "ru": "Средний размер одной строки в байтах, проходящей через этот узел.",
+      "en": "Estimated average width of rows output by this plan node, in bytes."
+    },
+    "input_rows": {
+      "ru": "Общее количество строк, поступивших на вход этого узла от дочерних операций (или прочитанных до фильтрации).",
+      "en": "Total number of rows entering this node from child operations (or read before filtering)."
+    },
+    "condition": {
+      "ru": "Условие фильтрации или соединения. Строки, не подходящие под это условие, отбрасываются.",
+      "en": "Filter or join condition. Rows not matching this condition are discarded."
+    },
+    "output_rows": {
+      "ru": "Реальное (фактическое) количество строк, которое этот узел передал дальше. Вычисляется как Actual Rows * Actual Loops.",
+      "en": "Actual number of rows this node produced and passed up. Calculated as Actual Rows * Actual Loops."
+    },
+    "columns": {
+      "ru": "Схема данных (колонки), которая выходит из этого узла после всех преобразований.",
+      "en": "Data schema (columns) output by this node after all transformations."
+    },
+    "node_time": {
+      "ru": "Суммарное реальное время, затраченное на выполнение именно этого узла (Actual Total Time).",
+      "en": "Total actual time spent executing this specific node (Actual Total Time)."
+    },
+    "time_per_row": {
+      "ru": "Среднее время, затраченное на обработку одной выходящей строки.",
+      "en": "Average time spent processing a single output row."
+    },
+    "buffers_hit": {
+      "ru": "Количество страниц данных (по 8 КБ), найденных в shared_buffers (кэш PostgreSQL) без обращения к диску. Чем больше, тем лучше.",
+      "en": "Number of data pages (8KB each) found in shared_buffers (PostgreSQL cache) without disk access. Higher is better."
+    },
+    "buffers_read": {
+      "ru": "Количество страниц данных, которые пришлось физически прочитать с диска. Это медленная операция, указывающая на промах кэша.",
+      "en": "Number of data pages physically read from disk. This is a slow operation indicating a cache miss."
+    },
+    "peak_memory": {
+      "ru": "Максимальный объем оперативной памяти, который этот узел (например, Sort или Hash) потребил во время выполнения.",
+      "en": "Maximum amount of RAM this node (e.g. Sort or Hash) consumed during execution."
+    },
+    "planner_accuracy": {
+      "ru": "Насколько сильно реальное количество строк (Actual Rows) разошлось с тем, что ожидал планировщик (Plan Rows). Сильное расхождение приводит к неоптимальным планам — планировщик выбирает стратегию джоинов и типы сканирования исходя из оценок строк.",
+      "en": "How much the actual row count differed from what the planner estimated. The planner picks join strategies and scan types based on row estimates, so large divergence often leads to suboptimal plans."
+    }
+  }
+}

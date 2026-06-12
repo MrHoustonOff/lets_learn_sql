@@ -3,6 +3,17 @@ import { Info, AlertTriangle, Loader2, CheckCircle2, ArrowDown, ArrowUp, ArrowUp
 import { useExplainStore, type FlatNode } from '../../../store/explainStore';
 
 import pgExplainDocs from '../../../i18n/pg_explain_docs.json';
+import explainFieldsDocs from '../../../i18n/explain_fields_i18n.json';
+
+const InfoTooltip = ({ text }: { text: string }) => (
+  <div className="relative group inline-flex items-center ml-1 align-middle">
+    <Info size={14} className="text-muted-foreground/50 hover:text-primary cursor-help transition-colors" />
+    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 p-2 bg-popover text-popover-foreground text-xs rounded-md shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 delay-500 z-[60] border border-glass-border pointer-events-none break-words font-sans font-normal normal-case">
+      {text}
+      <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-glass-border" />
+    </div>
+  </div>
+);
 
 // Хелпер для поиска узла в дереве
 const findNodeById = (node: any, id: string): any => {
@@ -179,14 +190,15 @@ const NodeDetailsOverlay: React.FC<NodeDetailsProps> = ({ nodeId, onClose, rootT
 
   return (
     <div 
-      className="absolute inset-0 bg-background/90 z-50 p-4 flex items-start justify-center overflow-y-auto animate-in fade-in zoom-in-95 duration-200"
+      className="absolute inset-0 bg-background/90 z-50 p-4 flex items-center justify-center animate-in fade-in zoom-in-95 duration-200"
       onClick={onClose}
     >
       <div 
-        className="border border-glass-border bg-[hsl(var(--glass-bg))] rounded-lg p-4 shadow-2xl w-full max-w-2xl relative my-auto mt-10 mb-10"
+        className="border border-glass-border bg-[hsl(var(--glass-bg))] rounded-lg shadow-2xl w-full max-w-2xl relative flex flex-col max-h-[90vh]"
         onClick={(e) => e.stopPropagation()} // Не закрывать при клике на саму карточку
       >
-        <div className="flex items-start justify-between mb-4 border-b border-glass-border pb-3">
+        {/* HEADER (Fixed) */}
+        <div className="flex items-start justify-between p-4 border-b border-glass-border shrink-0">
           <div className="flex items-center gap-2 text-lg flex-1">
             <div className={`w-3 h-3 rounded-full ${colorClass}`} />
             <span className="font-bold text-foreground">{nodeType}</span>
@@ -231,231 +243,248 @@ const NodeDetailsOverlay: React.FC<NodeDetailsProps> = ({ nodeId, onClose, rootT
           </button>
         </div>
 
-        <div className="grid grid-cols-3 gap-4 mb-4 font-mono text-sm">
-          <div className="flex flex-col">
-            <span className="text-muted-foreground text-xs uppercase">cost</span>
-            <span>{node["Total Cost"]?.toFixed(2)}</span>
+        {/* SCROLLABLE BODY */}
+        <div className="p-4 overflow-y-auto flex-1 custom-scrollbar">
+
+          {/* Документация/описание типа узла */}
+          <div className="mb-4 bg-primary/5 border border-primary/20 rounded-lg p-3 text-sm text-foreground/90 leading-relaxed flex items-start gap-2">
+            <Info size={16} className="text-primary shrink-0 mt-0.5" />
+            <span>
+              {((pgExplainDocs as any)[nodeType] && (pgExplainDocs as any)[nodeType].ru) || explainFieldsDocs.general.no_description.ru}
+            </span>
           </div>
-          <div className="flex flex-col">
-            <span className="text-muted-foreground text-xs uppercase">rows~</span>
-            <span>{node["Plan Rows"]}</span>
+
+          <div className="grid grid-cols-3 gap-4 mb-4 font-mono text-sm">
+            <div className="flex flex-col">
+              <span className="text-muted-foreground text-xs uppercase flex items-center">
+                cost <InfoTooltip text={explainFieldsDocs.fields.cost.ru} />
+              </span>
+              <span>{node["Total Cost"]?.toFixed(2)}</span>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-muted-foreground text-xs uppercase flex items-center">
+                rows~ <InfoTooltip text={explainFieldsDocs.fields.rows.ru} />
+              </span>
+              <span>{node["Plan Rows"]}</span>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-muted-foreground text-xs uppercase flex items-center">
+                width <InfoTooltip text={explainFieldsDocs.fields.width.ru} />
+              </span>
+              <span>{width ? `${width} bytes` : '—'}</span>
+            </div>
           </div>
-          <div className="flex flex-col">
-            <span className="text-muted-foreground text-xs uppercase">width</span>
-            <span>{width ? `${width} bytes` : '—'}</span>
-          </div>
-        </div>
 
-        {/* --- DATA FLOW BLOCK --- */}
-        <div className="mb-4 border border-primary/20 bg-primary/5 rounded-lg p-4">
-          <h4 className="text-xs font-bold text-primary uppercase mb-3 flex items-center gap-2">
-            Поток данных (Data Flow)
-          </h4>
-          <div className="flex flex-col gap-3 font-mono text-sm">
-            {/* Вошло */}
-            {(() => {
-              let inputRows = 0;
-              let hasInputRows = false;
-              if (node.Plans && node.Plans.length > 0) {
-                inputRows = node.Plans.reduce((sum: number, child: any) => {
-                  const childRows = child['Actual Rows'] ?? child['Plan Rows'] ?? 0;
-                  const loops = child['Actual Loops'] ?? 1;
-                  return sum + (childRows * loops);
-                }, 0);
-                hasInputRows = true;
-              } else if (node['Rows Removed by Filter'] !== undefined && node['Actual Rows'] !== undefined) {
-                inputRows = (node['Actual Rows'] * (node['Actual Loops'] || 1)) + Math.round(node['Rows Removed by Filter']);
-                hasInputRows = true;
-              }
+          {/* --- DATA FLOW BLOCK --- */}
+          <div className="mb-4 border border-primary/20 bg-primary/5 rounded-lg p-4">
+            <h4 className="text-xs font-bold text-primary uppercase mb-3 flex items-center gap-2">
+              Поток данных (Data Flow)
+            </h4>
+            <div className="flex flex-col gap-3 font-mono text-sm">
+              {/* Вошло */}
+              {(() => {
+                let inputRows = 0;
+                let hasInputRows = false;
+                if (node.Plans && node.Plans.length > 0) {
+                  inputRows = node.Plans.reduce((sum: number, child: any) => {
+                    const childRows = child['Actual Rows'] ?? child['Plan Rows'] ?? 0;
+                    const loops = child['Actual Loops'] ?? 1;
+                    return sum + (childRows * loops);
+                  }, 0);
+                  hasInputRows = true;
+                } else if (node['Rows Removed by Filter'] !== undefined && node['Actual Rows'] !== undefined) {
+                  inputRows = (node['Actual Rows'] * (node['Actual Loops'] || 1)) + Math.round(node['Rows Removed by Filter']);
+                  hasInputRows = true;
+                }
 
-              if (!hasInputRows) return null;
-              
-              const outputTotal = Math.round(node['Actual Rows'] !== undefined ? node['Actual Rows'] * (node['Actual Loops'] || 1) : node['Plan Rows']);
-              const filteredRows = Math.max(0, inputRows - outputTotal);
-              const selectivityPct = inputRows > 0 ? ((filteredRows / inputRows) * 100).toFixed(1) : '0.0';
+                if (!hasInputRows) return null;
+                
+                const outputTotal = Math.round(node['Actual Rows'] !== undefined ? node['Actual Rows'] * (node['Actual Loops'] || 1) : node['Plan Rows']);
+                const filteredRows = Math.max(0, inputRows - outputTotal);
+                const selectivityPct = inputRows > 0 ? ((filteredRows / inputRows) * 100).toFixed(1) : '0.0';
 
-              return (
-                <>
-                  <div className="flex items-start gap-2">
-                    <span className="text-muted-foreground w-20 shrink-0 mt-0.5">Вошло:</span>
-                    <span className="text-foreground">~{Math.round(inputRows)} строк</span>
-                  </div>
-                  
-                  {/* Условие */}
-                  {(() => {
-                    const condition = node['Filter'] || node['Index Cond'] || node['Hash Cond'] || node['Join Filter'] || node['Merge Cond'];
-                    if (!condition) return null;
-                    return (
-                      <div className="flex items-start gap-2 relative">
-                        <span className="text-muted-foreground w-20 shrink-0 mt-0.5">Условие:</span>
-                        <div className="flex flex-col gap-1">
-                          <span className="text-amber-500 break-all bg-amber-500/10 px-2 py-0.5 rounded">{condition}</span>
-                          {filteredRows > 0 && (
-                            <span className="text-muted-foreground text-xs">
-                              Отсев: <span className="font-bold text-foreground">{selectivityPct}%</span> ({filteredRows} строк удалено)
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })()}
-
-                  <div className="flex items-start gap-2">
-                    <span className="text-muted-foreground w-20 shrink-0 mt-0.5">Вышло:</span>
-                    <div className="flex items-center flex-wrap gap-2">
-                      <span className="text-emerald-500 font-bold bg-emerald-500/10 px-2 py-0.5 rounded">
-                        {outputTotal} строк
+                return (
+                  <>
+                    <div className="flex items-start gap-2">
+                      <span className="text-muted-foreground w-24 shrink-0 mt-0.5 flex items-center">
+                        Вошло: <InfoTooltip text={explainFieldsDocs.fields.input_rows.ru} />
                       </span>
-                      <span className="text-muted-foreground text-xs">→ идут дальше</span>
+                      <span className="text-foreground">~{Math.round(inputRows)} строк</span>
                     </div>
-                  </div>
-                </>
-              );
-            })()}
+                    
+                    {/* Условие */}
+                    {(() => {
+                      const condition = node['Filter'] || node['Index Cond'] || node['Hash Cond'] || node['Join Filter'] || node['Merge Cond'];
+                      if (!condition) return null;
+                      return (
+                        <div className="flex items-start gap-2 relative">
+                          <span className="text-muted-foreground w-24 shrink-0 mt-0.5 flex items-center">
+                            Условие: <InfoTooltip text={explainFieldsDocs.fields.condition.ru} />
+                          </span>
+                          <div className="flex flex-col gap-1">
+                            <span className="text-amber-500 break-all bg-amber-500/10 px-2 py-0.5 rounded">{condition}</span>
+                            {filteredRows > 0 && (
+                              <span className="text-muted-foreground text-xs">
+                                Отсев: <span className="font-bold text-foreground">{selectivityPct}%</span> ({filteredRows} строк удалено)
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })()}
 
-            {/* Колонки */}
-            {node['Output'] && Array.isArray(node['Output']) && (
-              <div className="flex items-start gap-2 mt-1 pt-3 border-t border-glass-border/50">
-                <span className="text-muted-foreground w-20 shrink-0 mt-0.5">Колонки:</span>
-                <div className="flex flex-wrap gap-1">
-                  {node['Output'].map((col: string, i: number) => (
-                    <span key={i} className="bg-black/10 dark:bg-white/10 px-1.5 py-0.5 rounded text-xs text-foreground/80 break-all">
-                      {col}
-                    </span>
-                  ))}
+                    <div className="flex items-start gap-2">
+                      <span className="text-muted-foreground w-24 shrink-0 mt-0.5 flex items-center">
+                        Вышло: <InfoTooltip text={explainFieldsDocs.fields.output_rows.ru} />
+                      </span>
+                      <div className="flex items-center flex-wrap gap-2">
+                        <span className="text-emerald-500 font-bold bg-emerald-500/10 px-2 py-0.5 rounded">
+                          {outputTotal} строк
+                        </span>
+                        <span className="text-muted-foreground text-xs">→ идут дальше</span>
+                      </div>
+                    </div>
+                  </>
+                );
+              })()}
+
+              {/* Колонки */}
+              {node['Output'] && Array.isArray(node['Output']) && (
+                <div className="flex items-start gap-2 mt-1 pt-3 border-t border-glass-border/50">
+                  <span className="text-muted-foreground w-24 shrink-0 mt-0.5 flex items-center">
+                    Колонки: <InfoTooltip text={explainFieldsDocs.fields.columns.ru} />
+                  </span>
+                  <div className="flex flex-wrap gap-1">
+                    {node['Output'].map((col: string, i: number) => (
+                      <span key={i} className="bg-black/10 dark:bg-white/10 px-1.5 py-0.5 rounded text-xs text-foreground/80 break-all">
+                        {col}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* --- INSIGHTS BLOCK --- */}
+          {(() => {
+            const actualTotalTime = node['Actual Total Time'];
+            const rootTime = rootTree['Actual Total Time'];
+            const outputTotal = Math.round(node['Actual Rows'] !== undefined ? node['Actual Rows'] * (node['Actual Loops'] || 1) : node['Plan Rows']);
+            const timePerRow = (actualTotalTime !== undefined && outputTotal > 0) ? (actualTotalTime / outputTotal).toFixed(4) : null;
+            const timePct = (actualTotalTime !== undefined && rootTime !== undefined && rootTime > 0) ? ((actualTotalTime / rootTime) * 100).toFixed(1) : null;
+            
+            const sharedHits = node['Shared Hit Blocks'] || 0;
+            const sharedReads = node['Shared Read Blocks'] || 0;
+            const peakMemory = node['Peak Memory Usage']; // В килобайтах
+
+            const planRows = node['Plan Rows'];
+            const actualRows = node['Actual Rows'] !== undefined ? node['Actual Rows'] * (node['Actual Loops'] || 1) : null;
+            let accuracyWarning = null;
+            if (actualRows !== null && planRows !== undefined && planRows > 0) {
+              const ratio = actualRows > planRows ? actualRows / planRows : planRows / actualRows;
+              if (ratio >= 10) {
+                accuracyWarning = `Планировщик ошибся в ~${Math.round(ratio)} раз (Ожидалось ${planRows}, по факту ${Math.round(actualRows)})`;
+              }
+            }
+
+            if (!actualTotalTime && !sharedHits && !sharedReads && !peakMemory && !accuracyWarning) return null;
+
+            return (
+              <div className="mb-4 border border-glass-border bg-black/5 dark:bg-white/5 rounded-lg p-4">
+                <h4 className="text-xs font-bold text-muted-foreground uppercase mb-3 flex items-center gap-2">
+                  Аналитика (Insights)
+                </h4>
+                <div className="flex flex-col gap-3 font-mono text-sm">
+                  
+                  {actualTotalTime !== undefined && (
+                    <div className="flex items-start gap-2">
+                      <span className="text-muted-foreground w-32 shrink-0 mt-0.5 flex items-center">
+                        Время узла: <InfoTooltip text={explainFieldsDocs.fields.node_time.ru + " " + explainFieldsDocs.fields.time_per_row.ru} />
+                      </span>
+                      <div className="flex flex-col gap-0.5">
+                        <span className="text-foreground">{actualTotalTime.toFixed(3)} ms {timePct && <span className="text-muted-foreground">({timePct}% от запроса)</span>}</span>
+                        {timePerRow && <span className="text-muted-foreground text-xs">{timePerRow} ms на строку</span>}
+                      </div>
+                    </div>
+                  )}
+
+                  {(sharedHits > 0 || sharedReads > 0) && (
+                    <div className="flex items-start gap-2">
+                      <span className="text-muted-foreground w-32 shrink-0 mt-0.5 flex items-center">
+                        Буферы: <InfoTooltip text={explainFieldsDocs.fields.buffers_hit.ru + " " + explainFieldsDocs.fields.buffers_read.ru} />
+                      </span>
+                      <div className="flex flex-col gap-0.5">
+                        {sharedHits > 0 && <span className="text-emerald-500">Hits: {sharedHits} <span className="text-muted-foreground text-xs">(прочитано из кэша)</span></span>}
+                        {sharedReads > 0 && <span className="text-destructive font-bold">Reads: {sharedReads} <span className="text-muted-foreground font-normal text-xs">(прочитано с диска ⚠)</span></span>}
+                      </div>
+                    </div>
+                  )}
+
+                  {peakMemory && (
+                    <div className="flex items-start gap-2">
+                      <span className="text-muted-foreground w-32 shrink-0 mt-0.5 flex items-center">
+                        Память: <InfoTooltip text={explainFieldsDocs.fields.peak_memory.ru} />
+                      </span>
+                      <span className="text-amber-500">{peakMemory} kB <span className="text-muted-foreground text-xs">(Peak Memory)</span></span>
+                    </div>
+                  )}
+
+                  {accuracyWarning && (
+                    <div className="flex items-start gap-2 mt-1 pt-3 border-t border-glass-border/50">
+                      <span className="text-muted-foreground w-32 shrink-0 mt-0.5 flex items-center">
+                        Прогноз: <InfoTooltip text={explainFieldsDocs.fields.planner_accuracy.ru} />
+                      </span>
+                      <span className="text-destructive font-bold flex items-start gap-1">
+                        <AlertTriangle size={14} className="mt-0.5 shrink-0" />
+                        <span>{accuracyWarning}</span>
+                      </span>
+                    </div>
+                  )}
+
                 </div>
               </div>
-            )}
-          </div>
-        </div>
+            );
+          })()}
 
-        {/* --- INSIGHTS BLOCK --- */}
-        {(() => {
-          const actualTotalTime = node['Actual Total Time'];
-          const rootTime = rootTree['Actual Total Time'];
-          const outputTotal = Math.round(node['Actual Rows'] !== undefined ? node['Actual Rows'] * (node['Actual Loops'] || 1) : node['Plan Rows']);
-          const timePerRow = (actualTotalTime !== undefined && outputTotal > 0) ? (actualTotalTime / outputTotal).toFixed(4) : null;
-          const timePct = (actualTotalTime !== undefined && rootTime !== undefined && rootTime > 0) ? ((actualTotalTime / rootTime) * 100).toFixed(1) : null;
-          
-          const sharedHits = node['Shared Hit Blocks'] || 0;
-          const sharedReads = node['Shared Read Blocks'] || 0;
-          const peakMemory = node['Peak Memory Usage']; // В килобайтах
-
-          const planRows = node['Plan Rows'];
-          const actualRows = node['Actual Rows'] !== undefined ? node['Actual Rows'] * (node['Actual Loops'] || 1) : null;
-          let accuracyWarning = null;
-          if (actualRows !== null && planRows !== undefined && planRows > 0) {
-            const ratio = actualRows > planRows ? actualRows / planRows : planRows / actualRows;
-            if (ratio >= 10) {
-              accuracyWarning = `Планировщик ошибся в ~${Math.round(ratio)} раз (Ожидалось ${planRows}, по факту ${Math.round(actualRows)})`;
-            }
-          }
-
-          if (!actualTotalTime && !sharedHits && !sharedReads && !peakMemory && !accuracyWarning) return null;
-
-          return (
-            <div className="mb-4 border border-glass-border bg-black/5 dark:bg-white/5 rounded-lg p-4">
-              <h4 className="text-xs font-bold text-muted-foreground uppercase mb-3 flex items-center gap-2">
-                Аналитика (Insights)
-              </h4>
-              <div className="flex flex-col gap-3 font-mono text-sm">
-                
-                {actualTotalTime !== undefined && (
-                  <div className="flex items-start gap-2">
-                    <span className="text-muted-foreground w-28 shrink-0 mt-0.5">Время узла:</span>
-                    <div className="flex flex-col gap-0.5">
-                      <span className="text-foreground">{actualTotalTime.toFixed(3)} ms {timePct && <span className="text-muted-foreground">({timePct}% от запроса)</span>}</span>
-                      {timePerRow && <span className="text-muted-foreground text-xs">{timePerRow} ms на строку</span>}
+          {/* Дополнительные параметры (Сворачиваемый блок) */}
+          {dynamicProps.length > 0 && (
+            <div className="border border-glass-border rounded-lg overflow-hidden">
+              <button 
+                onClick={() => setIsDetailsOpen(!isDetailsOpen)}
+                className="flex items-center justify-between bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 px-4 py-2.5 transition-colors w-full text-left"
+              >
+                <div className="flex items-center gap-2 text-xs font-bold text-foreground uppercase">
+                  {isDetailsOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+                  Детали операции ({dynamicProps.length})
+                </div>
+              </button>
+              
+              {isDetailsOpen && (
+                <div className="flex flex-col text-sm font-mono bg-background/30">
+                  {dynamicProps.map(([key, value]) => (
+                    <div 
+                      key={key} 
+                      onClick={() => handleCopy(key, value)}
+                      className="flex items-start gap-4 px-4 py-2.5 border-t border-glass-border/30 cursor-pointer even:bg-black/[0.02] dark:even:bg-white/[0.02] group"
+                      title="Нажмите, чтобы скопировать значение"
+                    >
+                      <span className="text-muted-foreground whitespace-nowrap min-w-[150px] mt-0.5">{key}:</span>
+                      <span className="text-foreground break-all flex-1">{String(value)}</span>
+                      <div className="opacity-0 group-hover:opacity-100 text-muted-foreground shrink-0 mt-0.5">
+                        {copiedKey === key ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
+                      </div>
                     </div>
-                  </div>
-                )}
-
-                {(sharedHits > 0 || sharedReads > 0) && (
-                  <div className="flex items-start gap-2">
-                    <span className="text-muted-foreground w-28 shrink-0 mt-0.5">Буферы:</span>
-                    <div className="flex flex-col gap-0.5">
-                      {sharedHits > 0 && <span className="text-emerald-500">Hits: {sharedHits} <span className="text-muted-foreground text-xs">(прочитано из кэша)</span></span>}
-                      {sharedReads > 0 && <span className="text-destructive font-bold">Reads: {sharedReads} <span className="text-muted-foreground font-normal text-xs">(прочитано с диска ⚠)</span></span>}
-                    </div>
-                  </div>
-                )}
-
-                {peakMemory && (
-                  <div className="flex items-start gap-2">
-                    <span className="text-muted-foreground w-28 shrink-0 mt-0.5">Память:</span>
-                    <span className="text-amber-500">{peakMemory} kB <span className="text-muted-foreground text-xs">(Peak Memory)</span></span>
-                  </div>
-                )}
-
-                {accuracyWarning && (
-                  <div className="flex items-start gap-2 mt-1 pt-3 border-t border-glass-border/50">
-                    <span className="text-muted-foreground w-28 shrink-0 mt-0.5">Прогноз:</span>
-                    <span className="text-destructive font-bold flex items-start gap-1">
-                      <AlertTriangle size={14} className="mt-0.5 shrink-0" />
-                      <span>{accuracyWarning}</span>
-                    </span>
-                  </div>
-                )}
-
-              </div>
+                  ))}
+                </div>
+              )}
             </div>
-          );
-        })()}
+          )}
 
-        {/* Дополнительные параметры (Сворачиваемый блок) */}
-        {dynamicProps.length > 0 && (
-          <div className="mb-4 border border-glass-border rounded-lg overflow-hidden">
-            <button 
-              onClick={() => setIsDetailsOpen(!isDetailsOpen)}
-              className="flex items-center justify-between bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 px-4 py-2.5 transition-colors w-full text-left"
-            >
-              <div className="flex items-center gap-2 text-xs font-bold text-foreground uppercase">
-                {isDetailsOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
-                Детали операции ({dynamicProps.length})
-              </div>
-            </button>
-            
-            {isDetailsOpen && (
-              <div className="flex flex-col text-sm font-mono bg-background/30">
-                {dynamicProps.map(([key, value]) => (
-                  <div 
-                    key={key} 
-                    onClick={() => handleCopy(key, value)}
-                    className="flex items-start gap-4 px-4 py-2.5 border-t border-glass-border/30 cursor-pointer even:bg-black/[0.02] dark:even:bg-white/[0.02] group"
-                    title="Нажмите, чтобы скопировать значение"
-                  >
-                    <span className="text-muted-foreground whitespace-nowrap min-w-[150px] mt-0.5">{key}:</span>
-                    <span className="text-foreground break-all flex-1">{String(value)}</span>
-                    <div className="opacity-0 group-hover:opacity-100 text-muted-foreground shrink-0 mt-0.5">
-                      {copiedKey === key ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Документация/описание типа узла */}
-        <div className="mb-4 bg-primary/5 border border-primary/20 rounded-lg p-3 text-sm text-foreground/90 leading-relaxed flex items-start gap-2">
-          <Info size={16} className="text-primary shrink-0 mt-0.5" />
-          <span>
-            {((pgExplainDocs as any)[nodeType] && (pgExplainDocs as any)[nodeType].ru) || 'Выполняет специализированную операцию над данными.'}
-          </span>
         </div>
-
-        <div className="mt-6 border-t border-glass-border pt-4">
-          <h4 className="text-xs font-bold text-muted-foreground uppercase mb-2">
-            PREVIEW — первые 5 строк которые проходят через этот узел:
-          </h4>
-          <div className="text-sm font-mono opacity-50 bg-background/50 p-4 rounded border border-glass-border/30 text-center italic">
-            Табличное превью данных находится в разработке...
-          </div>
-        </div>
-
       </div>
     </div>
-  );
+
 };
 
 type SortKey = 'step' | 'cost';
