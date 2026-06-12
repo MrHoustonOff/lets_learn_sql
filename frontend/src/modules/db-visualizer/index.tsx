@@ -222,7 +222,7 @@ export const DBVisualizer: React.FC<DBVisualizerProps> = ({ schema, isMaximized 
             <button 
               onClick={onToggleMaximize}
               title={isMaximized ? t('sql_results:minimize') : t('sql_results:maximize')}
-              className="p-2.5 rounded-xl hover:bg-hover transition-colors bg-glass backdrop-blur-md border border-glass-border shadow-sm"
+              className="p-2.5 rounded-xl hover:bg-hover transition-colors bg-glass backdrop-blur-md border border-glass-border shadow-sm outline-none focus:outline-none"
             >
               {isMaximized ? <Minimize2 size={20} /> : <Maximize2 size={20} />}
             </button>

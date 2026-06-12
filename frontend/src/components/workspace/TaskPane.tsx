@@ -72,7 +72,7 @@ export const TaskPane: React.FC<TaskPaneProps> = ({ slotId }) => {
 
         <button 
           onClick={() => setMaximizedPane(isMaximized ? null : 'task')}
-          className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-hover rounded-md transition-colors"
+          className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-hover rounded-md transition-colors outline-none focus:outline-none"
           title={isMaximized ? t('task_pane:collapse') : t('task_pane:expand')}
         >
           {isMaximized ? <Minimize2 size={14} /> : <Maximize2 size={14} />}

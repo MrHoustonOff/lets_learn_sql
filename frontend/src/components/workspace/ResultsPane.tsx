@@ -74,7 +74,7 @@ export const ResultsPane: React.FC<ResultsPaneProps> = ({
           <div className="w-px h-4 bg-glass-border mx-1" />
           <button 
             onClick={handleToggleMaximize}
-            className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-hover rounded-md transition-colors"
+            className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-hover rounded-md transition-colors outline-none focus:outline-none"
             title={isMaximized ? t('sql_results:minimize') : t('sql_results:maximize')}
           >
             {isMaximized ? <Minimize2 size={14} /> : <Maximize2 size={14} />}

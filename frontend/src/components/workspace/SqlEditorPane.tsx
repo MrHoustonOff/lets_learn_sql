@@ -51,7 +51,7 @@ export const SqlEditorPane: React.FC<SqlEditorPaneProps> = ({
           <div className="w-px h-4 bg-glass-border mx-1" />
           <button 
             onClick={handleToggleMaximize}
-            className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-hover rounded-md transition-colors"
+            className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-hover rounded-md transition-colors outline-none focus:outline-none"
             title={isMaximized ? t('sql_editor:collapse') : t('sql_editor:expand')}
           >
             {isMaximized ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
