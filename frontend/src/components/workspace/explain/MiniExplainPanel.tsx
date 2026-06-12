@@ -691,14 +691,15 @@ const NodeDetailsOverlay: React.FC<NodeDetailsProps> = ({ nodeId, onClose, rootT
   );
 };
 
-type SortKey = 'step' | 'cost';
+type SortKey = 'step' | 'metric';
 type SortDirection = 'asc' | 'desc';
 
 export const MiniExplainPanel: React.FC = () => {
   const { slot1, isLoading } = useExplainStore();
   
-  const [sortKey, setSortKey] = useState<SortKey>('cost');
+  const [sortKey, setSortKey] = useState<SortKey>('metric');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
+  const [activeMetric, setActiveMetric] = useState<'cost' | 'time'>('cost');
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [isCostBreakdownOpen, setIsCostBreakdownOpen] = useState(true);
   const [isPlanTreeOpen, setIsPlanTreeOpen] = useState(true);
@@ -855,12 +856,14 @@ export const MiniExplainPanel: React.FC = () => {
           ? a.step_number - b.step_number 
           : b.step_number - a.step_number;
       } else {
+        const valA = activeMetric === 'time' ? (a.actual_time || 0) : a.cost;
+        const valB = activeMetric === 'time' ? (b.actual_time || 0) : b.cost;
         return sortDirection === 'asc' 
-          ? a.cost - b.cost 
-          : b.cost - a.cost;
+          ? valA - valB 
+          : valB - valA;
       }
     });
-  }, [slot1, sortKey, sortDirection]);
+  }, [slot1, sortKey, sortDirection, activeMetric]);
 
   if (isLoading) {
     return (
@@ -903,21 +906,41 @@ export const MiniExplainPanel: React.FC = () => {
       )}
       <div className="flex-1 overflow-auto p-4 space-y-6">
         
-        {/* Cost Breakdown Section */}
+        {/* Performance Breakdown Section */}
         <section>
-          <div 
-            className="flex items-center gap-2 mb-3 cursor-pointer select-none group"
-            onClick={() => setIsCostBreakdownOpen(!isCostBreakdownOpen)}
-          >
-            <div className="flex items-center gap-1">
-              {isCostBreakdownOpen ? <ChevronDown size={16} className="text-muted-foreground group-hover:text-foreground transition-colors" /> : <ChevronRight size={16} className="text-muted-foreground group-hover:text-foreground transition-colors" />}
-              <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider group-hover:text-foreground transition-colors">
-                Cost Breakdown
-              </h3>
+          <div className="flex items-center justify-between mb-3">
+            <div 
+              className="flex items-center gap-2 cursor-pointer select-none group flex-1"
+              onClick={() => setIsCostBreakdownOpen(!isCostBreakdownOpen)}
+            >
+              <div className="flex items-center gap-1">
+                {isCostBreakdownOpen ? <ChevronDown size={16} className="text-muted-foreground group-hover:text-foreground transition-colors" /> : <ChevronRight size={16} className="text-muted-foreground group-hover:text-foreground transition-colors" />}
+                <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider group-hover:text-foreground transition-colors">
+                  Performance Breakdown
+                </h3>
+              </div>
+              <div onClick={(e) => e.stopPropagation()}>
+                <InfoTooltip text="Относительное распределение ресурсов на узлах дерева" />
+              </div>
             </div>
-            <div onClick={(e) => e.stopPropagation()}>
-              <InfoTooltip text={explainFieldsDocs.fields.cost_breakdown.ru} />
-            </div>
+
+            {/* Toggle COST/TIME */}
+            {slot1?.plan_parsed?.tree['Actual Total Time'] !== undefined && (
+              <div className="flex gap-1 bg-black/10 dark:bg-white/5 border border-glass-border p-0.5 rounded-md text-[10px] font-bold">
+                <button 
+                  onClick={() => { setActiveMetric('cost'); setSortKey('metric'); }}
+                  className={`px-3 py-1 uppercase rounded transition-colors ${activeMetric === 'cost' ? 'bg-primary/20 text-primary' : 'text-muted-foreground hover:text-foreground'}`}
+                >
+                  COST
+                </button>
+                <button 
+                  onClick={() => { setActiveMetric('time'); setSortKey('metric'); }}
+                  className={`px-3 py-1 uppercase rounded transition-colors ${activeMetric === 'time' ? 'bg-primary/20 text-primary' : 'text-muted-foreground hover:text-foreground'}`}
+                >
+                  TIME
+                </button>
+              </div>
+            )}
           </div>
           
           {isCostBreakdownOpen && (
@@ -929,22 +952,27 @@ export const MiniExplainPanel: React.FC = () => {
                     Операция
                   </th>
                   <th className="px-3 py-2 text-left text-xs font-medium text-muted-foreground w-1/2">
-                    Влияние на стоимость
+                    Влияние
                   </th>
                   <th 
                     className="px-3 py-2 text-right text-xs font-medium text-muted-foreground hover:text-foreground cursor-pointer transition-colors w-28"
-                    onClick={() => handleSort('cost')}
+                    onClick={() => handleSort('metric')}
                   >
                     <div className="flex items-center justify-end gap-1">
-                      {renderSortIcon('cost')}
-                      Cost
+                      {renderSortIcon('metric')}
+                      {activeMetric === 'time' ? 'Time' : 'Cost'}
                     </div>
                   </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-glass-border">
                 {sortedNodes.map((node, idx) => {
-                  const colorClass = getCostColor(node.cost_pct);
+                  const rootTime = slot1?.plan_parsed?.tree['Actual Total Time'];
+                  const pct = activeMetric === 'time' && rootTime
+                    ? ((node.actual_time || 0) / rootTime) * 100
+                    : node.cost_pct;
+                  
+                  const colorClass = getCostColor(pct);
                   
                   // Разделяем тип узла и объект (если есть стрелочка)
                   const [nodeType, objectName] = node.operation.split(' → ');
@@ -962,11 +990,11 @@ export const MiniExplainPanel: React.FC = () => {
                       </td>
                       <td className="px-3 py-2">
                         <div className="h-2 w-full bg-black/10 dark:bg-white/10 rounded-full overflow-hidden flex items-center">
-                          <div className={`h-full ${colorClass}`} style={{ width: `${Math.max(node.cost_pct, 1)}%` }} />
+                          <div className={`h-full ${colorClass}`} style={{ width: `${Math.max(pct, 1)}%` }} />
                         </div>
                       </td>
-                      <td className="px-3 py-2 text-right font-mono flex items-center justify-end gap-2">
-                        {node.cost.toFixed(2)}
+                      <td className="px-3 py-2 text-right font-mono flex items-center justify-end gap-2 text-xs">
+                        {activeMetric === 'time' ? `${(node.actual_time || 0).toFixed(2)} ms` : node.cost.toFixed(2)}
                         <div className={`w-2 h-2 rounded-full ${colorClass}`} />
                       </td>
                     </tr>
@@ -1001,6 +1029,10 @@ export const MiniExplainPanel: React.FC = () => {
               {/* Query Pipeline */}
               {(pipelineData.steps.length > 0 || pipelineData.branches.length > 0) && (
                 <div className="mb-3">
+                  <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground/50 uppercase tracking-wider mb-2 select-none">
+                    <Info size={12} className="shrink-0" />
+                    <span>Упрощенная структура (эти данные могут быть немного неточные в отличии от дерева снизу)</span>
+                  </div>
                   {pipelineData.mode === 'simple' ? (
                     <div className="flex flex-wrap items-center gap-1 px-1">
                       {pipelineData.steps.map((step, i) => {
