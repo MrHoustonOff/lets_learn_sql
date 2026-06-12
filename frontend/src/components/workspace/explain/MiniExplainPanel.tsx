@@ -1,6 +1,18 @@
 import React, { useState, useMemo } from 'react';
-import { Info, AlertTriangle, Loader2, CheckCircle2, ArrowDown, ArrowUp, ArrowUpDown } from 'lucide-react';
+import { Info, AlertTriangle, Loader2, CheckCircle2, ArrowDown, ArrowUp, ArrowUpDown, X } from 'lucide-react';
 import { useExplainStore, type FlatNode } from '../../../store/explainStore';
+
+// Хелпер для поиска узла в дереве
+const findNodeById = (node: any, id: string): any => {
+  if (node.node_id === id) return node;
+  if (node.Plans) {
+    for (const child of node.Plans) {
+      const found = findNodeById(child, id);
+      if (found) return found;
+    }
+  }
+  return null;
+};
 
 // Хелпер для цвета в зависимости от стоимости
 const getCostColor = (pct: number) => {
@@ -14,9 +26,10 @@ interface PlanTreeNodeProps {
   flatNodesMap: Map<string, FlatNode>;
   isLast: boolean;
   isRoot?: boolean;
+  onSelectNode: (nodeId: string) => void;
 }
 
-const PlanTreeNode: React.FC<PlanTreeNodeProps> = ({ node, flatNodesMap, isLast, isRoot = false }) => {
+const PlanTreeNode: React.FC<PlanTreeNodeProps> = ({ node, flatNodesMap, isLast, isRoot = false, onSelectNode }) => {
   const flatData = flatNodesMap.get(node.node_id);
   const colorClass = flatData ? getCostColor(flatData.cost_pct) : 'bg-muted';
   
@@ -29,7 +42,7 @@ const PlanTreeNode: React.FC<PlanTreeNodeProps> = ({ node, flatNodesMap, isLast,
   const children = node["Plans"] || [];
 
   return (
-    <div className={`relative group cursor-default transition-colors ${!isRoot ? 'pl-6' : ''}`}>
+    <div className={`relative group transition-colors ${!isRoot ? 'pl-6' : ''}`}>
       {/* Линии отступов для не-корневых узлов */}
       {!isRoot && (
         <>
@@ -40,7 +53,13 @@ const PlanTreeNode: React.FC<PlanTreeNodeProps> = ({ node, flatNodesMap, isLast,
         </>
       )}
 
-      <div className="flex flex-col hover:bg-hover p-1 -mx-1 rounded relative z-10">
+      <div 
+        className="flex flex-col hover:bg-hover p-1 -mx-1 rounded relative z-10 cursor-pointer"
+        onClick={(e) => {
+          e.stopPropagation();
+          onSelectNode(node.node_id);
+        }}
+      >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className={`w-2 h-2 rounded-full ${colorClass} shrink-0`} />
@@ -79,10 +98,89 @@ const PlanTreeNode: React.FC<PlanTreeNodeProps> = ({ node, flatNodesMap, isLast,
               node={child} 
               flatNodesMap={flatNodesMap} 
               isLast={idx === children.length - 1} 
+              onSelectNode={onSelectNode}
             />
           ))}
         </div>
       )}
+    </div>
+  );
+};
+
+interface NodeDetailsProps {
+  nodeId: string;
+  onClose: () => void;
+  rootTree: any;
+  flatNodesMap: Map<string, FlatNode>;
+}
+
+const NodeDetailsOverlay: React.FC<NodeDetailsProps> = ({ nodeId, onClose, rootTree, flatNodesMap }) => {
+  const node = findNodeById(rootTree, nodeId);
+  if (!node) return null;
+
+  const flatData = flatNodesMap.get(node.node_id);
+  const colorClass = flatData ? getCostColor(flatData.cost_pct) : 'bg-muted';
+  
+  const nodeType = node["Node Type"];
+  const relation = node["Relation Name"];
+  const index = node["Index Name"];
+  const objectName = index || relation;
+  const filter = node["Filter"] || node["Index Cond"] || node["Hash Cond"];
+  const width = node["Plan Width"];
+
+  return (
+    <div className="absolute inset-0 bg-background/95 backdrop-blur-sm z-50 p-4 overflow-auto animate-in fade-in zoom-in-95 duration-200">
+      <div className="border border-glass-border bg-black/5 dark:bg-white/5 rounded-lg p-4 shadow-xl">
+        <div className="flex items-start justify-between mb-4 border-b border-glass-border pb-3">
+          <div className="flex items-center gap-2 text-lg">
+            <div className={`w-3 h-3 rounded-full ${colorClass}`} />
+            <span className="font-bold text-foreground">{nodeType}</span>
+            {objectName && (
+              <>
+                <span className="text-muted-foreground">—</span>
+                <span className="text-primary">{objectName}</span>
+              </>
+            )}
+          </div>
+          <button 
+            onClick={onClose}
+            className="p-1 hover:bg-hover rounded-md text-muted-foreground transition-colors"
+          >
+            <X size={18} />
+          </button>
+        </div>
+
+        <div className="grid grid-cols-3 gap-4 mb-4 font-mono text-sm">
+          <div className="flex flex-col">
+            <span className="text-muted-foreground text-xs uppercase">cost</span>
+            <span>{node["Total Cost"]?.toFixed(2)}</span>
+          </div>
+          <div className="flex flex-col">
+            <span className="text-muted-foreground text-xs uppercase">rows~</span>
+            <span>{node["Plan Rows"]}</span>
+          </div>
+          <div className="flex flex-col">
+            <span className="text-muted-foreground text-xs uppercase">width</span>
+            <span>{width ? `${width} bytes` : '—'}</span>
+          </div>
+        </div>
+
+        {filter && (
+          <div className="mb-4 bg-background/50 p-2 rounded border border-glass-border/50 text-sm font-mono">
+            <span className="text-muted-foreground">Filter/Cond:</span> {filter}
+          </div>
+        )}
+
+        <div className="mt-6 border-t border-glass-border pt-4">
+          <h4 className="text-xs font-bold text-muted-foreground uppercase mb-2">
+            PREVIEW — первые 5 строк которые проходят через этот узел:
+          </h4>
+          <div className="text-sm font-mono opacity-50 bg-background/50 p-4 rounded border border-glass-border/30 text-center italic">
+            Табличное превью данных находится в разработке...
+          </div>
+        </div>
+
+      </div>
     </div>
   );
 };
@@ -95,6 +193,7 @@ export const MiniExplainPanel: React.FC = () => {
   
   const [sortKey, setSortKey] = useState<SortKey>('step');
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
+  const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
 
   const handleSort = (key: SortKey) => {
     if (sortKey === key) {
@@ -146,8 +245,18 @@ export const MiniExplainPanel: React.FC = () => {
     return sortDirection === 'asc' ? <ArrowUp size={12} className="text-primary" /> : <ArrowDown size={12} className="text-primary" />;
   };
 
+  const flatNodesMap = new Map(sortedNodes.map(n => [n.node_id, n]));
+
   return (
-    <div className="flex flex-col h-full w-full bg-background overflow-hidden">
+    <div className="flex flex-col h-full w-full bg-background overflow-hidden relative">
+      {selectedNodeId && (
+        <NodeDetailsOverlay 
+          nodeId={selectedNodeId} 
+          onClose={() => setSelectedNodeId(null)} 
+          rootTree={slot1.plan_parsed.tree} 
+          flatNodesMap={flatNodesMap} 
+        />
+      )}
       <div className="flex-1 overflow-auto p-4 space-y-6">
         
         {/* Cost Breakdown Section */}
@@ -231,9 +340,10 @@ export const MiniExplainPanel: React.FC = () => {
           <div className="font-mono text-sm bg-black/5 dark:bg-white/5 border border-glass-border rounded-lg p-4 space-y-1">
             <PlanTreeNode 
               node={slot1.plan_parsed.tree} 
-              flatNodesMap={new Map(sortedNodes.map(n => [n.node_id, n]))} 
+              flatNodesMap={flatNodesMap} 
               isLast={true} 
               isRoot={true}
+              onSelectNode={setSelectedNodeId}
             />
           </div>
         </section>
