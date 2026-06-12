@@ -246,7 +246,7 @@ export const DBVisualizer: React.FC<DBVisualizerProps> = ({ schema, isMaximized 
         </div>
       </header>
 
-      <div className={`flex-1 relative z-layout ${draggedNode ? 'is-global-dragging' : ''}`}>
+      <div className={`flex-1 relative z-base ${draggedNode ? 'is-global-dragging' : ''}`}>
         <ReactFlow
           nodes={modifiedNodes}
           edges={modifiedEdges}
