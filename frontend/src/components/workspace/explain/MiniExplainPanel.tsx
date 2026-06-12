@@ -83,17 +83,58 @@ const getCostColor = (pct: number) => {
   return 'bg-emerald-500';
 };
 
+const BRANCH_COLORS = [
+  'bg-blue-500/50',
+  'bg-emerald-500/50',
+  'bg-purple-500/50',
+  'bg-amber-500/50',
+  'bg-pink-500/50',
+  'bg-cyan-500/50',
+  'bg-rose-500/50',
+];
+
+const getDescendantsMetrics = (node: any): { count: number, maxCost: number } => {
+  let count = 0;
+  let maxCost = node["Total Cost"] || 0;
+  if (node.Plans) {
+    for (const child of node.Plans) {
+      count += 1;
+      const childMetrics = getDescendantsMetrics(child);
+      count += childMetrics.count;
+      maxCost = Math.max(maxCost, childMetrics.maxCost);
+    }
+  }
+  return { count, maxCost };
+};
+
 interface PlanTreeNodeProps {
   node: any;
   flatNodesMap: Map<string, FlatNode>;
   isLast: boolean;
   isRoot?: boolean;
   onSelectNode: (nodeId: string) => void;
+  hoveredBranchId: string | null;
+  setHoveredBranchId: (id: string | null) => void;
+  clickedBranchId: string | null;
+  setClickedBranchId: (id: string | null) => void;
+  branchColor?: string;
 }
 
-const PlanTreeNode: React.FC<PlanTreeNodeProps> = ({ node, flatNodesMap, isLast, isRoot = false, onSelectNode }) => {
-  const flatData = flatNodesMap.get(node.node_id);
-  const colorClass = flatData ? getCostColor(flatData.cost_pct) : 'bg-muted';
+const PlanTreeNode: React.FC<PlanTreeNodeProps> = ({ 
+  node, flatNodesMap, isLast, isRoot = false, onSelectNode,
+  hoveredBranchId, setHoveredBranchId,
+  clickedBranchId, setClickedBranchId,
+  branchColor = 'bg-glass-border'
+}) => {
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  const nodeId = node.node_id;
+
+  const activeBranchId = clickedBranchId || hoveredBranchId;
+  const isHighlighted = activeBranchId ? nodeId.startsWith(activeBranchId) : false;
+  const isDimmed = activeBranchId ? !isHighlighted : false;
+
+  const flatData = flatNodesMap.get(nodeId);
+  const costColorClass = flatData ? getCostColor(flatData.cost_pct) : 'bg-muted';
   
   const nodeType = node["Node Type"];
   const relation = node["Relation Name"];
@@ -104,27 +145,43 @@ const PlanTreeNode: React.FC<PlanTreeNodeProps> = ({ node, flatNodesMap, isLast,
   const children = node["Plans"] || [];
 
   return (
-    <div className={`relative group transition-colors ${!isRoot ? 'pl-6' : ''}`}>
+    <div 
+      className={`relative group transition-colors duration-200 ${!isRoot ? 'pl-6' : ''} ${isHighlighted ? 'bg-primary/5 rounded-md' : ''} ${isDimmed ? 'opacity-40 grayscale-[50%]' : ''}`}
+      onMouseEnter={(e) => { e.stopPropagation(); setHoveredBranchId(nodeId); }}
+      onMouseLeave={(e) => { e.stopPropagation(); setHoveredBranchId(null); }}
+    >
       {/* Линии отступов для не-корневых узлов */}
       {!isRoot && (
         <>
           {/* Вертикальная линия от родителя (проходит насквозь, если не последний) */}
-          <div className={`absolute left-[11px] top-0 ${isLast ? 'bottom-1/2' : 'bottom-[-4px]'} w-px bg-glass-border`} />
+          <div className={`absolute left-[11px] top-0 ${isLast ? 'bottom-1/2' : 'bottom-[-4px]'} w-[2px] ${branchColor}`} />
           {/* Горизонтальная линия к этому узлу */}
-          <div className="absolute left-[11px] top-[14px] w-3 h-px bg-glass-border" />
+          <div className={`absolute left-[11px] top-[14px] w-3 h-[2px] ${branchColor}`} />
         </>
       )}
 
       <div 
-        className="flex flex-col hover:bg-hover p-1 -mx-1 rounded relative z-10 cursor-pointer"
+        className={`flex flex-col hover:bg-hover p-1 -mx-1 rounded relative z-10 cursor-pointer transition-colors ${clickedBranchId === nodeId ? 'ring-1 ring-primary/30 bg-primary/10' : ''}`}
         onClick={(e) => {
           e.stopPropagation();
-          onSelectNode(node.node_id);
+          setClickedBranchId(nodeId === clickedBranchId ? null : nodeId);
+          onSelectNode(nodeId);
         }}
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className={`w-2 h-2 rounded-full ${colorClass} shrink-0`} />
+            {children.length > 0 && (
+              <button 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsCollapsed(!isCollapsed);
+                }}
+                className="p-0.5 hover:bg-foreground/10 rounded transition-colors text-muted-foreground hover:text-foreground shrink-0"
+              >
+                {isCollapsed ? <ChevronRight size={14} /> : <ChevronDown size={14} />}
+              </button>
+            )}
+            <div className={`w-2 h-2 rounded-full ${costColorClass} shrink-0 ${children.length === 0 ? 'ml-5' : ''}`} />
             <span className="font-semibold text-foreground">{nodeType}</span>
             {objectName && (
               <>
@@ -132,39 +189,58 @@ const PlanTreeNode: React.FC<PlanTreeNodeProps> = ({ node, flatNodesMap, isLast,
                 <span className="text-primary">{objectName}</span>
               </>
             )}
-            {flatData && (
-              <span className="flex items-center justify-center w-4 h-4 rounded bg-background border border-glass-border text-[10px] text-muted-foreground font-mono ml-1">
-                {flatData.step_number}
-              </span>
-            )}
           </div>
-          <div className="flex gap-4 text-xs text-muted-foreground ml-4">
+          <div className="flex gap-4 text-xs text-muted-foreground ml-4 shrink-0">
             <span>cost: {node["Total Cost"]?.toFixed(2)}</span>
             <span>rows~: {node["Plan Rows"]}</span>
           </div>
         </div>
         
-        {filter && (
-          <div className="text-xs text-muted-foreground pl-4 mt-0.5 opacity-70 truncate max-w-lg">
+        {!isCollapsed && filter && (
+          <div className="text-xs text-muted-foreground pl-6 ml-5 mt-0.5 opacity-70 truncate max-w-lg">
             Filter/Cond: {filter}
           </div>
         )}
       </div>
 
       {/* Рендер детей */}
-      {children.length > 0 && (
-        <div className="relative">
-          {children.map((child: any, idx: number) => (
-            <PlanTreeNode 
-              key={idx} 
-              node={child} 
-              flatNodesMap={flatNodesMap} 
-              isLast={idx === children.length - 1} 
-              onSelectNode={onSelectNode}
-            />
-          ))}
-        </div>
-      )}
+      <div 
+        className={`relative overflow-hidden transition-all duration-300 ease-in-out`}
+        style={{ maxHeight: isCollapsed ? '0px' : '5000px', opacity: isCollapsed ? 0 : 1 }}
+      >
+        {children.length > 0 && (
+          <div className="relative mt-1">
+            {children.map((child: any, idx: number) => {
+              const childColor = isRoot ? BRANCH_COLORS[idx % BRANCH_COLORS.length] : branchColor;
+              return (
+                <div key={idx}>
+                  {idx > 0 && <div className="ml-6 border-t border-glass-border/20 my-1" />}
+                  <PlanTreeNode 
+                    node={child} 
+                    flatNodesMap={flatNodesMap} 
+                    isLast={idx === children.length - 1} 
+                    onSelectNode={onSelectNode}
+                    hoveredBranchId={hoveredBranchId}
+                    setHoveredBranchId={setHoveredBranchId}
+                    clickedBranchId={clickedBranchId}
+                    setClickedBranchId={setClickedBranchId}
+                    branchColor={childColor}
+                  />
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {isCollapsed && children.length > 0 && (() => {
+        const metrics = getDescendantsMetrics(node);
+        return (
+          <div className="text-xs text-muted-foreground/60 italic pl-6 ml-5 mt-1 pb-2">
+            [свёрнуто: {metrics.count} узлов, макс. стоимость: {metrics.maxCost.toFixed(2)}]
+          </div>
+        );
+      })()}
     </div>
   );
 };
@@ -521,6 +597,9 @@ export const MiniExplainPanel: React.FC = () => {
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [isCostBreakdownOpen, setIsCostBreakdownOpen] = useState(true);
   const [isPlanTreeOpen, setIsPlanTreeOpen] = useState(true);
+  
+  const [hoveredBranchId, setHoveredBranchId] = useState<string | null>(null);
+  const [clickedBranchId, setClickedBranchId] = useState<string | null>(null);
 
   const handleSort = (key: SortKey) => {
     if (sortKey === key) {
@@ -682,14 +761,48 @@ export const MiniExplainPanel: React.FC = () => {
           
           {isPlanTreeOpen && (
             <div className="font-mono text-sm bg-black/5 dark:bg-white/5 border border-glass-border rounded-lg p-4 space-y-1">
-            <PlanTreeNode 
-              node={slot1.plan_parsed.tree} 
-              flatNodesMap={flatNodesMap} 
-              isLast={true} 
-              isRoot={true}
-              onSelectNode={setSelectedNodeId}
-            />
-          </div>
+              
+              {/* Breadcrumbs */}
+              {clickedBranchId && (
+                <div className="flex flex-wrap items-center gap-1 mb-3 px-1 text-xs text-muted-foreground font-sans bg-background/50 p-2 rounded border border-glass-border">
+                  {clickedBranchId.split('_').reduce((acc: string[], part: string, idx: number) => {
+                    if (idx === 0) return [part];
+                    acc.push(acc[idx - 1] + '_' + part);
+                    return acc;
+                  }, []).map((pathId: string, idx: number, arr: string[]) => {
+                    const bNode = findNodeById(slot1.plan_parsed.tree, pathId);
+                    if (!bNode) return null;
+                    const isLast = idx === arr.length - 1;
+                    return (
+                      <React.Fragment key={pathId}>
+                        <span 
+                          className={`cursor-pointer hover:text-foreground transition-colors px-1 rounded hover:bg-hover ${isLast ? 'text-primary font-bold bg-primary/10' : ''}`}
+                          onClick={() => {
+                            setClickedBranchId(pathId);
+                            setSelectedNodeId(pathId);
+                          }}
+                        >
+                          {bNode["Node Type"]}
+                        </span>
+                        {!isLast && <span className="opacity-50">→</span>}
+                      </React.Fragment>
+                    );
+                  })}
+                </div>
+              )}
+
+              <PlanTreeNode 
+                node={slot1.plan_parsed.tree} 
+                flatNodesMap={flatNodesMap} 
+                isLast={true} 
+                isRoot={true}
+                onSelectNode={setSelectedNodeId}
+                hoveredBranchId={hoveredBranchId}
+                setHoveredBranchId={setHoveredBranchId}
+                clickedBranchId={clickedBranchId}
+                setClickedBranchId={setClickedBranchId}
+              />
+            </div>
           )}
         </section>
 
