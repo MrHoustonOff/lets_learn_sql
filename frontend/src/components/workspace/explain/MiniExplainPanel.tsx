@@ -269,36 +269,49 @@ const NodeDetailsOverlay: React.FC<NodeDetailsProps> = ({ nodeId, onClose, rootT
               }
 
               if (!hasInputRows) return null;
+              
+              const outputTotal = Math.round(node['Actual Rows'] !== undefined ? node['Actual Rows'] * (node['Actual Loops'] || 1) : node['Plan Rows']);
+              const filteredRows = Math.max(0, inputRows - outputTotal);
+              const selectivityPct = inputRows > 0 ? ((filteredRows / inputRows) * 100).toFixed(1) : '0.0';
+
               return (
-                <div className="flex items-start gap-2">
-                  <span className="text-muted-foreground w-20 shrink-0 mt-0.5">Вошло:</span>
-                  <span className="text-foreground">~{Math.round(inputRows)} строк</span>
-                </div>
+                <>
+                  <div className="flex items-start gap-2">
+                    <span className="text-muted-foreground w-20 shrink-0 mt-0.5">Вошло:</span>
+                    <span className="text-foreground">~{Math.round(inputRows)} строк</span>
+                  </div>
+                  
+                  {/* Условие */}
+                  {(() => {
+                    const condition = node['Filter'] || node['Index Cond'] || node['Hash Cond'] || node['Join Filter'] || node['Merge Cond'];
+                    if (!condition) return null;
+                    return (
+                      <div className="flex items-start gap-2 relative">
+                        <span className="text-muted-foreground w-20 shrink-0 mt-0.5">Условие:</span>
+                        <div className="flex flex-col gap-1">
+                          <span className="text-amber-500 break-all bg-amber-500/10 px-2 py-0.5 rounded">{condition}</span>
+                          {filteredRows > 0 && (
+                            <span className="text-muted-foreground text-xs">
+                              Отсев: <span className="font-bold text-foreground">{selectivityPct}%</span> ({filteredRows} строк удалено)
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })()}
+
+                  <div className="flex items-start gap-2">
+                    <span className="text-muted-foreground w-20 shrink-0 mt-0.5">Вышло:</span>
+                    <div className="flex items-center flex-wrap gap-2">
+                      <span className="text-emerald-500 font-bold bg-emerald-500/10 px-2 py-0.5 rounded">
+                        {outputTotal} строк
+                      </span>
+                      <span className="text-muted-foreground text-xs">→ идут дальше</span>
+                    </div>
+                  </div>
+                </>
               );
             })()}
-
-            {/* Условие */}
-            {(() => {
-              const condition = node['Filter'] || node['Index Cond'] || node['Hash Cond'] || node['Join Filter'] || node['Merge Cond'];
-              if (!condition) return null;
-              return (
-                <div className="flex items-start gap-2 relative">
-                  <span className="text-muted-foreground w-20 shrink-0 mt-0.5">Условие:</span>
-                  <span className="text-amber-500 break-all bg-amber-500/10 px-2 py-0.5 rounded">{condition}</span>
-                </div>
-              );
-            })()}
-
-            {/* Вышло */}
-            <div className="flex items-start gap-2">
-              <span className="text-muted-foreground w-20 shrink-0 mt-0.5">Вышло:</span>
-              <div className="flex items-center flex-wrap gap-2">
-                <span className="text-emerald-500 font-bold bg-emerald-500/10 px-2 py-0.5 rounded">
-                  {Math.round(node['Actual Rows'] !== undefined ? node['Actual Rows'] * (node['Actual Loops'] || 1) : node['Plan Rows'])} строк
-                </span>
-                <span className="text-muted-foreground text-xs">→ идут дальше</span>
-              </div>
-            </div>
 
             {/* Колонки */}
             {node['Output'] && Array.isArray(node['Output']) && (
@@ -315,6 +328,79 @@ const NodeDetailsOverlay: React.FC<NodeDetailsProps> = ({ nodeId, onClose, rootT
             )}
           </div>
         </div>
+
+        {/* --- INSIGHTS BLOCK --- */}
+        {(() => {
+          const actualTotalTime = node['Actual Total Time'];
+          const rootTime = rootTree['Actual Total Time'];
+          const outputTotal = Math.round(node['Actual Rows'] !== undefined ? node['Actual Rows'] * (node['Actual Loops'] || 1) : node['Plan Rows']);
+          const timePerRow = (actualTotalTime !== undefined && outputTotal > 0) ? (actualTotalTime / outputTotal).toFixed(4) : null;
+          const timePct = (actualTotalTime !== undefined && rootTime !== undefined && rootTime > 0) ? ((actualTotalTime / rootTime) * 100).toFixed(1) : null;
+          
+          const sharedHits = node['Shared Hit Blocks'] || 0;
+          const sharedReads = node['Shared Read Blocks'] || 0;
+          const peakMemory = node['Peak Memory Usage']; // В килобайтах
+
+          const planRows = node['Plan Rows'];
+          const actualRows = node['Actual Rows'] !== undefined ? node['Actual Rows'] * (node['Actual Loops'] || 1) : null;
+          let accuracyWarning = null;
+          if (actualRows !== null && planRows !== undefined && planRows > 0) {
+            const ratio = actualRows > planRows ? actualRows / planRows : planRows / actualRows;
+            if (ratio >= 10) {
+              accuracyWarning = `Планировщик ошибся в ~${Math.round(ratio)} раз (Ожидалось ${planRows}, по факту ${Math.round(actualRows)})`;
+            }
+          }
+
+          if (!actualTotalTime && !sharedHits && !sharedReads && !peakMemory && !accuracyWarning) return null;
+
+          return (
+            <div className="mb-4 border border-glass-border bg-black/5 dark:bg-white/5 rounded-lg p-4">
+              <h4 className="text-xs font-bold text-muted-foreground uppercase mb-3 flex items-center gap-2">
+                Аналитика (Insights)
+              </h4>
+              <div className="flex flex-col gap-3 font-mono text-sm">
+                
+                {actualTotalTime !== undefined && (
+                  <div className="flex items-start gap-2">
+                    <span className="text-muted-foreground w-28 shrink-0 mt-0.5">Время узла:</span>
+                    <div className="flex flex-col gap-0.5">
+                      <span className="text-foreground">{actualTotalTime.toFixed(3)} ms {timePct && <span className="text-muted-foreground">({timePct}% от запроса)</span>}</span>
+                      {timePerRow && <span className="text-muted-foreground text-xs">{timePerRow} ms на строку</span>}
+                    </div>
+                  </div>
+                )}
+
+                {(sharedHits > 0 || sharedReads > 0) && (
+                  <div className="flex items-start gap-2">
+                    <span className="text-muted-foreground w-28 shrink-0 mt-0.5">Буферы:</span>
+                    <div className="flex flex-col gap-0.5">
+                      {sharedHits > 0 && <span className="text-emerald-500">Hits: {sharedHits} <span className="text-muted-foreground text-xs">(прочитано из кэша)</span></span>}
+                      {sharedReads > 0 && <span className="text-destructive font-bold">Reads: {sharedReads} <span className="text-muted-foreground font-normal text-xs">(прочитано с диска ⚠)</span></span>}
+                    </div>
+                  </div>
+                )}
+
+                {peakMemory && (
+                  <div className="flex items-start gap-2">
+                    <span className="text-muted-foreground w-28 shrink-0 mt-0.5">Память:</span>
+                    <span className="text-amber-500">{peakMemory} kB <span className="text-muted-foreground text-xs">(Peak Memory)</span></span>
+                  </div>
+                )}
+
+                {accuracyWarning && (
+                  <div className="flex items-start gap-2 mt-1 pt-3 border-t border-glass-border/50">
+                    <span className="text-muted-foreground w-28 shrink-0 mt-0.5">Прогноз:</span>
+                    <span className="text-destructive font-bold flex items-start gap-1">
+                      <AlertTriangle size={14} className="mt-0.5 shrink-0" />
+                      <span>{accuracyWarning}</span>
+                    </span>
+                  </div>
+                )}
+
+              </div>
+            </div>
+          );
+        })()}
 
         {/* Дополнительные параметры (Сворачиваемый блок) */}
         {dynamicProps.length > 0 && (
