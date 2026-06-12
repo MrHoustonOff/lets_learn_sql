@@ -1,5 +1,5 @@
 import React from 'react';
-import { PanelResizeHandle } from 'react-resizable-panels';
+import { Separator as PanelResizeHandle } from 'react-resizable-panels';
 import { GripVertical, GripHorizontal } from 'lucide-react';
 
 interface ResizeHandleProps {

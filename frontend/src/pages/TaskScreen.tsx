@@ -122,6 +122,7 @@ export const TaskScreen: React.FC = () => {
 
         </PanelGroup>
       </div>
+      </div>
     </div>
   );
 };
