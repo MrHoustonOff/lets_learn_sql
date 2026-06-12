@@ -246,6 +246,76 @@ const NodeDetailsOverlay: React.FC<NodeDetailsProps> = ({ nodeId, onClose, rootT
           </div>
         </div>
 
+        {/* --- DATA FLOW BLOCK --- */}
+        <div className="mb-4 border border-primary/20 bg-primary/5 rounded-lg p-4">
+          <h4 className="text-xs font-bold text-primary uppercase mb-3 flex items-center gap-2">
+            Поток данных (Data Flow)
+          </h4>
+          <div className="flex flex-col gap-3 font-mono text-sm">
+            {/* Вошло */}
+            {(() => {
+              let inputRows = 0;
+              let hasInputRows = false;
+              if (node.Plans && node.Plans.length > 0) {
+                inputRows = node.Plans.reduce((sum: number, child: any) => {
+                  const childRows = child['Actual Rows'] ?? child['Plan Rows'] ?? 0;
+                  const loops = child['Actual Loops'] ?? 1;
+                  return sum + (childRows * loops);
+                }, 0);
+                hasInputRows = true;
+              } else if (node['Rows Removed by Filter'] !== undefined && node['Actual Rows'] !== undefined) {
+                inputRows = (node['Actual Rows'] * (node['Actual Loops'] || 1)) + Math.round(node['Rows Removed by Filter']);
+                hasInputRows = true;
+              }
+
+              if (!hasInputRows) return null;
+              return (
+                <div className="flex items-start gap-2">
+                  <span className="text-muted-foreground w-20 shrink-0 mt-0.5">Вошло:</span>
+                  <span className="text-foreground">~{Math.round(inputRows)} строк</span>
+                </div>
+              );
+            })()}
+
+            {/* Условие */}
+            {(() => {
+              const condition = node['Filter'] || node['Index Cond'] || node['Hash Cond'] || node['Join Filter'] || node['Merge Cond'];
+              if (!condition) return null;
+              return (
+                <div className="flex items-start gap-2 relative">
+                  <span className="text-muted-foreground w-20 shrink-0 mt-0.5">Условие:</span>
+                  <span className="text-amber-500 break-all bg-amber-500/10 px-2 py-0.5 rounded">{condition}</span>
+                </div>
+              );
+            })()}
+
+            {/* Вышло */}
+            <div className="flex items-start gap-2">
+              <span className="text-muted-foreground w-20 shrink-0 mt-0.5">Вышло:</span>
+              <div className="flex items-center flex-wrap gap-2">
+                <span className="text-emerald-500 font-bold bg-emerald-500/10 px-2 py-0.5 rounded">
+                  {Math.round(node['Actual Rows'] !== undefined ? node['Actual Rows'] * (node['Actual Loops'] || 1) : node['Plan Rows'])} строк
+                </span>
+                <span className="text-muted-foreground text-xs">→ идут дальше</span>
+              </div>
+            </div>
+
+            {/* Колонки */}
+            {node['Output'] && Array.isArray(node['Output']) && (
+              <div className="flex items-start gap-2 mt-1 pt-3 border-t border-glass-border/50">
+                <span className="text-muted-foreground w-20 shrink-0 mt-0.5">Колонки:</span>
+                <div className="flex flex-wrap gap-1">
+                  {node['Output'].map((col: string, i: number) => (
+                    <span key={i} className="bg-black/10 dark:bg-white/10 px-1.5 py-0.5 rounded text-xs text-foreground/80 break-all">
+                      {col}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
         {/* Дополнительные параметры (Сворачиваемый блок) */}
         {dynamicProps.length > 0 && (
           <div className="mb-4 border border-glass-border rounded-lg overflow-hidden">
