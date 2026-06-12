@@ -7,6 +7,7 @@ import { ResultsPane } from '../components/workspace/ResultsPane';
 import { GripVertical, GripHorizontal } from 'lucide-react';
 import { useUIStore, type SlotId, type PaneType } from '../store/uiStore';
 import { DroppableSlot } from '../components/workspace/DroppableSlot';
+import { ResizeHandle } from '../components/workspace/ResizeHandle';
 
 export const TaskScreen: React.FC = () => {
   const { maximizedPane, setMaximizedPane, slots } = useUIStore();
@@ -85,12 +86,7 @@ export const TaskScreen: React.FC = () => {
               {renderPane('topLeft')}
             </Panel>
 
-            <PanelResizeHandle className="h-[2px] bg-glass-border hover:bg-primary/50 transition-colors relative flex items-center justify-center group !cursor-grab active:!cursor-grabbing z-40 outline-none">
-              <div className="absolute -inset-y-1.5 inset-x-0 z-40"></div>
-              <div className="absolute z-50 bg-popover border border-glass-border rounded flex items-center justify-center px-1 py-[1px] text-muted-foreground group-hover:text-primary group-hover:border-primary/50 transition-colors shadow-sm">
-                <GripHorizontal size={12} />
-              </div>
-            </PanelResizeHandle>
+            <ResizeHandle direction="horizontal" />
 
             {/* Bottom Left Slot */}
             <Panel defaultSize={50} minSize={20} className={`!overflow-visible transition-all duration-300 ${maximizedPane === slots.bottomLeft ? 'z-[100]' : ''}`}>
@@ -100,12 +96,7 @@ export const TaskScreen: React.FC = () => {
           </PanelGroup>
         </Panel>
 
-        <PanelResizeHandle className="w-[2px] bg-glass-border hover:bg-primary/50 transition-colors relative flex items-center justify-center group !cursor-grab active:!cursor-grabbing z-[70] outline-none">
-          <div className="absolute inset-y-0 -inset-x-1.5 z-40"></div>
-          <div className="absolute z-50 bg-popover border border-glass-border rounded flex items-center justify-center py-1 px-[1px] text-muted-foreground group-hover:text-primary group-hover:border-primary/50 transition-colors shadow-sm">
-            <GripVertical size={12} />
-          </div>
-        </PanelResizeHandle>
+        <ResizeHandle direction="vertical" />
 
         {/* ================= RIGHT HALF ================= */}
         <Panel defaultSize={60} minSize={30} className={`!overflow-visible transition-all duration-300 ${isRightMaximized ? 'z-[100]' : ''}`}>
@@ -116,12 +107,7 @@ export const TaskScreen: React.FC = () => {
               {renderPane('topRight')}
             </Panel>
 
-            <PanelResizeHandle className="h-[2px] bg-glass-border hover:bg-primary/50 transition-colors relative flex items-center justify-center group !cursor-grab active:!cursor-grabbing z-40 outline-none">
-              <div className="absolute -inset-y-1.5 inset-x-0 z-40"></div>
-              <div className="absolute z-50 bg-popover border border-glass-border rounded flex items-center justify-center px-1 py-[1px] text-muted-foreground group-hover:text-primary group-hover:border-primary/50 transition-colors shadow-sm">
-                <GripHorizontal size={12} />
-              </div>
-            </PanelResizeHandle>
+            <ResizeHandle direction="horizontal" />
 
             {/* Bottom Right Slot */}
             <Panel defaultSize={50} minSize={20} className={`!overflow-visible transition-all duration-300 ${maximizedPane === slots.bottomRight ? 'z-[100]' : ''}`}>
