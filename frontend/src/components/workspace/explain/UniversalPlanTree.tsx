@@ -24,21 +24,35 @@ type MetricType = 'NONE' | 'COST' | 'DURATION' | 'ROWS';
 
 // Кастомный узел графа
 const ExplainNodeComponent = ({ data }: { data: any }) => {
-  const { 
-    node, 
-    flatData, 
-    metric, 
-    rootTree,
+  const {
+    node,
+    flatData,
+    metric,
     isHovered,
     setHoveredNode
   } = data;
-  
-  const nodeType = node["Node Type"];
-  
+
+  // Таймер задержки до активации ховера
+  const hoverTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleMouseEnter = () => {
+    hoverTimer.current = setTimeout(() => {
+      setHoveredNode(node.node_id);
+    }, 1000);
+  };
+
+  const handleMouseLeave = () => {
+    if (hoverTimer.current) {
+      clearTimeout(hoverTimer.current);
+      hoverTimer.current = null;
+    }
+    setHoveredNode(null);
+  };
+
+  const nodeType = node['Node Type'];
   const duration = node['Actual Total Time'];
   const rows = node['Actual Rows'] !== undefined ? node['Actual Rows'] * (node['Actual Loops'] || 1) : node['Plan Rows'];
-  
-  // Выбор цвета бордера в зависимости от метрики
+
   let colorKey = 'none';
   if (metric === 'COST' && flatData) {
     colorKey = getCostLevel(flatData.cost_pct);
@@ -69,9 +83,10 @@ const ExplainNodeComponent = ({ data }: { data: any }) => {
 
   return (
     <div
-      className={`relative min-w-[200px] backdrop-blur-md rounded-xl border shadow-lg p-3 cursor-pointer transition-all duration-200 ${cardClass} ${isHovered ? 'ring-4 ring-primary/50 scale-[1.05]' : 'hover:scale-[1.02]'} ${isDimmed ? 'opacity-30 grayscale-[30%]' : ''}`}
-      onMouseEnter={() => setHoveredNode(node.node_id)}
-      onMouseLeave={() => setHoveredNode(null)}
+      tabIndex={-1}
+      className={`relative min-w-[200px] backdrop-blur-md rounded-xl border shadow-lg p-3 cursor-pointer transition-all duration-200 outline-none ${cardClass} ${isHovered ? 'ring-4 ring-primary/50 scale-[1.05]' : 'hover:scale-[1.02]'} ${isDimmed ? 'opacity-30 grayscale-[30%]' : ''}`}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
     >
       <Handle type="target" position={Position.Top} className="opacity-0" />
 

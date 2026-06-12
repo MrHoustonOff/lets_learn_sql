@@ -183,6 +183,13 @@
   z-index: 1000 !important;
 }
 
+/* Убираем браузерный outline у нод после клика */
+.react-flow__node:focus,
+.react-flow__node:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
 /* Custom Scrollbar */
 .custom-scrollbar::-webkit-scrollbar {
   width: 6px;
