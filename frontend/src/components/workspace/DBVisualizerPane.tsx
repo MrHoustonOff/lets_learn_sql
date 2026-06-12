@@ -1,4 +1,5 @@
 import React from 'react';
+import { createPortal } from 'react-dom';
 import { useUIStore, type SlotId } from '../../store/uiStore';
 import { DBVisualizer } from '../../modules/db-visualizer';
 
@@ -10,8 +11,8 @@ export const DBVisualizerPane: React.FC<DBVisualizerPaneProps> = ({ slotId }) =>
   const { maximizedPane, setMaximizedPane } = useUIStore();
   const isMaximized = maximizedPane === 'db';
 
-  return (
-    <div className={`transition-all duration-300 ${isMaximized ? 'absolute inset-0 z-[100] bg-background rounded-2xl overflow-hidden' : 'h-full w-full relative !overflow-visible'}`}>
+  const content = (
+    <div className={`transition-all duration-300 ${isMaximized ? 'fixed inset-4 z-[100] bg-background rounded-2xl shadow-2xl border border-glass-border overflow-hidden' : 'h-full w-full relative overflow-hidden'}`}>
       <DBVisualizer 
         isMaximized={isMaximized} 
         onToggleMaximize={() => setMaximizedPane(isMaximized ? null : 'db')}
@@ -19,4 +20,15 @@ export const DBVisualizerPane: React.FC<DBVisualizerPaneProps> = ({ slotId }) =>
       />
     </div>
   );
+
+  if (isMaximized) {
+    return createPortal(
+      <div className="fixed inset-0 z-[90] bg-background/80 backdrop-blur-sm">
+        {content}
+      </div>,
+      document.body
+    );
+  }
+
+  return content;
 };

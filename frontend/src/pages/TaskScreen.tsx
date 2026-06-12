@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { Panel, Group as PanelGroup, useDefaultLayout } from 'react-resizable-panels';
+import { Panel, Group as PanelGroup } from 'react-resizable-panels';
 import type { GroupImperativeHandle } from 'react-resizable-panels';
 import { DBVisualizerPane } from '../components/workspace/DBVisualizerPane';
 import { TaskPane } from '../components/workspace/TaskPane';
@@ -10,39 +10,47 @@ import { DroppableSlot } from '../components/workspace/DroppableSlot';
 import { ResizeHandle } from '../components/workspace/ResizeHandle';
 import { ViewMenu } from '../components/workspace/ViewMenu';
 
+const LAYOUT_KEY = 'task_screen_layout_v6';
+const MIN_HORIZONTAL_PCT = 30;
+const MIN_VERTICAL_PCT = 25;
+
+function clampLayout(layout: number[], min: number): number[] {
+  if (!Array.isArray(layout) || layout.length !== 2) return [50, 50];
+  if (layout.some(s => typeof s !== 'number' || s < min)) return [50, 50];
+  return layout;
+}
+
+function useCustomLayout(id: string, minSize: number) {
+  const defaultLayout = React.useMemo(() => {
+    try {
+      const raw = localStorage.getItem(`${LAYOUT_KEY}_${id}`);
+      if (!raw) return [50, 50];
+      const parsed = JSON.parse(raw);
+      return clampLayout(parsed, minSize);
+    } catch {
+      return [50, 50];
+    }
+  }, [id, minSize]);
+
+  const onLayoutChanged = React.useCallback((layout: number[]) => {
+    if (layout.every(s => s >= minSize)) {
+      localStorage.setItem(`${LAYOUT_KEY}_${id}`, JSON.stringify(layout));
+    }
+  }, [id, minSize]);
+
+  return { defaultLayout, onLayoutChanged };
+}
+
 export const TaskScreen: React.FC = () => {
   const { maximizedPane, setMaximizedPane, slots } = useUIStore();
 
-  // Dynamic minSize calculation to enforce hard pixel limits
-  const [minHorizontalPct, setMinHorizontalPct] = React.useState(30);
-  const [minVerticalPct, setMinVerticalPct] = React.useState(25);
-
-  React.useEffect(() => {
-    const calculateLimits = () => {
-      // For horizontal (left/right panes), we want at least 320px
-      const w = window.innerWidth || 1000;
-      const h = window.innerHeight || 800;
-      
-      const horizPct = Math.ceil((320 / w) * 100);
-      setMinHorizontalPct(Math.min(Math.max(horizPct, 20), 45));
-
-      // For vertical (top/bottom panes), we want at least 200px
-      const vertPct = Math.ceil((200 / h) * 100);
-      setMinVerticalPct(Math.min(Math.max(vertPct, 15), 45));
-    };
-
-    calculateLimits();
-    window.addEventListener('resize', calculateLimits);
-    return () => window.removeEventListener('resize', calculateLimits);
-  }, []);
-  
   const mainGroupRef = useRef<GroupImperativeHandle>(null);
   const leftGroupRef = useRef<GroupImperativeHandle>(null);
   const rightGroupRef = useRef<GroupImperativeHandle>(null);
 
-  const { defaultLayout: mainLayout, onLayoutChanged: mainOnLayout } = useDefaultLayout({ id: 'llpg_main_horizontal_v5' });
-  const { defaultLayout: leftLayout, onLayoutChanged: leftOnLayout } = useDefaultLayout({ id: 'llpg_left_vertical_v5' });
-  const { defaultLayout: rightLayout, onLayoutChanged: rightOnLayout } = useDefaultLayout({ id: 'llpg_right_vertical_v5' });
+  const { defaultLayout: mainLayout, onLayoutChanged: mainOnLayout } = useCustomLayout('main_horizontal', MIN_HORIZONTAL_PCT);
+  const { defaultLayout: leftLayout, onLayoutChanged: leftOnLayout } = useCustomLayout('left_vertical', MIN_VERTICAL_PCT);
+  const { defaultLayout: rightLayout, onLayoutChanged: rightOnLayout } = useCustomLayout('right_vertical', MIN_VERTICAL_PCT);
 
   const handleResetProportions = () => {
     mainGroupRef.current?.setLayout({ main_left: 50, main_right: 50 });
@@ -111,18 +119,18 @@ export const TaskScreen: React.FC = () => {
         >
         
         {/* ================= LEFT HALF ================= */}
-        <Panel id="main_left" defaultSize={50} minSize={minHorizontalPct} className={`!overflow-visible ${isLeftMaximized ? 'z-[100]' : ''}`}>
-          <PanelGroup groupRef={leftGroupRef} defaultLayout={leftLayout} onLayoutChanged={leftOnLayout} orientation="vertical" id="llpg_left_vertical_v5" className="w-full h-full !overflow-visible">
+        <Panel id="main_left" defaultSize={50} minSize={MIN_HORIZONTAL_PCT} collapsible={false}>
+          <PanelGroup groupRef={leftGroupRef} defaultLayout={leftLayout} onLayoutChanged={leftOnLayout} orientation="vertical" id="llpg_left_vertical_v6" className="w-full h-full">
             
             {/* Top Left Slot */}
-            <Panel id="left_top" defaultSize={50} minSize={minVerticalPct} className={`!overflow-visible ${maximizedPane === slots.topLeft ? 'z-[100]' : ''}`}>
+            <Panel id="left_top" defaultSize={50} minSize={MIN_VERTICAL_PCT} collapsible={false}>
               {renderPane('topLeft')}
             </Panel>
 
             <ResizeHandle direction="horizontal" />
 
             {/* Bottom Left Slot */}
-            <Panel id="left_bottom" defaultSize={50} minSize={minVerticalPct} className={`!overflow-visible ${maximizedPane === slots.bottomLeft ? 'z-[100]' : ''}`}>
+            <Panel id="left_bottom" defaultSize={50} minSize={MIN_VERTICAL_PCT} collapsible={false}>
               {renderPane('bottomLeft')}
             </Panel>
             
@@ -132,18 +140,18 @@ export const TaskScreen: React.FC = () => {
         <ResizeHandle direction="vertical" />
 
         {/* ================= RIGHT HALF ================= */}
-        <Panel id="main_right" defaultSize={50} minSize={minHorizontalPct} className={`!overflow-visible ${isRightMaximized ? 'z-[100]' : ''}`}>
-          <PanelGroup groupRef={rightGroupRef} defaultLayout={rightLayout} onLayoutChanged={rightOnLayout} orientation="vertical" id="llpg_right_vertical_v5" className="w-full h-full !overflow-visible">
+        <Panel id="main_right" defaultSize={50} minSize={MIN_HORIZONTAL_PCT} collapsible={false}>
+          <PanelGroup groupRef={rightGroupRef} defaultLayout={rightLayout} onLayoutChanged={rightOnLayout} orientation="vertical" id="llpg_right_vertical_v6" className="w-full h-full">
             
             {/* Top Right Slot */}
-            <Panel id="right_top" defaultSize={50} minSize={minVerticalPct} className={`!overflow-visible ${maximizedPane === slots.topRight ? 'z-[100]' : ''}`}>
+            <Panel id="right_top" defaultSize={50} minSize={MIN_VERTICAL_PCT} collapsible={false}>
               {renderPane('topRight')}
             </Panel>
 
             <ResizeHandle direction="horizontal" />
 
             {/* Bottom Right Slot */}
-            <Panel id="right_bottom" defaultSize={50} minSize={minVerticalPct} className={`!overflow-visible ${maximizedPane === slots.bottomRight ? 'z-[100]' : ''}`}>
+            <Panel id="right_bottom" defaultSize={50} minSize={MIN_VERTICAL_PCT} collapsible={false}>
               {renderPane('bottomRight')}
             </Panel>
 
