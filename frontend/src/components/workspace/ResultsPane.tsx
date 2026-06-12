@@ -1,10 +1,9 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Table2, Activity, Maximize2, Minimize2, Loader2, AlertCircle, Play } from 'lucide-react';
 import { MiniExplainPanel } from './explain/MiniExplainPanel';
 import { useUIStore } from '../../store/uiStore';
 import { useQueryStore } from '../../store/queryStore';
-import { useExplainStore } from '../../store/explainStore';
 
 import { DataTable } from '../ui/DataTable';
 
@@ -21,7 +20,6 @@ export const ResultsPane: React.FC<ResultsPaneProps> = ({
   const [activeTab, setActiveTab] = useState<'result' | 'explain'>('result');
   const { maximizedPane, setMaximizedPane } = useUIStore();
   const { result, isLoading, error, maxRowsToDisplay } = useQueryStore();
-  const { options } = useExplainStore();
   
   const isMaximized = propIsMaximized !== undefined ? propIsMaximized : maximizedPane === 'results';
 

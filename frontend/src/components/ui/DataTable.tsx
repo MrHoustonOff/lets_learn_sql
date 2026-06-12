@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
-import { ZoomIn, ZoomOut, Hash, Type, Calendar, ToggleLeft, Database, Clock, Filter, X, Search, RotateCcw } from 'lucide-react';
+import { ZoomIn, ZoomOut, Database, Clock, Filter, Search, RotateCcw } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 interface DataTableProps {

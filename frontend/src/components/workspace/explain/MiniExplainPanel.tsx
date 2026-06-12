@@ -1,8 +1,8 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { Info, AlertTriangle, Loader2, CheckCircle2, ChevronRight, ChevronDown, Network } from 'lucide-react';
-import { useExplainStore, type FlatNode } from '../../../store/explainStore';
+import { useExplainStore } from '../../../store/explainStore';
 import { ExplainModal } from '../ExplainModal';
 
 import { NodeDetailsOverlay } from './NodeDetailsOverlay';
@@ -107,7 +107,7 @@ export const MiniExplainPanel: React.FC = () => {
           
           {isPlanTreeOpen && (
             <div 
-              className="font-mono text-sm bg-muted/30 border border-glass-border rounded-lg p-4 space-y-1 cursor-default"
+              className="font-mono text-sm bg-black/5 dark:bg-white/5 shadow-inner border border-glass-border rounded-lg p-4 space-y-1 cursor-default"
               onClick={() => {
                 setClickedBranchId(null);
                 setActivePipelineNodeIds([]);
@@ -157,10 +157,14 @@ export const MiniExplainPanel: React.FC = () => {
                   colorClass = "text-primary";
                 }
 
+                const diagText = diag.code 
+                  ? t(diag.code, { ...diag.params, defaultValue: diag.message })
+                  : diag.message;
+
                 return (
                   <div key={idx} className={`flex items-start gap-2 ${colorClass}`}>
                     <Icon size={14} className="shrink-0 mt-0.5" />
-                    <span className="font-medium truncate" title={diag.message}>{diag.message}</span>
+                    <span className="font-medium truncate" title={diagText}>{diagText}</span>
                   </div>
                 );
               })

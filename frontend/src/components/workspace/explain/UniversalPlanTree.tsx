@@ -126,7 +126,8 @@ const UniversalPlanTreeInner: React.FC<UniversalPlanTreeInnerProps> = ({ onClose
   const { slot1 } = useExplainStore();
   const rootTree = slot1?.plan_parsed?.tree;
   const flatNodes = slot1?.plan_parsed?.flat_nodes || [];
-  const { fitView } = useReactFlow();
+  const { fitView, getNodes } = useReactFlow();
+  const lastFitTimeRef = useRef<number>(0);
   
   const [metric, setMetric] = useState<MetricType>('DURATION');
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
@@ -328,13 +329,31 @@ const UniversalPlanTreeInner: React.FC<UniversalPlanTreeInnerProps> = ({ onClose
   // Горячие клавиши
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Игнорируем если фокус в инпутах
-      if (document.activeElement?.tagName === 'INPUT' || document.activeElement?.tagName === 'TEXTAREA') return;
+      // Игнорируем зажатую клавишу (repeat), чтобы не забивать очередь анимаций
+      if (e.repeat) return;
+
+      // Игнорируем если фокус в инпутах, CodeMirror или других текстовых полях
+      if (
+        document.activeElement?.tagName === 'INPUT' || 
+        document.activeElement?.tagName === 'TEXTAREA' ||
+        document.activeElement?.getAttribute('contenteditable') === 'true' ||
+        document.activeElement?.closest('.cm-editor')
+      ) return;
 
       if (e.key === ' ' || e.key.toLowerCase() === 'f') {
         e.preventDefault();
+        
+        // Предотвращаем наложение анимаций fitView (кулдаун 600мс)
+        const now = Date.now();
+        if (now - lastFitTimeRef.current < 600) return;
+        lastFitTimeRef.current = now;
+
         if (hoveredNodeId) {
-          fitView({ nodes: [{ id: hoveredNodeId }], duration: 500, padding: 0.5 });
+          const freshNodes = getNodes();
+          const nodeToFit = freshNodes.find(n => n.id === hoveredNodeId);
+          if (nodeToFit) {
+            fitView({ nodes: [nodeToFit], duration: 500, padding: 0.5 });
+          }
         } else {
           fitView({ duration: 500, padding: 0.2 });
         }
@@ -400,7 +419,7 @@ const UniversalPlanTreeInner: React.FC<UniversalPlanTreeInnerProps> = ({ onClose
         </button>
       </div>
 
-      <div className="flex-1 relative z-10">
+      <div className="flex-1 relative z-10 text-foreground">
         <ReactFlow
           nodes={nodes}
           edges={edges}
@@ -419,11 +438,12 @@ const UniversalPlanTreeInner: React.FC<UniversalPlanTreeInnerProps> = ({ onClose
           className="bg-transparent"
         >
           <Background 
+            id="explain-graph-background"
             variant={BackgroundVariant.Dots} 
             gap={24} 
             size={2} 
             color="currentColor" 
-            className="opacity-10 dark:opacity-20"
+            className="opacity-15 dark:opacity-30"
           />
           <Controls 
             showInteractive={false} 

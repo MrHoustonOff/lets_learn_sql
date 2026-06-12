@@ -11,6 +11,8 @@ export interface FlatNode {
 
 export interface Diagnostic {
   severity: 'info' | 'warning' | 'critical' | 'success';
+  code?: string;
+  params?: Record<string, any>;
   message: string;
 }
 
@@ -52,7 +54,7 @@ interface ExplainState {
   fetchExplain: (sql: string, database?: string) => Promise<void>;
 }
 
-export const useExplainStore = create<ExplainState>((set, get) => ({
+export const useExplainStore = create<ExplainState>((set) => ({
   options: {
     analyze: true,
     buffers: true,

@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback, useRef } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import type { DatabaseSchema, TableSchema } from './types';
 import { useSchema } from './hooks/useSchema';
 import { Filter, Maximize2, Minimize2, X } from 'lucide-react';
@@ -245,6 +245,7 @@ export const DBVisualizer: React.FC<DBVisualizerProps> = ({ schema, isMaximized 
           className="bg-transparent"
         >
           <Background 
+            id="db-visualizer-background"
             variant={BackgroundVariant.Dots} 
             gap={24} 
             size={2} 

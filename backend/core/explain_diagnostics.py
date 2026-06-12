@@ -11,6 +11,8 @@ def analyze_plan(root_plan: dict) -> list:
             if rows > 1000:
                 diagnostics.append({
                     "severity": "warning",
+                    "code": "explain_ui:diagnostics.seq_scan_large",
+                    "params": {"relation": relation, "rows": rows},
                     "message": f"Seq Scan на большой таблице '{relation}' (строк: {rows}). Возможно, не хватает индекса."
                 })
                 
@@ -20,6 +22,8 @@ def analyze_plan(root_plan: dict) -> list:
             if sort_space_type == "Disk":
                 diagnostics.append({
                     "severity": "critical",
+                    "code": "explain_ui:diagnostics.disk_sort",
+                    "params": {},
                     "message": f"Дисковая сортировка (Disk Sort). Увеличьте work_mem или оптимизируйте ORDER BY."
                 })
                 
@@ -28,6 +32,8 @@ def analyze_plan(root_plan: dict) -> list:
         if rows_removed > 1000:
             diagnostics.append({
                 "severity": "warning",
+                "code": "explain_ui:diagnostics.high_filter",
+                "params": {"rows_removed": rows_removed},
                 "message": f"Фильтр отбросил {rows_removed} строк. Индекс мог бы помочь избежать лишнего чтения."
             })
             
@@ -37,6 +43,8 @@ def analyze_plan(root_plan: dict) -> list:
             if cost > 10000:
                  diagnostics.append({
                     "severity": "info",
+                    "code": "explain_ui:diagnostics.heavy_hash_join",
+                    "params": {"cost": cost},
                     "message": f"Тяжелый Hash Join (стоимость {cost}). Убедитесь, что условия соединения оптимальны."
                 })
 
@@ -50,6 +58,8 @@ def analyze_plan(root_plan: dict) -> list:
     if not diagnostics:
         diagnostics.append({
             "severity": "success",
+            "code": "explain_ui:diagnostics.optimal_plan",
+            "params": {},
             "message": "План выполнения выглядит оптимально (явных узких мест не найдено)."
         })
         

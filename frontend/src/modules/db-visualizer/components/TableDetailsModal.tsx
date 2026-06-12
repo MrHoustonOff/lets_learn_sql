@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import type { TableSchema } from '../types';
-import { X, Database, Key, Link, AlertCircle, Hash, TableProperties, Fingerprint, Zap, Play } from 'lucide-react';
+import { X, Database, Key, Link, AlertCircle, Hash, TableProperties, Fingerprint, Play } from 'lucide-react';
 
 import { DataTable } from '../../../components/ui/DataTable';
 

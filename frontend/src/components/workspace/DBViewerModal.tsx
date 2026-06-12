@@ -1,14 +1,13 @@
 import React, { useEffect } from 'react';
-import { X } from 'lucide-react';
 import { DBVisualizer } from '../../modules/db-visualizer';
 
 interface DBViewerModalProps {
   isOpen: boolean;
   onClose: () => void;
-  dbName: string;
+  dbName?: string;
 }
 
-export const DBViewerModal: React.FC<DBViewerModalProps> = ({ isOpen, onClose, dbName }) => {
+export const DBViewerModal: React.FC<DBViewerModalProps> = ({ isOpen, onClose }) => {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && isOpen) {

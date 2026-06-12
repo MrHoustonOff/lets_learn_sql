@@ -29,5 +29,12 @@
   "planner_accuracy": "Прогноз",
   "filter_cond": "Filter/Cond",
   "rows_est": "Строк~",
-  "planner_accuracy_warning": "Планировщик ошибся в ~{{ratio}} раз (Ожидалось {{expected}}, по факту {{actual}})"
+  "planner_accuracy_warning": "Планировщик ошибся в ~{{ratio}} раз (Ожидалось {{expected}}, по факту {{actual}})",
+  "diagnostics": {
+    "seq_scan_large": "Seq Scan на большой таблице '{{relation}}' (строк: {{rows}}). Возможно, не хватает индекса.",
+    "disk_sort": "Дисковая сортировка (Disk Sort). Увеличьте work_mem или оптимизируйте ORDER BY.",
+    "high_filter": "Фильтр отбросил {{rows_removed}} строк. Индекс мог бы помочь избежать лишнего чтения.",
+    "heavy_hash_join": "Тяжелый Hash Join (стоимость {{cost}}). Убедитесь, что условия соединения оптимальны.",
+    "optimal_plan": "План выполнения выглядит оптимально (явных узких мест не найдено)."
+  }
 }

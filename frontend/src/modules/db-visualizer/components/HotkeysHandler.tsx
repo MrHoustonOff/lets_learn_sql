@@ -26,6 +26,11 @@ export const HotkeysHandler: React.FC<HotkeysHandlerProps> = ({ onResetLayout, h
         return;
       }
 
+      // Игнорируем хоткеи бэкграунд-визуализатора, если открыто модальное окно EXPLAIN (z-[100])
+      if (document.querySelector('.z-\\[100\\]') || document.querySelector('[class*="z-[100]"]')) {
+        return;
+      }
+
       const key = e.key.toLowerCase();
       const code = e.code.toLowerCase();
 

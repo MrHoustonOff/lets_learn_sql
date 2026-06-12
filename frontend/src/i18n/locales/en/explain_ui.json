@@ -29,5 +29,12 @@
   "planner_accuracy": "Estimate",
   "filter_cond": "Filter/Cond",
   "rows_est": "Rows~",
-  "planner_accuracy_warning": "Planner was off by ~{{ratio}}x (Expected {{expected}}, actual {{actual}})"
+  "planner_accuracy_warning": "Planner was off by ~{{ratio}}x (Expected {{expected}}, actual {{actual}})",
+  "diagnostics": {
+    "seq_scan_large": "Seq Scan on large table '{{relation}}' (rows: {{rows}}). Consider adding an index.",
+    "disk_sort": "Disk Sort. Increase work_mem or optimize ORDER BY.",
+    "high_filter": "Filter removed {{rows_removed}} rows. An index could help avoid reading them.",
+    "heavy_hash_join": "Heavy Hash Join (cost {{cost}}). Ensure join conditions are optimal.",
+    "optimal_plan": "Execution plan looks optimal (no obvious bottlenecks found)."
+  }
 }

@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Database, Folder, Import, Plus } from 'lucide-react';
+import { Database, Import, Plus } from 'lucide-react';
 
 interface CourseMock {
   id: string;

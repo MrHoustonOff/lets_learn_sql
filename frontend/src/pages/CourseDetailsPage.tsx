@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft, CheckCircle2, Circle, Star, ArrowRight, Database } from 'lucide-react';
 import { DBViewerModal } from '../components/workspace/DBViewerModal';
@@ -7,7 +7,6 @@ import { DBViewerModal } from '../components/workspace/DBViewerModal';
 export const CourseDetailsPage: React.FC = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const { id } = useParams<{ id: string }>();
   const [selectedDb, setSelectedDb] = useState<string | null>(null);
 
   // Обработка Esc для возврата

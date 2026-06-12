@@ -4,7 +4,7 @@ import { createPortal } from 'react-dom';
 import { Activity, X, Info, AlertTriangle } from 'lucide-react';
 import { InfoTooltip } from '../../ui/InfoTooltip';
 import { type FlatNode } from '../../../store/explainStore';
-import { findNodeById, getCostColor } from './utils';
+import { findNodeById } from './utils';
 
 import { useExplainNodeDoc, useExplainFieldsDocRaw } from '../../../i18n/content/useExplainContent';
 import { NodePropertiesList } from './parts/NodePropertiesList';
@@ -18,7 +18,7 @@ interface NodeDetailsProps {
   onNavigate: (nodeId: string) => void;
 }
 
-export const NodeDetailsOverlay: React.FC<NodeDetailsProps> = ({ nodeId, onClose, rootTree, flatNodesMap, flatNodes, onNavigate }) => {
+export const NodeDetailsOverlay: React.FC<NodeDetailsProps> = ({ nodeId, onClose, rootTree }) => {
   const { t } = useTranslation();
   const explainFieldsDocs = useExplainFieldsDocRaw();
   // Закрытие по ESC
@@ -37,24 +37,20 @@ export const NodeDetailsOverlay: React.FC<NodeDetailsProps> = ({ nodeId, onClose
   const node = findNodeById(rootTree, nodeId);
   if (!node) return null;
 
-  const flatData = flatNodesMap.get(node.node_id);
-  const colorClass = flatData ? getCostColor(flatData.cost_pct) : 'bg-muted';
-  
   const nodeType = node["Node Type"];
   const relation = node["Relation Name"];
   const index = node["Index Name"];
   const objectName = index || relation;
-  const filter = node["Filter"] || node["Index Cond"] || node["Hash Cond"];
   const width = node["Plan Width"];
   const explainNodeDoc = useExplainNodeDoc(nodeType);
 
   return createPortal(
     <div 
-      className="fixed inset-0 bg-background/90 z-[99999] p-4 flex items-center justify-center animate-in fade-in zoom-in-95 duration-200"
+      className="fixed inset-0 bg-background/60 backdrop-blur-sm z-[99999] p-4 flex items-center justify-center animate-in fade-in zoom-in-95 duration-200"
       onClick={onClose}
     >
       <div 
-        className="border border-glass-border bg-[hsl(var(--glass-bg))] rounded-lg shadow-2xl w-full max-w-2xl relative flex flex-col max-h-[90vh]"
+        className="border border-glass-border bg-glass backdrop-blur-3xl rounded-xl shadow-2xl w-full max-w-2xl relative flex flex-col max-h-[90vh]"
         onClick={(e) => e.stopPropagation()} // Не закрывать при клике на саму карточку
       >
         {/* HEADER (Fixed) */}
