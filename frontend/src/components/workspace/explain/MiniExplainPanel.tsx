@@ -110,28 +110,22 @@ const getDescendantsMetrics = (node: any): { count: number, maxCost: number } =>
 interface PlanTreeNodeProps {
   node: any;
   flatNodesMap: Map<string, FlatNode>;
+  lineColorsMap: Map<string, string>;
   isLast: boolean;
   isRoot?: boolean;
   onSelectNode: (nodeId: string) => void;
-  hoveredBranchId: string | null;
-  setHoveredBranchId: (id: string | null) => void;
   clickedBranchId: string | null;
   setClickedBranchId: (id: string | null) => void;
-  branchColor?: string;
 }
 
 const PlanTreeNode: React.FC<PlanTreeNodeProps> = ({ 
-  node, flatNodesMap, isLast, isRoot = false, onSelectNode,
-  hoveredBranchId, setHoveredBranchId,
+  node, flatNodesMap, lineColorsMap, isLast, isRoot = false, onSelectNode,
   clickedBranchId, setClickedBranchId,
-  branchColor = 'bg-glass-border'
 }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const nodeId = node.node_id;
 
-  const activeBranchId = clickedBranchId || hoveredBranchId;
-  const isHighlighted = activeBranchId ? nodeId.startsWith(activeBranchId) : false;
-  const isDimmed = activeBranchId ? !isHighlighted : false;
+  const branchColor = lineColorsMap.get(nodeId) || 'bg-glass-border';
 
   const flatData = flatNodesMap.get(nodeId);
   const costColorClass = flatData ? getCostColor(flatData.cost_pct) : 'bg-muted';
@@ -145,11 +139,7 @@ const PlanTreeNode: React.FC<PlanTreeNodeProps> = ({
   const children = node["Plans"] || [];
 
   return (
-    <div 
-      className={`relative group transition-colors duration-200 ${!isRoot ? 'pl-6' : ''} ${isHighlighted ? 'bg-primary/5 rounded-md' : ''} ${isDimmed ? 'opacity-40 grayscale-[50%]' : ''}`}
-      onMouseEnter={(e) => { e.stopPropagation(); setHoveredBranchId(nodeId); }}
-      onMouseLeave={(e) => { e.stopPropagation(); setHoveredBranchId(null); }}
-    >
+    <div className={`relative group transition-colors duration-200 ${!isRoot ? 'pl-6' : ''}`}>
       {/* Линии отступов для не-корневых узлов */}
       {!isRoot && (
         <>
@@ -211,20 +201,17 @@ const PlanTreeNode: React.FC<PlanTreeNodeProps> = ({
         {children.length > 0 && (
           <div className="relative mt-1">
             {children.map((child: any, idx: number) => {
-              const childColor = isRoot ? BRANCH_COLORS[idx % BRANCH_COLORS.length] : branchColor;
               return (
                 <div key={idx}>
                   {idx > 0 && <div className="ml-6 border-t border-glass-border/20 my-1" />}
                   <PlanTreeNode 
                     node={child} 
                     flatNodesMap={flatNodesMap} 
+                    lineColorsMap={lineColorsMap}
                     isLast={idx === children.length - 1} 
                     onSelectNode={onSelectNode}
-                    hoveredBranchId={hoveredBranchId}
-                    setHoveredBranchId={setHoveredBranchId}
                     clickedBranchId={clickedBranchId}
                     setClickedBranchId={setClickedBranchId}
-                    branchColor={childColor}
                   />
                 </div>
               );
@@ -598,8 +585,35 @@ export const MiniExplainPanel: React.FC = () => {
   const [isCostBreakdownOpen, setIsCostBreakdownOpen] = useState(true);
   const [isPlanTreeOpen, setIsPlanTreeOpen] = useState(true);
   
-  const [hoveredBranchId, setHoveredBranchId] = useState<string | null>(null);
   const [clickedBranchId, setClickedBranchId] = useState<string | null>(null);
+
+  const lineColorsMap = useMemo(() => {
+    const map = new Map<string, string>();
+    if (!slot1?.plan_parsed?.tree) return map;
+    
+    let colorIndex = 0;
+
+    const assignColors = (node: any, inheritedColor: string) => {
+      map.set(node.node_id, inheritedColor);
+      const children = node.Plans || [];
+      
+      if (children.length === 0) return;
+      
+      if (children.length === 1) {
+        assignColors(children[0], inheritedColor);
+        return;
+      }
+      
+      children.forEach((child: any) => {
+        const color = BRANCH_COLORS[colorIndex % BRANCH_COLORS.length];
+        colorIndex++;
+        assignColors(child, color);
+      });
+    };
+
+    assignColors(slot1.plan_parsed.tree, 'bg-glass-border');
+    return map;
+  }, [slot1]);
 
   const handleSort = (key: SortKey) => {
     if (sortKey === key) {
@@ -794,11 +808,10 @@ export const MiniExplainPanel: React.FC = () => {
               <PlanTreeNode 
                 node={slot1.plan_parsed.tree} 
                 flatNodesMap={flatNodesMap} 
+                lineColorsMap={lineColorsMap}
                 isLast={true} 
                 isRoot={true}
                 onSelectNode={setSelectedNodeId}
-                hoveredBranchId={hoveredBranchId}
-                setHoveredBranchId={setHoveredBranchId}
                 clickedBranchId={clickedBranchId}
                 setClickedBranchId={setClickedBranchId}
               />

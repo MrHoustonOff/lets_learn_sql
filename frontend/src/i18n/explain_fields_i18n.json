@@ -63,8 +63,8 @@
       "en": "Impact of operations on total query cost.\n\nShows what percentage of total cost (or time) each node consumed.\nUse this to quickly find the bottleneck in your query."
     },
     "plan_tree": {
-      "ru": "Иерархия выполнения запроса.\n\nДерево показывает вложенность операций. Выполнение идет снизу вверх (от дочерних узлов к родительским).\nИспользуйте дерево для понимания структуры: как соединяются таблицы и где именно происходит отсев данных.",
-      "en": "Query execution hierarchy.\n\nThe tree shows operation nesting. Execution goes bottom-up (from children to parents).\nUse the tree to understand the structure: how tables are joined and where data is filtered."
+      "ru": "Иерархия выполнения запроса.\n\nДерево показывает вложенность операций. Листья (узлы без детей) работают первыми — они читают данные. Родительские узлы получают результат от детей и обрабатывают его дальше.\nИспользуйте дерево чтобы понять как соединяются таблицы, где фильтруются строки и какие операции обходятся дороже всего.",
+      "en": "Query execution hierarchy.\n\nThe tree shows operation nesting. Leaf nodes (those without children) run first — they read the data. Parent nodes receive results from their children and process them further.\nUse the tree to understand how tables are joined, where rows are filtered, and which operations cost the most."
     }
   }
 }
