@@ -17,13 +17,15 @@ import { TableDetailsModal } from './components/TableDetailsModal';
 import { ResizeCenterKeeper } from './components/ResizeCenterKeeper';
 import { useGraphDrag } from './hooks/useGraphDrag';
 import { useGraphFilters } from './hooks/useGraphFilters';
-
+import { type SlotId } from '../../store/uiStore';
+import { DragHandle } from '../../components/workspace/DragHandle';
 
 interface DBVisualizerProps {
   schema?: DatabaseSchema;
   isMaximized?: boolean;
   onToggleMaximize?: () => void;
   onClose?: () => void;
+  slotId?: SlotId;
 }
 
 const nodeTypes = {
@@ -34,7 +36,7 @@ const edgeTypes = {
   relationEdge: RelationEdge,
 };
 
-export const DBVisualizer: React.FC<DBVisualizerProps> = ({ schema, isMaximized = true, onToggleMaximize, onClose }) => {
+export const DBVisualizer: React.FC<DBVisualizerProps> = ({ schema, isMaximized = true, onToggleMaximize, onClose, slotId }) => {
   const { t } = useTranslation();
   const [showRelations, setShowRelations] = useState(true);
   const [showMarkers, setShowMarkers] = useState(true);
@@ -77,10 +79,15 @@ export const DBVisualizer: React.FC<DBVisualizerProps> = ({ schema, isMaximized 
   // Первоначальное создание узлов при загрузке или смене схемы
   React.useEffect(() => {
     if (!activeSchema) return;
-    const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(activeSchema);
-    const nodesWithSavedPositions = loadSavedLayout(layoutedNodes);
-    setNodes(nodesWithSavedPositions);
-    setEdges(layoutedEdges);
+    try {
+      const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(activeSchema);
+      const nodesWithSavedPositions = loadSavedLayout(layoutedNodes);
+      setNodes(nodesWithSavedPositions);
+      setEdges(layoutedEdges);
+    } catch (err: any) {
+      console.error('Crash during getLayoutedElements:', err);
+      // We don't have setError from useSchema here, but we can avoid crashing
+    }
   }, [activeSchema, setNodes, setEdges, loadSavedLayout]);
 
   // Выбор таблицы
@@ -219,6 +226,12 @@ export const DBVisualizer: React.FC<DBVisualizerProps> = ({ schema, isMaximized 
             >
               {isMaximized ? <Minimize2 size={20} /> : <Maximize2 size={20} />}
             </button>
+          )}
+
+          {slotId && !isMaximized && (
+            <div className="bg-glass backdrop-blur-md border border-glass-border rounded-xl flex items-center justify-center p-2.5 shadow-sm hover:bg-hover transition-colors">
+              <DragHandle slotId={slotId} />
+            </div>
           )}
 
           {onClose && (

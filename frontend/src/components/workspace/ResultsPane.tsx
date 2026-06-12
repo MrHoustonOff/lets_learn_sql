@@ -2,19 +2,22 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Table2, Activity, Maximize2, Minimize2, Loader2, AlertCircle, Play } from 'lucide-react';
 import { MiniExplainPanel } from './explain/MiniExplainPanel';
-import { useUIStore } from '../../store/uiStore';
+import { useUIStore, type SlotId } from '../../store/uiStore';
 import { useQueryStore } from '../../store/queryStore';
+import { DragHandle } from './DragHandle';
 
 import { DataTable } from '../ui/DataTable';
 
 interface ResultsPaneProps {
   isMaximized?: boolean;
   onToggleMaximize?: () => void;
+  slotId?: SlotId;
 }
 
 export const ResultsPane: React.FC<ResultsPaneProps> = ({
   isMaximized: propIsMaximized,
-  onToggleMaximize: propOnToggleMaximize
+  onToggleMaximize: propOnToggleMaximize,
+  slotId
 }) => {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<'result' | 'explain'>('result');
@@ -34,7 +37,7 @@ export const ResultsPane: React.FC<ResultsPaneProps> = ({
   return (
     <div className={`h-full flex flex-col transition-all duration-300 ${isMaximized ? 'absolute inset-0 z-[100] bg-background rounded-2xl' : 'bg-transparent relative'}`}>
       {/* Header Tabs */}
-      <div className="h-10 border-b border-glass-border flex items-center justify-between px-2 shrink-0 bg-hover">
+      <div className="h-10 border-b border-glass-border flex items-center justify-between px-2 shrink-0 bg-hover relative z-50">
         <div className="flex items-center gap-1">
           <button 
             onClick={() => setActiveTab('result')}
@@ -52,11 +55,11 @@ export const ResultsPane: React.FC<ResultsPaneProps> = ({
             onClick={() => setActiveTab('explain')}
             className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-md transition-all ${
               activeTab === 'explain' 
-                ? 'bg-background text-foreground shadow-sm border border-border/40' 
-                : 'text-muted-foreground hover:text-foreground hover:bg-hover border border-transparent'
+                ? 'bg-warning/10 text-warning-text shadow-sm border border-warning/20' 
+                : 'text-muted-foreground hover:text-warning-text hover:bg-hover border border-transparent'
             }`}
           >
-            <Activity size={14} />
+            <Activity size={14} className={activeTab === 'explain' ? "fill-current" : ""} />
             {t('explain')}
           </button>
         </div>
@@ -76,6 +79,7 @@ export const ResultsPane: React.FC<ResultsPaneProps> = ({
           >
             {isMaximized ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
           </button>
+          {slotId && !isMaximized && <DragHandle slotId={slotId} className="ml-1" />}
         </div>
       </div>
 

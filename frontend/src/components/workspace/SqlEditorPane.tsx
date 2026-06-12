@@ -4,18 +4,21 @@ import { sql } from '@codemirror/lang-sql';
 import { keymap } from '@codemirror/view';
 import { Play, Zap, Maximize2, Minimize2, Loader2 } from 'lucide-react';
 import { useTheme } from '../../components/theme-provider';
-import { useUIStore } from '../../store/uiStore';
+import { useUIStore, type SlotId } from '../../store/uiStore';
 import { useQueryStore } from '../../store/queryStore';
 import { useTranslation } from 'react-i18next';
+import { DragHandle } from './DragHandle';
 
 interface SqlEditorPaneProps {
   isMaximized?: boolean;
   onToggleMaximize?: () => void;
+  slotId?: SlotId;
 }
 
 export const SqlEditorPane: React.FC<SqlEditorPaneProps> = ({ 
   isMaximized: propIsMaximized, 
-  onToggleMaximize: propOnToggleMaximize 
+  onToggleMaximize: propOnToggleMaximize,
+  slotId
 }) => {
   const { t } = useTranslation();
   const { sql: query, setSql: setQuery, executeQuery, isLoading } = useQueryStore();
@@ -34,9 +37,9 @@ export const SqlEditorPane: React.FC<SqlEditorPaneProps> = ({
 
   return (
     <div className={`h-full flex flex-col transition-all duration-300 ${isMaximized ? 'absolute inset-0 z-[100] bg-background rounded-2xl' : 'bg-transparent'}`}>
-      <div className="h-10 border-b border-glass-border flex items-center justify-between px-3 shrink-0 bg-hover">
+      <div className="h-10 border-b border-glass-border flex items-center justify-between px-3 shrink-0 bg-hover relative z-50">
         <span className="text-sm font-semibold text-foreground uppercase tracking-wider text-[11px] opacity-70">{t('sql_editor:title')}</span>
-        <div className="flex gap-2">
+        <div className="flex items-center gap-1.5">
           <button 
             onClick={() => executeQuery()}
             disabled={isLoading}
@@ -44,12 +47,6 @@ export const SqlEditorPane: React.FC<SqlEditorPaneProps> = ({
           >
             {isLoading ? <Loader2 size={12} className="animate-spin" /> : <Play size={12} className="fill-current" />}
             {t('sql_editor:run')} <span className="opacity-50 font-normal hidden sm:inline ml-1">(Ctrl+Enter)</span>
-          </button>
-          <button 
-            className="flex items-center gap-1.5 text-xs font-semibold bg-warning/10 text-warning-text hover:bg-warning/20 px-3 py-1.5 rounded-md transition-colors"
-          >
-            <Zap size={12} className="fill-current" />
-            {t('sql_editor:explain')}
           </button>
           <div className="w-px h-4 bg-glass-border mx-1" />
           <button 
@@ -59,6 +56,7 @@ export const SqlEditorPane: React.FC<SqlEditorPaneProps> = ({
           >
             {isMaximized ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
           </button>
+          {slotId && !isMaximized && <DragHandle slotId={slotId} className="ml-1" />}
         </div>
       </div>
       <div className="flex-1 overflow-hidden relative code-editor-wrapper">

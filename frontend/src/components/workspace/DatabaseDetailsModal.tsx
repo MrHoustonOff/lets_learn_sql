@@ -114,7 +114,7 @@ export const DatabaseDetailsModal: React.FC<DatabaseDetailsModalProps> = ({ isOp
                   </div>
                 </Panel>
 
-                <PanelResizeHandle className="w-[2px] bg-glass-border hover:bg-primary/50 transition-colors relative flex items-center justify-center group cursor-col-resize z-40 outline-none">
+                <PanelResizeHandle className="w-[2px] bg-glass-border hover:bg-primary/50 transition-colors relative flex items-center justify-center group !cursor-grab active:!cursor-grabbing z-40 outline-none">
                   <div className="absolute inset-y-0 -inset-x-3 z-40"></div>
                   <div className="absolute z-50 bg-background/90 backdrop-blur-md border border-glass-border rounded flex items-center justify-center py-1 px-[1px] text-muted-foreground group-hover:text-primary group-hover:border-primary/50 transition-colors shadow-sm">
                     <GripVertical size={12} />

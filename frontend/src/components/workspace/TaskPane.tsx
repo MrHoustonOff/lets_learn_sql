@@ -1,9 +1,14 @@
 import React, { useState } from 'react';
 import { useTranslation, Trans } from 'react-i18next';
-import { useUIStore } from '../../store/uiStore';
+import { useUIStore, type SlotId } from '../../store/uiStore';
 import { Maximize2, Minimize2, Check, Bookmark } from 'lucide-react';
+import { DragHandle } from './DragHandle';
 
-export const TaskPane: React.FC = () => {
+interface TaskPaneProps {
+  slotId: SlotId;
+}
+
+export const TaskPane: React.FC<TaskPaneProps> = ({ slotId }) => {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<'task' | 'solution'>('task');
   const [isSolved, setIsSolved] = useState(true);
@@ -13,7 +18,7 @@ export const TaskPane: React.FC = () => {
 
   return (
     <div className={`h-full flex flex-col transition-all duration-300 ${isMaximized ? 'absolute inset-0 z-[100] bg-background rounded-2xl' : 'bg-transparent'}`}>
-      <div className="h-10 border-b border-glass-border flex items-center px-2 shrink-0 bg-hover justify-between">
+      <div className="h-10 border-b border-glass-border flex items-center px-2 shrink-0 bg-hover justify-between relative z-50">
         <div className="flex items-center gap-1">
           <button 
           onClick={() => setActiveTab('task')}
@@ -72,6 +77,8 @@ export const TaskPane: React.FC = () => {
         >
           {isMaximized ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
         </button>
+        
+        {!isMaximized && <DragHandle slotId={slotId} className="ml-1" />}
       </div>
       </div>
 
