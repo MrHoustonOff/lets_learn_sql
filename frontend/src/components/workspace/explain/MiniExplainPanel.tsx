@@ -76,54 +76,59 @@ export const MiniExplainPanel: React.FC = () => {
       <div className="flex-1 overflow-auto p-4 space-y-6">
         
         {/* Diagnostics & Recommendations */}
-        {slot1.plan_parsed.diagnostics && slot1.plan_parsed.diagnostics.length > 0 && (
-          <section className="bg-glass border border-glass-border p-4 rounded-xl shadow-sm space-y-3 animate-in fade-in slide-in-from-top-4 duration-200">
-            <div className="flex items-center justify-between mb-1 select-none">
-              <div className="flex items-center gap-2">
-                <AlertTriangle className="text-warning shrink-0" size={18} />
-                <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-                  {t('explain_ui:diagnostics_title')}
-                </h3>
+        {(() => {
+          const diags = slot1.plan_parsed.diagnostics;
+          if (!diags || diags.length === 0) return null;
+          
+          const hasWarnings = diags.some(d => d.severity === 'warning' || d.severity === 'critical');
+          const headerIconColor = hasWarnings ? "text-warning" : "text-emerald-500";
+          const HeaderIcon = hasWarnings ? AlertTriangle : Info;
+          
+          return (
+            <section className="bg-black/5 dark:bg-white/5 border border-glass-border p-3.5 rounded-xl space-y-2.5 animate-in fade-in slide-in-from-top-4 duration-200">
+              <div className="flex items-center justify-between mb-1 select-none">
+                <div className="flex items-center gap-2">
+                  <HeaderIcon className={`${headerIconColor} shrink-0`} size={16} />
+                  <h3 className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
+                    {t('explain_ui:diagnostics_title')}
+                  </h3>
+                </div>
+                <InfoTooltip text={t('explain_ui:diagnostics_disclaimer')} />
               </div>
-              <InfoTooltip text={t('explain_ui:diagnostics_disclaimer')} />
-            </div>
-            <div className="flex flex-col gap-2">
-              {slot1.plan_parsed.diagnostics.map((diag, idx) => {
-                let Icon = CheckCircle2;
-                let borderStyle = "border-l-success";
-                let iconColor = "text-success";
-                
-                if (diag.severity === "warning") {
-                  Icon = AlertTriangle;
-                  borderStyle = "border-l-warning";
-                  iconColor = "text-warning";
-                } else if (diag.severity === "critical") {
-                  Icon = AlertTriangle;
-                  borderStyle = "border-l-destructive";
-                  iconColor = "text-destructive";
-                } else if (diag.severity === "info") {
-                  Icon = Info;
-                  borderStyle = "border-l-primary";
-                  iconColor = "text-primary";
-                }
+              <div className="flex flex-col gap-1.5">
+                {diags.map((diag, idx) => {
+                  let Icon = CheckCircle2;
+                  let iconColor = "text-emerald-500";
+                  
+                  if (diag.severity === "warning") {
+                    Icon = AlertTriangle;
+                    iconColor = "text-warning";
+                  } else if (diag.severity === "critical") {
+                    Icon = AlertTriangle;
+                    iconColor = "text-destructive";
+                  } else if (diag.severity === "info") {
+                    Icon = Info;
+                    iconColor = "text-emerald-500";
+                  }
 
-                const diagText = diag.code 
-                  ? t(diag.code, { ...diag.params, defaultValue: diag.message })
-                  : diag.message;
+                  const diagText = diag.code 
+                    ? t(diag.code, { ...diag.params, defaultValue: diag.message })
+                    : diag.message;
 
-                return (
-                  <div 
-                    key={idx} 
-                    className={`border border-glass-border border-l-2 ${borderStyle} bg-black/5 dark:bg-white/5 p-3.5 rounded-lg flex items-start gap-3 text-sm text-foreground shadow-sm transition-all hover:bg-black/10 dark:hover:bg-white/10`}
-                  >
-                    <Icon size={16} className={`${iconColor} shrink-0 mt-0.5`} />
-                    <span className="font-medium leading-relaxed">{diagText}</span>
-                  </div>
-                );
-              })}
-            </div>
-          </section>
-        )}
+                  return (
+                    <div 
+                      key={idx} 
+                      className="flex items-start gap-2.5 text-xs text-foreground/80 py-1"
+                    >
+                      <Icon size={14} className={`${iconColor} shrink-0 mt-0.5 opacity-80`} />
+                      <span className="leading-relaxed">{diagText}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
+          );
+        })()}
 
         {/* Performance Breakdown Section */}
         <PerformanceBreakdown setSelectedNodeId={setSelectedNodeId} />
@@ -190,17 +195,34 @@ export const MiniExplainPanel: React.FC = () => {
       {/* Bottom Status Bar */}
       <div className="shrink-0 border-t border-glass-border bg-hover flex items-center justify-between px-4 py-2 min-h-[40px] text-xs">
         <div className="flex items-center gap-2 text-muted-foreground">
-          {slot1.plan_parsed.diagnostics && slot1.plan_parsed.diagnostics.length > 0 ? (
-            <>
-              <AlertTriangle size={14} className="text-warning shrink-0" />
-              <span className="font-medium">{t('explain_ui:has_recommendations')}</span>
-            </>
-          ) : (
-            <>
-              <CheckCircle2 size={14} className="text-emerald-500 shrink-0" />
-              <span className="font-medium">{t('explain_ui:no_issues')}</span>
-            </>
-          )}
+          {(() => {
+            const diags = slot1.plan_parsed.diagnostics;
+            if (diags && diags.length > 0) {
+              const hasWarnings = diags.some(d => d.severity === 'warning' || d.severity === 'critical');
+              if (hasWarnings) {
+                return (
+                  <>
+                    <AlertTriangle size={14} className="text-warning shrink-0" />
+                    <span className="font-medium">{t('explain_ui:has_recommendations')}</span>
+                  </>
+                );
+              } else {
+                return (
+                  <>
+                    <Info size={14} className="text-emerald-500 shrink-0" />
+                    <span className="font-medium">{t('explain_ui:has_recommendations')}</span>
+                  </>
+                );
+              }
+            } else {
+              return (
+                <>
+                  <CheckCircle2 size={14} className="text-emerald-500 shrink-0" />
+                  <span className="font-medium">{t('explain_ui:no_issues')}</span>
+                </>
+              );
+            }
+          })()}
         </div>
         
         <div className="text-muted-foreground font-mono whitespace-nowrap ml-4 flex items-center gap-4">
