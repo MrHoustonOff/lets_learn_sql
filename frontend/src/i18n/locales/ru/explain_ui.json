@@ -30,6 +30,8 @@
   "filter_cond": "Filter/Cond",
   "rows_est": "Строк~",
   "planner_accuracy_warning": "Планировщик ошибся в ~{{ratio}} раз (Ожидалось {{expected}}, по факту {{actual}})",
+  "diagnostics_title": "Рекомендации по оптимизации",
+  "has_recommendations": "Есть рекомендации по оптимизации",
   "diagnostics": {
     "seq_scan_large": "Seq Scan на большой таблице '{{relation}}' (строк: {{rows}}). Возможно, не хватает индекса.",
     "disk_sort": "Дисковая сортировка (Disk Sort). Увеличьте work_mem или оптимизируйте ORDER BY.",

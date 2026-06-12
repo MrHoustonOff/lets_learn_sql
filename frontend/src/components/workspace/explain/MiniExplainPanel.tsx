@@ -75,6 +75,46 @@ export const MiniExplainPanel: React.FC = () => {
       )}
       <div className="flex-1 overflow-auto p-4 space-y-6">
         
+        {/* Diagnostics & Recommendations */}
+        {slot1.plan_parsed.diagnostics && slot1.plan_parsed.diagnostics.length > 0 && (
+          <section className="bg-glass border border-glass-border p-4 rounded-xl shadow-sm space-y-3 animate-in fade-in slide-in-from-top-4 duration-200">
+            <div className="flex items-center gap-2 mb-1">
+              <AlertTriangle className="text-warning shrink-0" size={18} />
+              <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                {t('explain_ui:diagnostics_title')}
+              </h3>
+            </div>
+            <div className="flex flex-col gap-2">
+              {slot1.plan_parsed.diagnostics.map((diag, idx) => {
+                let Icon = CheckCircle2;
+                let cardStyle = "bg-emerald-500/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400";
+                
+                if (diag.severity === "warning") {
+                  Icon = AlertTriangle;
+                  cardStyle = "bg-amber-500/10 border-amber-500/20 text-amber-600 dark:text-amber-400";
+                } else if (diag.severity === "critical") {
+                  Icon = AlertTriangle;
+                  cardStyle = "bg-destructive/10 border-destructive/20 text-destructive";
+                } else if (diag.severity === "info") {
+                  Icon = Info;
+                  cardStyle = "bg-primary/10 border-primary/20 text-primary";
+                }
+
+                const diagText = diag.code 
+                  ? t(diag.code, { ...diag.params, defaultValue: diag.message })
+                  : diag.message;
+
+                return (
+                  <div key={idx} className={`flex items-start gap-3 p-3 rounded-lg border text-sm ${cardStyle}`}>
+                    <Icon size={16} className="shrink-0 mt-0.5" />
+                    <span className="font-semibold">{diagText}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+        )}
+
         {/* Performance Breakdown Section */}
         <PerformanceBreakdown setSelectedNodeId={setSelectedNodeId} />
 
@@ -138,48 +178,24 @@ export const MiniExplainPanel: React.FC = () => {
       </div>
 
       {/* Bottom Status Bar */}
-      <div className="shrink-0 border-t border-glass-border bg-hover flex flex-col justify-center px-4 py-2 min-h-[40px] text-xs">
-        <div className="flex items-start justify-between w-full">
-          <div className="flex flex-col gap-1 w-full max-w-full">
-            {slot1.plan_parsed.diagnostics && slot1.plan_parsed.diagnostics.length > 0 ? (
-              slot1.plan_parsed.diagnostics.map((diag, idx) => {
-                let Icon = CheckCircle2;
-                let colorClass = "text-emerald-500";
-                
-                if (diag.severity === "warning") {
-                  Icon = AlertTriangle;
-                  colorClass = "text-warning";
-                } else if (diag.severity === "critical") {
-                  Icon = AlertTriangle;
-                  colorClass = "text-destructive";
-                } else if (diag.severity === "info") {
-                  Icon = Info;
-                  colorClass = "text-primary";
-                }
-
-                const diagText = diag.code 
-                  ? t(diag.code, { ...diag.params, defaultValue: diag.message })
-                  : diag.message;
-
-                return (
-                  <div key={idx} className={`flex items-start gap-2 ${colorClass}`}>
-                    <Icon size={14} className="shrink-0 mt-0.5" />
-                    <span className="font-medium truncate" title={diagText}>{diagText}</span>
-                  </div>
-                );
-              })
-            ) : (
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <CheckCircle2 size={14} className="text-emerald-500" />
-                <span className="font-medium">{t('explain_ui:no_issues')}</span>
-              </div>
-            )}
-          </div>
-          
-          <div className="text-muted-foreground font-mono whitespace-nowrap ml-4 flex flex-col items-end">
-            <div>Planning: {planning_time.toFixed(2)} ms</div>
-            <div>Execution: {slot1.plan_parsed.execution_time.toFixed(2)} ms</div>
-          </div>
+      <div className="shrink-0 border-t border-glass-border bg-hover flex items-center justify-between px-4 py-2 min-h-[40px] text-xs">
+        <div className="flex items-center gap-2 text-muted-foreground">
+          {slot1.plan_parsed.diagnostics && slot1.plan_parsed.diagnostics.length > 0 ? (
+            <>
+              <AlertTriangle size={14} className="text-warning shrink-0" />
+              <span className="font-medium">{t('explain_ui:has_recommendations')}</span>
+            </>
+          ) : (
+            <>
+              <CheckCircle2 size={14} className="text-emerald-500 shrink-0" />
+              <span className="font-medium">{t('explain_ui:no_issues')}</span>
+            </>
+          )}
+        </div>
+        
+        <div className="text-muted-foreground font-mono whitespace-nowrap ml-4 flex items-center gap-4">
+          <div>Planning: {planning_time.toFixed(2)} ms</div>
+          <div>Execution: {slot1.plan_parsed.execution_time.toFixed(2)} ms</div>
         </div>
       </div>
       
