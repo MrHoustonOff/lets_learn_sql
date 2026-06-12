@@ -179,11 +179,11 @@ const NodeDetailsOverlay: React.FC<NodeDetailsProps> = ({ nodeId, onClose, rootT
 
   return (
     <div 
-      className="absolute inset-0 bg-background/95 backdrop-blur-sm z-50 p-4 flex items-start justify-center overflow-y-auto animate-in fade-in zoom-in-95 duration-200"
+      className="absolute inset-0 bg-background/90 z-50 p-4 flex items-start justify-center overflow-y-auto animate-in fade-in zoom-in-95 duration-200"
       onClick={onClose}
     >
       <div 
-        className="border border-glass-border bg-black/5 dark:bg-white/5 rounded-lg p-4 shadow-xl w-full max-w-2xl relative my-auto mt-10 mb-10"
+        className="border border-glass-border bg-background rounded-lg p-4 shadow-2xl w-full max-w-2xl relative my-auto mt-10 mb-10"
         onClick={(e) => e.stopPropagation()} // Не закрывать при клике на саму карточку
       >
         <div className="flex items-start justify-between mb-4 border-b border-glass-border pb-3">
