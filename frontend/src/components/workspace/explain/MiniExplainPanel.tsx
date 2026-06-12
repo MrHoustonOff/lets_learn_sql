@@ -215,22 +215,7 @@ const NodeDetailsOverlay: React.FC<NodeDetailsProps> = ({ nodeId, onClose, rootT
     setTimeout(() => setCopiedKey(null), 2000);
   };
 
-  // Логика навигации
-  const chronologicalNodes = [...flatNodes].sort((a, b) => a.step_number - b.step_number);
-  const currentIndex = chronologicalNodes.findIndex(n => n.node_id === nodeId);
-  
-  const hasPrev = currentIndex > 0;
-  const hasNext = currentIndex < chronologicalNodes.length - 1;
-
-  const handlePrev = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (hasPrev) onNavigate(chronologicalNodes[currentIndex - 1].node_id);
-  };
-
-  const handleNext = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (hasNext) onNavigate(chronologicalNodes[currentIndex + 1].node_id);
-  };
+  // Навигация удалена по просьбе пользователя
 
   const dynamicProps = Object.entries(node).filter(([key, value]) => {
     const ignoredKeys = ['Node Type', 'Relation Name', 'Index Name', 'Total Cost', 'Plan Rows', 'Plan Width', 'Plans', 'node_id', 'Parent Relationship', 'Startup Cost', 'Alias'];
@@ -270,25 +255,6 @@ const NodeDetailsOverlay: React.FC<NodeDetailsProps> = ({ nodeId, onClose, rootT
           </div>
           
           <div className="flex items-center gap-2 shrink-0">
-            {/* Навигация */}
-            <div className="flex items-center gap-1 mr-2 border-r border-glass-border pr-3">
-              <button 
-                onClick={handlePrev}
-                disabled={!hasPrev}
-                className={`p-2 rounded-xl transition-colors ${hasPrev ? 'hover:bg-hover text-muted-foreground hover:text-foreground' : 'text-muted-foreground/30 cursor-not-allowed'}`}
-                title="Предыдущий шаг"
-              >
-                <ChevronLeft size={18} />
-              </button>
-              <button 
-                onClick={handleNext}
-                disabled={!hasNext}
-                className={`p-2 rounded-xl transition-colors ${hasNext ? 'hover:bg-hover text-muted-foreground hover:text-foreground' : 'text-muted-foreground/30 cursor-not-allowed'}`}
-                title="Следующий шаг"
-              >
-                <ChevronRight size={18} />
-              </button>
-            </div>
 
             <button 
               onClick={onClose}
