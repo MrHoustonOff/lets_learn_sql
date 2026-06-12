@@ -12,6 +12,29 @@ import { ViewMenu } from '../components/workspace/ViewMenu';
 
 export const TaskScreen: React.FC = () => {
   const { maximizedPane, setMaximizedPane, slots } = useUIStore();
+
+  // Dynamic minSize calculation to enforce hard pixel limits
+  const [minHorizontalPct, setMinHorizontalPct] = React.useState(30);
+  const [minVerticalPct, setMinVerticalPct] = React.useState(25);
+
+  React.useEffect(() => {
+    const calculateLimits = () => {
+      // For horizontal (left/right panes), we want at least 320px
+      const w = window.innerWidth || 1000;
+      const h = window.innerHeight || 800;
+      
+      const horizPct = Math.ceil((320 / w) * 100);
+      setMinHorizontalPct(Math.min(Math.max(horizPct, 20), 45));
+
+      // For vertical (top/bottom panes), we want at least 200px
+      const vertPct = Math.ceil((200 / h) * 100);
+      setMinVerticalPct(Math.min(Math.max(vertPct, 15), 45));
+    };
+
+    calculateLimits();
+    window.addEventListener('resize', calculateLimits);
+    return () => window.removeEventListener('resize', calculateLimits);
+  }, []);
   
   const mainGroupRef = useRef<GroupImperativeHandle>(null);
   const leftGroupRef = useRef<GroupImperativeHandle>(null);
@@ -88,18 +111,18 @@ export const TaskScreen: React.FC = () => {
         >
         
         {/* ================= LEFT HALF ================= */}
-        <Panel id="main_left" defaultSize={50} minSize={30} className={`transition-all duration-300 ${isLeftMaximized ? 'z-[100]' : ''}`}>
+        <Panel id="main_left" defaultSize={50} minSize={minHorizontalPct} className={`transition-all duration-300 ${isLeftMaximized ? 'z-[100]' : ''}`}>
           <PanelGroup groupRef={leftGroupRef} defaultLayout={leftLayout} onLayoutChanged={leftOnLayout} orientation="vertical" id="llpg_left_vertical_v4" className="w-full h-full">
             
             {/* Top Left Slot */}
-            <Panel id="left_top" defaultSize={50} minSize={30} className={`transition-all duration-300 ${maximizedPane === slots.topLeft ? 'z-[100]' : ''}`}>
+            <Panel id="left_top" defaultSize={50} minSize={minVerticalPct} className={`transition-all duration-300 ${maximizedPane === slots.topLeft ? 'z-[100]' : ''}`}>
               {renderPane('topLeft')}
             </Panel>
 
             <ResizeHandle direction="horizontal" />
 
             {/* Bottom Left Slot */}
-            <Panel id="left_bottom" defaultSize={50} minSize={30} className={`transition-all duration-300 ${maximizedPane === slots.bottomLeft ? 'z-[100]' : ''}`}>
+            <Panel id="left_bottom" defaultSize={50} minSize={minVerticalPct} className={`transition-all duration-300 ${maximizedPane === slots.bottomLeft ? 'z-[100]' : ''}`}>
               {renderPane('bottomLeft')}
             </Panel>
             
@@ -109,18 +132,18 @@ export const TaskScreen: React.FC = () => {
         <ResizeHandle direction="vertical" />
 
         {/* ================= RIGHT HALF ================= */}
-        <Panel id="main_right" defaultSize={50} minSize={30} className={`transition-all duration-300 ${isRightMaximized ? 'z-[100]' : ''}`}>
+        <Panel id="main_right" defaultSize={50} minSize={minHorizontalPct} className={`transition-all duration-300 ${isRightMaximized ? 'z-[100]' : ''}`}>
           <PanelGroup groupRef={rightGroupRef} defaultLayout={rightLayout} onLayoutChanged={rightOnLayout} orientation="vertical" id="llpg_right_vertical_v4" className="w-full h-full">
             
             {/* Top Right Slot */}
-            <Panel id="right_top" defaultSize={50} minSize={30} className={`transition-all duration-300 ${maximizedPane === slots.topRight ? 'z-[100]' : ''}`}>
+            <Panel id="right_top" defaultSize={50} minSize={minVerticalPct} className={`transition-all duration-300 ${maximizedPane === slots.topRight ? 'z-[100]' : ''}`}>
               {renderPane('topRight')}
             </Panel>
 
             <ResizeHandle direction="horizontal" />
 
             {/* Bottom Right Slot */}
-            <Panel id="right_bottom" defaultSize={50} minSize={30} className={`transition-all duration-300 ${maximizedPane === slots.bottomRight ? 'z-[100]' : ''}`}>
+            <Panel id="right_bottom" defaultSize={50} minSize={minVerticalPct} className={`transition-all duration-300 ${maximizedPane === slots.bottomRight ? 'z-[100]' : ''}`}>
               {renderPane('bottomRight')}
             </Panel>
 
