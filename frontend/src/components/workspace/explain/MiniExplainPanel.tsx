@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { Info, AlertTriangle, Loader2, CheckCircle2, ArrowDown, ArrowUp, ArrowUpDown, X, ChevronLeft, ChevronRight, Copy, Check, ChevronDown } from 'lucide-react';
+import { createPortal } from 'react-dom';
+import { Info, AlertTriangle, Loader2, CheckCircle2, ArrowDown, ArrowUp, ArrowUpDown, X, ChevronLeft, ChevronRight, Copy, Check, ChevronDown, Activity } from 'lucide-react';
 import { useExplainStore, type FlatNode } from '../../../store/explainStore';
 
 import pgExplainDocs from '../../../i18n/pg_explain_docs.json';
@@ -237,9 +238,9 @@ const NodeDetailsOverlay: React.FC<NodeDetailsProps> = ({ nodeId, onClose, rootT
     return !ignoredKeys.includes(key) && typeof value !== 'object' && value !== undefined && value !== null;
   });
 
-  return (
+  return createPortal(
     <div 
-      className="absolute inset-0 bg-background/90 z-50 p-4 flex items-center justify-center animate-in fade-in zoom-in-95 duration-200"
+      className="fixed inset-0 bg-background/90 z-[99999] p-4 flex items-center justify-center animate-in fade-in zoom-in-95 duration-200"
       onClick={onClose}
     >
       <div 
@@ -247,49 +248,56 @@ const NodeDetailsOverlay: React.FC<NodeDetailsProps> = ({ nodeId, onClose, rootT
         onClick={(e) => e.stopPropagation()} // Не закрывать при клике на саму карточку
       >
         {/* HEADER (Fixed) */}
-        <div className="flex items-start justify-between p-4 border-b border-glass-border shrink-0">
-          <div className="flex items-center gap-2 text-lg flex-1">
-            <div className={`w-3 h-3 rounded-full ${colorClass}`} />
-            <span className="font-bold text-foreground">{nodeType}</span>
-            {objectName && (
-              <>
-                <span className="text-muted-foreground">—</span>
-                <span className="text-primary">{objectName}</span>
-              </>
-            )}
-            {flatData && (
-              <span className="flex items-center justify-center w-5 h-5 rounded bg-background border border-glass-border text-xs text-muted-foreground font-mono ml-2 shrink-0">
-                {flatData.step_number}
-              </span>
-            )}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-glass-border bg-hover shrink-0 rounded-t-lg">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-primary/20 text-primary rounded-lg relative overflow-hidden">
+              <Activity size={24} className="relative z-10" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h2 className="text-xl font-bold text-foreground">{nodeType}</h2>
+                {flatData && (
+                  <span className="text-[10px] uppercase tracking-wider bg-badge text-badge-foreground px-2 py-0.5 rounded-full">
+                    Шаг {flatData.step_number}
+                  </span>
+                )}
+              </div>
+              <p className="text-sm text-muted-foreground mt-0.5">
+                {objectName ? `Объект: ${objectName}` : 'Операция'}
+                {node["Plan Rows"] !== undefined && ` • Строк~: ${node["Plan Rows"]}`}
+                {node["Total Cost"] !== undefined && ` • Cost: ${node["Total Cost"]?.toFixed(2)}`}
+              </p>
+            </div>
           </div>
           
-          {/* Навигация */}
-          <div className="flex items-center gap-1 mr-4 shrink-0">
+          <div className="flex items-center gap-2 shrink-0">
+            {/* Навигация */}
+            <div className="flex items-center gap-1 mr-2 border-r border-glass-border pr-3">
+              <button 
+                onClick={handlePrev}
+                disabled={!hasPrev}
+                className={`p-2 rounded-xl transition-colors ${hasPrev ? 'hover:bg-hover text-muted-foreground hover:text-foreground' : 'text-muted-foreground/30 cursor-not-allowed'}`}
+                title="Предыдущий шаг"
+              >
+                <ChevronLeft size={18} />
+              </button>
+              <button 
+                onClick={handleNext}
+                disabled={!hasNext}
+                className={`p-2 rounded-xl transition-colors ${hasNext ? 'hover:bg-hover text-muted-foreground hover:text-foreground' : 'text-muted-foreground/30 cursor-not-allowed'}`}
+                title="Следующий шаг"
+              >
+                <ChevronRight size={18} />
+              </button>
+            </div>
+
             <button 
-              onClick={handlePrev}
-              disabled={!hasPrev}
-              className={`p-1.5 rounded-md transition-colors ${hasPrev ? 'hover:bg-hover text-foreground' : 'text-muted-foreground/30 cursor-not-allowed'}`}
-              title="Предыдущий шаг"
+              onClick={onClose}
+              className="p-2 rounded-xl hover:bg-hover text-muted-foreground hover:text-foreground transition-colors"
             >
-              <ChevronLeft size={16} />
-            </button>
-            <button 
-              onClick={handleNext}
-              disabled={!hasNext}
-              className={`p-1.5 rounded-md transition-colors ${hasNext ? 'hover:bg-hover text-foreground' : 'text-muted-foreground/30 cursor-not-allowed'}`}
-              title="Следующий шаг"
-            >
-              <ChevronRight size={16} />
+              <X size={20} />
             </button>
           </div>
-
-          <button 
-            onClick={onClose}
-            className="p-1.5 hover:bg-hover rounded-md text-muted-foreground transition-colors shrink-0"
-          >
-            <X size={18} />
-          </button>
         </div>
 
         {/* SCROLLABLE BODY */}
@@ -532,7 +540,8 @@ const NodeDetailsOverlay: React.FC<NodeDetailsProps> = ({ nodeId, onClose, rootT
 
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 
