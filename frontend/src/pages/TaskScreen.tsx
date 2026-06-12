@@ -61,9 +61,9 @@ export const TaskScreen: React.FC = () => {
   return (
     <div className="h-full w-full flex flex-col px-2 pb-2 pt-0 gap-2">
       <div className="flex-1 w-full relative">
-        {/* Central View Button Panel (Hanging from top) */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 z-[60] flex items-start justify-center">
-          <button className="flex items-center gap-1.5 px-4 py-1.5 rounded-b-xl text-xs font-semibold text-muted-foreground hover:bg-hover hover:text-foreground transition-colors bg-glass backdrop-blur-md border border-t-0 border-glass-border shadow-sm outline-none focus:outline-none">
+        {/* Central View Button Panel (Sticking out upwards from top) */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-full z-[60] flex items-end justify-center">
+          <button className="translate-y-[1px] flex items-center gap-1.5 px-5 py-1.5 rounded-t-xl text-xs font-semibold text-muted-foreground hover:bg-hover hover:text-foreground transition-colors bg-glass backdrop-blur-md border border-b-0 border-glass-border outline-none focus:outline-none">
             <AppWindow size={14} />
             {t('view')}
           </button>
