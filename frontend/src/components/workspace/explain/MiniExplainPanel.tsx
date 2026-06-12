@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { Info, AlertTriangle, Loader2, CheckCircle2, ArrowDown, ArrowUp, ArrowUpDown, X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Info, AlertTriangle, Loader2, CheckCircle2, ArrowDown, ArrowUp, ArrowUpDown, X, ChevronLeft, ChevronRight, Copy, Check, ChevronRight as ChevronRightIcon } from 'lucide-react';
 import { useExplainStore, type FlatNode } from '../../../store/explainStore';
 
 // Хелпер для поиска узла в дереве
@@ -159,6 +159,13 @@ const NodeDetailsOverlay: React.FC<NodeDetailsProps> = ({ nodeId, onClose, rootT
   const width = node["Plan Width"];
 
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const [copiedKey, setCopiedKey] = useState<string | null>(null);
+
+  const handleCopy = (key: string, value: any) => {
+    navigator.clipboard.writeText(String(value));
+    setCopiedKey(key);
+    setTimeout(() => setCopiedKey(null), 2000);
+  };
 
   // Логика навигации
   const chronologicalNodes = [...flatNodes].sort((a, b) => a.step_number - b.step_number);
@@ -253,21 +260,31 @@ const NodeDetailsOverlay: React.FC<NodeDetailsProps> = ({ nodeId, onClose, rootT
 
         {/* Дополнительные параметры (Сворачиваемый блок) */}
         {dynamicProps.length > 0 && (
-          <div className="mb-4">
+          <div className="mb-4 border border-glass-border rounded-lg overflow-hidden">
             <button 
               onClick={() => setIsDetailsOpen(!isDetailsOpen)}
-              className="flex items-center gap-2 text-xs font-bold text-muted-foreground uppercase mb-2 hover:text-foreground transition-colors w-full text-left"
+              className="flex items-center justify-between bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 px-4 py-2.5 transition-colors w-full text-left"
             >
-              <span className={`transform transition-transform ${isDetailsOpen ? 'rotate-90' : ''}`}>▶</span>
-              Детали операции ({dynamicProps.length})
+              <div className="flex items-center gap-2 text-xs font-bold text-foreground uppercase">
+                <ChevronRightIcon size={16} className={`transform transition-transform ${isDetailsOpen ? 'rotate-90' : ''}`} />
+                Детали операции ({dynamicProps.length})
+              </div>
             </button>
             
             {isDetailsOpen && (
-              <div className="bg-background/50 border border-glass-border/50 rounded-lg p-3 text-sm font-mono overflow-x-auto animate-in slide-in-from-top-2 duration-200">
+              <div className="flex flex-col text-sm font-mono bg-background/30 animate-in slide-in-from-top-1 duration-200">
                 {dynamicProps.map(([key, value]) => (
-                  <div key={key} className="flex gap-2 py-1 border-b border-glass-border/20 last:border-0">
-                    <span className="text-muted-foreground whitespace-nowrap min-w-[150px]">{key}:</span>
-                    <span className="text-foreground break-all">{String(value)}</span>
+                  <div 
+                    key={key} 
+                    onClick={() => handleCopy(key, value)}
+                    className="flex items-start gap-4 px-4 py-2.5 border-t border-glass-border/30 cursor-pointer transition-colors even:bg-black/[0.02] dark:even:bg-white/[0.02] hover:bg-primary/10 group"
+                    title="Нажмите, чтобы скопировать значение"
+                  >
+                    <span className="text-muted-foreground whitespace-nowrap min-w-[150px] mt-0.5">{key}:</span>
+                    <span className="text-foreground break-all flex-1">{String(value)}</span>
+                    <div className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground shrink-0 mt-0.5">
+                      {copiedKey === key ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
+                    </div>
                   </div>
                 ))}
               </div>
