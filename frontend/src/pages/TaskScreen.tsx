@@ -97,6 +97,8 @@ export const TaskScreen: React.FC = () => {
         {content}
       </DroppableSlot>
     );
+  };
+
   return (
     <div className="h-full w-full flex flex-col px-2 pb-2 pt-0 gap-2">
       <div className="flex-1 w-full relative">
