@@ -15,6 +15,7 @@ interface UIState {
   setMaximizedPane: (pane: MaximizedPane) => void;
   setDraggingSlot: (slot: SlotId | null) => void;
   swapSlots: (slotA: SlotId, slotB: SlotId) => void;
+  resetSlots: () => void;
 }
 
 const defaultSlots: Record<SlotId, PaneType> = {
@@ -42,6 +43,7 @@ export const useUIStore = create<UIState>()(
         newSlots[slotB] = temp;
         return { slots: newSlots, draggingSlot: null };
       }),
+      resetSlots: () => set({ slots: defaultSlots }),
     }),
     {
       name: 'll_ui_storage',

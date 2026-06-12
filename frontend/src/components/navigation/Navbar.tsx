@@ -3,7 +3,7 @@ import { NavLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAppLang } from '../../i18n';
 import { useTheme } from '../theme-provider';
-import { Moon, Sun, User, BookOpen, CheckSquare, Database, AppWindow } from 'lucide-react';
+import { Moon, Sun, User, BookOpen, CheckSquare, Database } from 'lucide-react';
 
 const baseTabClasses = "transition-all duration-300 active:duration-75 ease-out outline-none select-none active:scale-95 bg-glass backdrop-blur-md border border-glass-border shadow-[0_8px_24px_-4px_rgba(0,0,0,0.2)] text-muted-foreground hover:text-foreground hover:bg-foreground/5";
 const hangingTabClasses = `-translate-y-[1px] rounded-b-2xl border-t-0 ${baseTabClasses}`;

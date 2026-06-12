@@ -13,5 +13,10 @@
   "course_toc": "Course Table of Contents",
   "overall_progress": "Overall Progress",
   "close": "Close",
-  "view": "View"
+  "view": "View",
+  "view_menu": {
+    "layout": "Layout",
+    "reset_proportions": "Reset window proportions",
+    "reset_slots": "Default panels layout"
+  }
 }

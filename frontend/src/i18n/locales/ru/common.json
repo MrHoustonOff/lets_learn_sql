@@ -13,5 +13,10 @@
   "course_toc": "Оглавление курса",
   "overall_progress": "Общий прогресс",
   "close": "Закрыть",
-  "view": "Вид"
+  "view": "Вид",
+  "view_menu": {
+    "layout": "Лейаут",
+    "reset_proportions": "Сбросить пропорции окон",
+    "reset_slots": "Раскладка окон по умолчанию"
+  }
 }

@@ -2,7 +2,7 @@ import React from 'react';
 import CodeMirror from '@uiw/react-codemirror';
 import { sql } from '@codemirror/lang-sql';
 import { keymap } from '@codemirror/view';
-import { Play, Zap, Maximize2, Minimize2, Loader2 } from 'lucide-react';
+import { Play, Maximize2, Minimize2, Loader2 } from 'lucide-react';
 import { useTheme } from '../../components/theme-provider';
 import { useUIStore, type SlotId } from '../../store/uiStore';
 import { useQueryStore } from '../../store/queryStore';
