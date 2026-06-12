@@ -3,7 +3,7 @@ import { NavLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAppLang } from '../../i18n';
 import { useTheme } from '../theme-provider';
-import { Moon, Sun, User, BookOpen, CheckSquare, Database } from 'lucide-react';
+import { Moon, Sun, User, BookOpen, CheckSquare, Database, AppWindow } from 'lucide-react';
 
 export const Navbar: React.FC = () => {
   const { t, i18n } = useTranslation();
@@ -43,6 +43,13 @@ export const Navbar: React.FC = () => {
         </div>
       </div>
 
+      {/* Center panel - absolute positioning ensures it's exactly centered regardless of left/right side widths */}
+      <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-1 pointer-events-auto p-0.5 rounded-lg border border-glass-border bg-glass backdrop-blur-md shadow-sm">
+        <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium text-muted-foreground hover:bg-black/5 dark:hover:bg-white/5 hover:text-foreground transition-colors outline-none focus:outline-none">
+          <AppWindow size={14} />
+          {t('view')}
+        </button>
+      </div>
       <div className="flex items-center gap-1 pointer-events-auto p-0.5 rounded-lg border border-glass-border bg-glass backdrop-blur-md shadow-sm">
         {/* DEV: language switcher */}
         <button 
