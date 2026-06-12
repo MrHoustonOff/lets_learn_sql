@@ -14,26 +14,30 @@ const LAYOUT_KEY = 'task_screen_layout_v6';
 const MIN_HORIZONTAL_PCT = 30;
 const MIN_VERTICAL_PCT = 25;
 
-function clampLayout(layout: number[], min: number): number[] {
-  if (!Array.isArray(layout) || layout.length !== 2) return [50, 50];
-  if (layout.some(s => typeof s !== 'number' || s < min)) return [50, 50];
+type LayoutMap = { [panelId: string]: number };
+
+function clampLayout(layout: LayoutMap | undefined, defaultLayout: LayoutMap, min: number): LayoutMap {
+  if (!layout || typeof layout !== 'object' || Array.isArray(layout)) return defaultLayout;
+  const values = Object.values(layout);
+  if (values.length !== Object.keys(defaultLayout).length) return defaultLayout;
+  if (values.some(s => typeof s !== 'number' || s < min)) return defaultLayout;
   return layout;
 }
 
-function useCustomLayout(id: string, minSize: number) {
+function useCustomLayout(id: string, minSize: number, defaultLayoutMap: LayoutMap) {
   const defaultLayout = React.useMemo(() => {
     try {
       const raw = localStorage.getItem(`${LAYOUT_KEY}_${id}`);
-      if (!raw) return [50, 50];
+      if (!raw) return defaultLayoutMap;
       const parsed = JSON.parse(raw);
-      return clampLayout(parsed, minSize);
+      return clampLayout(parsed, defaultLayoutMap, minSize);
     } catch {
-      return [50, 50];
+      return defaultLayoutMap;
     }
-  }, [id, minSize]);
+  }, [id, minSize, defaultLayoutMap]);
 
-  const onLayoutChanged = React.useCallback((layout: number[]) => {
-    if (layout.every(s => s >= minSize)) {
+  const onLayoutChanged = React.useCallback((layout: LayoutMap) => {
+    if (Object.values(layout).every(s => typeof s === 'number' && s >= minSize)) {
       localStorage.setItem(`${LAYOUT_KEY}_${id}`, JSON.stringify(layout));
     }
   }, [id, minSize]);
@@ -48,9 +52,9 @@ export const TaskScreen: React.FC = () => {
   const leftGroupRef = useRef<GroupImperativeHandle>(null);
   const rightGroupRef = useRef<GroupImperativeHandle>(null);
 
-  const { defaultLayout: mainLayout, onLayoutChanged: mainOnLayout } = useCustomLayout('main_horizontal', MIN_HORIZONTAL_PCT);
-  const { defaultLayout: leftLayout, onLayoutChanged: leftOnLayout } = useCustomLayout('left_vertical', MIN_VERTICAL_PCT);
-  const { defaultLayout: rightLayout, onLayoutChanged: rightOnLayout } = useCustomLayout('right_vertical', MIN_VERTICAL_PCT);
+  const { defaultLayout: mainLayout, onLayoutChanged: mainOnLayout } = useCustomLayout('main_horizontal', MIN_HORIZONTAL_PCT, { main_left: 50, main_right: 50 });
+  const { defaultLayout: leftLayout, onLayoutChanged: leftOnLayout } = useCustomLayout('left_vertical', MIN_VERTICAL_PCT, { left_top: 50, left_bottom: 50 });
+  const { defaultLayout: rightLayout, onLayoutChanged: rightOnLayout } = useCustomLayout('right_vertical', MIN_VERTICAL_PCT, { right_top: 50, right_bottom: 50 });
 
   const handleResetProportions = () => {
     mainGroupRef.current?.setLayout({ main_left: 50, main_right: 50 });
@@ -96,8 +100,6 @@ export const TaskScreen: React.FC = () => {
   };
 
   const maximizedSlot = Object.entries(slots).find(([_, paneType]) => paneType === maximizedPane)?.[0] as SlotId | undefined;
-  const isLeftMaximized = maximizedSlot === 'topLeft' || maximizedSlot === 'bottomLeft';
-  const isRightMaximized = maximizedSlot === 'topRight' || maximizedSlot === 'bottomRight';
 
   return (
     <div className="h-full w-full flex flex-col px-2 pb-2 pt-0 gap-2">
