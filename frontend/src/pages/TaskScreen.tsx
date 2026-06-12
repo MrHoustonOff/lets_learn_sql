@@ -40,14 +40,14 @@ export const TaskScreen: React.FC = () => {
   const leftGroupRef = useRef<GroupImperativeHandle>(null);
   const rightGroupRef = useRef<GroupImperativeHandle>(null);
 
-  const { defaultLayout: mainLayout, onLayoutChanged: mainOnLayout } = useDefaultLayout({ id: 'llpg_main_horizontal_v4' });
-  const { defaultLayout: leftLayout, onLayoutChanged: leftOnLayout } = useDefaultLayout({ id: 'llpg_left_vertical_v4' });
-  const { defaultLayout: rightLayout, onLayoutChanged: rightOnLayout } = useDefaultLayout({ id: 'llpg_right_vertical_v4' });
+  const { defaultLayout: mainLayout, onLayoutChanged: mainOnLayout } = useDefaultLayout({ id: 'llpg_main_horizontal_v5' });
+  const { defaultLayout: leftLayout, onLayoutChanged: leftOnLayout } = useDefaultLayout({ id: 'llpg_left_vertical_v5' });
+  const { defaultLayout: rightLayout, onLayoutChanged: rightOnLayout } = useDefaultLayout({ id: 'llpg_right_vertical_v5' });
 
   const handleResetProportions = () => {
-    mainGroupRef.current?.setLayout({ main_left: 50, main_right: 50 });
-    leftGroupRef.current?.setLayout({ left_top: 50, left_bottom: 50 });
-    rightGroupRef.current?.setLayout({ right_top: 50, right_bottom: 50 });
+    mainGroupRef.current?.setLayout([50, 50]);
+    leftGroupRef.current?.setLayout([50, 50]);
+    rightGroupRef.current?.setLayout([50, 50]);
   };
   // Обработка Esc для выхода из полноэкранного режима панелей
   useEffect(() => {
@@ -106,13 +106,13 @@ export const TaskScreen: React.FC = () => {
           defaultLayout={mainLayout}
           onLayoutChanged={mainOnLayout}
           orientation="horizontal" 
-          id="llpg_main_horizontal_v4" 
+          id="llpg_main_horizontal_v5" 
           className="h-full w-full relative z-10"
         >
         
         {/* ================= LEFT HALF ================= */}
         <Panel id="main_left" defaultSize={50} minSize={minHorizontalPct} className={`!overflow-visible ${isLeftMaximized ? 'z-[100]' : ''}`}>
-          <PanelGroup groupRef={leftGroupRef} defaultLayout={leftLayout} onLayoutChanged={leftOnLayout} orientation="vertical" id="llpg_left_vertical_v4" className="w-full h-full !overflow-visible">
+          <PanelGroup groupRef={leftGroupRef} defaultLayout={leftLayout} onLayoutChanged={leftOnLayout} orientation="vertical" id="llpg_left_vertical_v5" className="w-full h-full !overflow-visible">
             
             {/* Top Left Slot */}
             <Panel id="left_top" defaultSize={50} minSize={minVerticalPct} className={`!overflow-visible ${maximizedPane === slots.topLeft ? 'z-[100]' : ''}`}>
@@ -133,7 +133,7 @@ export const TaskScreen: React.FC = () => {
 
         {/* ================= RIGHT HALF ================= */}
         <Panel id="main_right" defaultSize={50} minSize={minHorizontalPct} className={`!overflow-visible ${isRightMaximized ? 'z-[100]' : ''}`}>
-          <PanelGroup groupRef={rightGroupRef} defaultLayout={rightLayout} onLayoutChanged={rightOnLayout} orientation="vertical" id="llpg_right_vertical_v4" className="w-full h-full !overflow-visible">
+          <PanelGroup groupRef={rightGroupRef} defaultLayout={rightLayout} onLayoutChanged={rightOnLayout} orientation="vertical" id="llpg_right_vertical_v5" className="w-full h-full !overflow-visible">
             
             {/* Top Right Slot */}
             <Panel id="right_top" defaultSize={50} minSize={minVerticalPct} className={`!overflow-visible ${maximizedPane === slots.topRight ? 'z-[100]' : ''}`}>
