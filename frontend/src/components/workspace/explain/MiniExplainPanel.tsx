@@ -1,5 +1,5 @@
-import React, { useState, useMemo } from 'react';
-import { Info, AlertTriangle, Loader2, CheckCircle2, ArrowDown, ArrowUp, ArrowUpDown, X } from 'lucide-react';
+import React, { useState, useMemo, useEffect } from 'react';
+import { Info, AlertTriangle, Loader2, CheckCircle2, ArrowDown, ArrowUp, ArrowUpDown, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useExplainStore, type FlatNode } from '../../../store/explainStore';
 
 // Хелпер для поиска узла в дереве
@@ -12,6 +12,23 @@ const findNodeById = (node: any, id: string): any => {
     }
   }
   return null;
+};
+
+// Глоссарий типов узлов PostgreSQL
+const getNodeDescription = (nodeType: string): string => {
+  const descriptions: Record<string, string> = {
+    'Seq Scan': 'Читает таблицу от начала до конца. Нормально для маленьких таблиц. Проблема на больших без нужного индекса.',
+    'Index Scan': 'Идёт по B-tree индексу к нужным строкам. Быстро и оптимально.',
+    'Bitmap Index Scan': 'Сначала собирает битовую карту подходящих строк, потом читает их. Эффективен при большом % совпадений.',
+    'Hash Join': 'Строит хэш-таблицу из одного набора строк, ищет совпадения в другом. Хорош для больших таблиц без индекса.',
+    'Nested Loop': 'Для каждой строки внешнего набора ищет совпадения во внутреннем. Очень медленно для больших таблиц.',
+    'Merge Join': 'Объединяет два уже отсортированных набора. Быстро, если оба входа уже отсортированы.',
+    'Gather': 'Объединяет результаты от параллельных воркеров. Признак параллельного выполнения.',
+    'Materialize': 'Сохраняет результат подзапроса в памяти для повторного использования.',
+    'Sort': 'Сортирует данные. Если памяти (work_mem) не хватает, может уйти в медленную сортировку на диск.'
+  };
+  
+  return descriptions[nodeType] || 'Выполняет специализированную операцию над данными.';
 };
 
 // Хелпер для цвета в зависимости от стоимости
@@ -112,9 +129,22 @@ interface NodeDetailsProps {
   onClose: () => void;
   rootTree: any;
   flatNodesMap: Map<string, FlatNode>;
+  flatNodes: FlatNode[];
+  onNavigate: (nodeId: string) => void;
 }
 
-const NodeDetailsOverlay: React.FC<NodeDetailsProps> = ({ nodeId, onClose, rootTree, flatNodesMap }) => {
+const NodeDetailsOverlay: React.FC<NodeDetailsProps> = ({ nodeId, onClose, rootTree, flatNodesMap, flatNodes, onNavigate }) => {
+  // Закрытие по ESC
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
+
   const node = findNodeById(rootTree, nodeId);
   if (!node) return null;
 
@@ -128,11 +158,34 @@ const NodeDetailsOverlay: React.FC<NodeDetailsProps> = ({ nodeId, onClose, rootT
   const filter = node["Filter"] || node["Index Cond"] || node["Hash Cond"];
   const width = node["Plan Width"];
 
+  // Логика навигации
+  const chronologicalNodes = [...flatNodes].sort((a, b) => a.step_number - b.step_number);
+  const currentIndex = chronologicalNodes.findIndex(n => n.node_id === nodeId);
+  
+  const hasPrev = currentIndex > 0;
+  const hasNext = currentIndex < chronologicalNodes.length - 1;
+
+  const handlePrev = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (hasPrev) onNavigate(chronologicalNodes[currentIndex - 1].node_id);
+  };
+
+  const handleNext = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (hasNext) onNavigate(chronologicalNodes[currentIndex + 1].node_id);
+  };
+
   return (
-    <div className="absolute inset-0 bg-background/95 backdrop-blur-sm z-50 p-4 overflow-auto animate-in fade-in zoom-in-95 duration-200">
-      <div className="border border-glass-border bg-black/5 dark:bg-white/5 rounded-lg p-4 shadow-xl">
+    <div 
+      className="absolute inset-0 bg-background/95 backdrop-blur-sm z-50 p-4 flex items-center justify-center animate-in fade-in zoom-in-95 duration-200"
+      onClick={onClose}
+    >
+      <div 
+        className="border border-glass-border bg-black/5 dark:bg-white/5 rounded-lg p-4 shadow-xl w-full max-w-2xl relative"
+        onClick={(e) => e.stopPropagation()} // Не закрывать при клике на саму карточку
+      >
         <div className="flex items-start justify-between mb-4 border-b border-glass-border pb-3">
-          <div className="flex items-center gap-2 text-lg">
+          <div className="flex items-center gap-2 text-lg flex-1">
             <div className={`w-3 h-3 rounded-full ${colorClass}`} />
             <span className="font-bold text-foreground">{nodeType}</span>
             {objectName && (
@@ -141,10 +194,36 @@ const NodeDetailsOverlay: React.FC<NodeDetailsProps> = ({ nodeId, onClose, rootT
                 <span className="text-primary">{objectName}</span>
               </>
             )}
+            {flatData && (
+              <span className="flex items-center justify-center w-5 h-5 rounded bg-background border border-glass-border text-xs text-muted-foreground font-mono ml-2">
+                {flatData.step_number}
+              </span>
+            )}
           </div>
+          
+          {/* Навигация */}
+          <div className="flex items-center gap-1 mr-4">
+            <button 
+              onClick={handlePrev}
+              disabled={!hasPrev}
+              className={`p-1.5 rounded-md transition-colors ${hasPrev ? 'hover:bg-hover text-foreground' : 'text-muted-foreground/30 cursor-not-allowed'}`}
+              title="Предыдущий шаг"
+            >
+              <ChevronLeft size={16} />
+            </button>
+            <button 
+              onClick={handleNext}
+              disabled={!hasNext}
+              className={`p-1.5 rounded-md transition-colors ${hasNext ? 'hover:bg-hover text-foreground' : 'text-muted-foreground/30 cursor-not-allowed'}`}
+              title="Следующий шаг"
+            >
+              <ChevronRight size={16} />
+            </button>
+          </div>
+
           <button 
             onClick={onClose}
-            className="p-1 hover:bg-hover rounded-md text-muted-foreground transition-colors"
+            className="p-1.5 hover:bg-hover rounded-md text-muted-foreground transition-colors"
           >
             <X size={18} />
           </button>
@@ -165,9 +244,16 @@ const NodeDetailsOverlay: React.FC<NodeDetailsProps> = ({ nodeId, onClose, rootT
           </div>
         </div>
 
+        {/* Документация/описание типа узла */}
+        <div className="mb-4 bg-primary/5 border border-primary/20 rounded-lg p-3 text-sm text-foreground/90 leading-relaxed flex items-start gap-2">
+          <Info size={16} className="text-primary shrink-0 mt-0.5" />
+          <span>{getNodeDescription(nodeType)}</span>
+        </div>
+
         {filter && (
-          <div className="mb-4 bg-background/50 p-2 rounded border border-glass-border/50 text-sm font-mono">
-            <span className="text-muted-foreground">Filter/Cond:</span> {filter}
+          <div className="mb-4 bg-background/50 p-3 rounded border border-glass-border/50 text-sm font-mono">
+            <span className="text-muted-foreground block mb-1">Filter/Cond:</span> 
+            <span className="break-all">{filter}</span>
           </div>
         )}
 
@@ -254,7 +340,9 @@ export const MiniExplainPanel: React.FC = () => {
           nodeId={selectedNodeId} 
           onClose={() => setSelectedNodeId(null)} 
           rootTree={slot1.plan_parsed.tree} 
-          flatNodesMap={flatNodesMap} 
+          flatNodesMap={flatNodesMap}
+          flatNodes={slot1.plan_parsed.flat_nodes}
+          onNavigate={setSelectedNodeId}
         />
       )}
       <div className="flex-1 overflow-auto p-4 space-y-6">
