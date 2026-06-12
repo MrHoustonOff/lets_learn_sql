@@ -162,7 +162,8 @@ const NodeDetailsOverlay: React.FC<NodeDetailsProps> = ({ nodeId, onClose, rootT
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
 
   const handleCopy = (key: string, value: any) => {
-    navigator.clipboard.writeText(String(value));
+    const copyText = `Операция: ${nodeType}\n${key}: ${String(value)}`;
+    navigator.clipboard.writeText(copyText);
     setCopiedKey(key);
     setTimeout(() => setCopiedKey(null), 2000);
   };
