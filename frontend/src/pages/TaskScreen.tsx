@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { Panel, Group as PanelGroup, Separator as PanelResizeHandle } from 'react-resizable-panels';
-import { DBVisualizer } from '../modules/db-visualizer';
+import { DBVisualizerPane } from '../components/workspace/DBVisualizerPane';
 import { TaskPane } from '../components/workspace/TaskPane';
 import { SqlEditorPane } from '../components/workspace/SqlEditorPane';
 import { ResultsPane } from '../components/workspace/ResultsPane';
@@ -36,15 +36,7 @@ export const TaskScreen: React.FC = () => {
         content = <SqlEditorPane slotId={slotId} />; 
         break;
       case 'db': 
-        content = (
-          <div className={`transition-all duration-300 ${isMaximized ? 'absolute inset-0 z-[100] bg-background rounded-2xl overflow-hidden' : 'h-full w-full relative !overflow-visible'}`}>
-            <DBVisualizer 
-              isMaximized={isMaximized} 
-              onToggleMaximize={() => setMaximizedPane(isMaximized ? null : 'db')}
-              slotId={slotId}
-            />
-          </div>
-        ); 
+        content = <DBVisualizerPane slotId={slotId} />;
         break;
       case 'results': 
         content = <ResultsPane slotId={slotId} />; 
