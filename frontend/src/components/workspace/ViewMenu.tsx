@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { AppWindow, RefreshCw, LayoutTemplate, Type, Minus, Plus, WrapText, Check } from 'lucide-react';
+import { AppWindow, RefreshCw, LayoutTemplate, Type, Minus, Plus, WrapText, Check, RotateCcw } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useUIStore } from '../../store/uiStore';
 import { InfoTooltip } from '../ui/InfoTooltip';
@@ -85,6 +85,15 @@ export const ViewMenu: React.FC<ViewMenuProps> = ({ onResetProportions }) => {
               {t('view_menu.font_size', 'Font size')}
             </div>
             <div className="flex items-center gap-1">
+              {editorFontSize !== 14 && (
+                <button 
+                  onClick={(e) => { e.stopPropagation(); setEditorFontSize(14); }} 
+                  className="p-1 hover:bg-white/10 dark:hover:bg-white/10 rounded transition-colors text-muted-foreground hover:text-foreground mr-1"
+                  title={t('view_menu.reset_font_size', 'Reset font size')}
+                >
+                  <RotateCcw size={12} />
+                </button>
+              )}
               <button 
                 onClick={(e) => { e.stopPropagation(); setEditorFontSize(Math.max(10, editorFontSize - 1)); }} 
                 className="p-1 hover:bg-white/10 dark:hover:bg-white/10 rounded transition-colors text-muted-foreground hover:text-foreground"
