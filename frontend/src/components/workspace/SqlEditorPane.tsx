@@ -55,6 +55,8 @@ export const SqlEditorPane: React.FC<SqlEditorPaneProps> = ({
     return () => document.removeEventListener('keydown', handleGlobalKeyDown);
   }, [executeQuery, isLoading]);
 
+  const isMac = typeof window !== 'undefined' && /Mac|iPod|iPhone|iPad/.test(navigator.userAgent);
+
   const content = (
     <div className={`h-full flex flex-col transition-all duration-300 min-h-0 min-w-0 ${isMaximized ? 'fixed inset-4 z-modal bg-background rounded-2xl shadow-2xl border border-glass-border overflow-hidden' : 'bg-transparent overflow-hidden'}`}>
       <div className="h-10 border-b border-glass-border flex items-center justify-between px-3 shrink-0 bg-hover relative z-layout min-w-0">
@@ -67,7 +69,7 @@ export const SqlEditorPane: React.FC<SqlEditorPaneProps> = ({
           >
             {isLoading ? <Loader2 size={12} className="animate-spin shrink-0" /> : <Play size={12} className="fill-current shrink-0" />}
             <span className="truncate">{t('sql_editor:run')}</span>
-            <span className="opacity-50 font-normal hidden sm:inline ml-1 shrink-0">(Ctrl+Enter)</span>
+            <span className="opacity-50 font-normal hidden sm:inline ml-1 shrink-0">({isMac ? 'Cmd' : 'Ctrl'}+Enter)</span>
           </button>
           <div className="w-px h-4 bg-glass-border mx-1 shrink-0" />
           <button 
