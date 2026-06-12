@@ -118,6 +118,46 @@ interface PipelineStep {
   nodeIds: string[];
 }
 
+interface PipelineBranch {
+  label: string;
+  steps: PipelineStep[];
+}
+
+function containsNodeType(node: any, typeName: string): boolean {
+  if (node['Node Type'] === typeName) return true;
+  if (!node.Plans) return false;
+  return node.Plans.some((child: any) => containsNodeType(child, typeName));
+}
+
+function countNodeType(node: any, typeName: string): number {
+  let count = node['Node Type'] === typeName ? 1 : 0;
+  if (node.Plans) {
+    for (const child of node.Plans) {
+      count += countNodeType(child, typeName);
+    }
+  }
+  return count;
+}
+
+function getPipelineMode(rootNode: any): 'simple' | 'complex' {
+  const hasSubquery = containsNodeType(rootNode, 'Subquery Scan');
+  const hasCTE = containsNodeType(rootNode, 'CTE Scan');
+  const hasMultipleAggregates = countNodeType(rootNode, 'Aggregate') > 1;
+  
+  if (hasSubquery || hasCTE || hasMultipleAggregates) {
+    return 'complex';
+  }
+  return 'simple';
+}
+
+function detectBranchLabel(node: any): string {
+  if (containsNodeType(node, 'WindowAgg')) return 'CTE / Window';
+  if (containsNodeType(node, 'Aggregate')) return 'CTE / Group';
+  if (node['Node Type'] === 'Subquery Scan') return 'Subquery';
+  if (node['Node Type'] === 'CTE Scan') return 'CTE';
+  return 'Branch';
+}
+
 function toClause(node: any): string | null {
   const type = node['Node Type'];
   const filter = node['Filter'] || node['Index Cond'] || node['Hash Cond'] || null;
@@ -658,8 +698,8 @@ export const MiniExplainPanel: React.FC = () => {
   const [activePipelineNodeIds, setActivePipelineNodeIds] = useState<string[]>([]);
   const [clickedBranchId, setClickedBranchId] = useState<string | null>(null);
 
-  const pipelineSteps = useMemo(() => {
-    if (!slot1?.plan_parsed?.tree) return [];
+  const pipelineData = useMemo(() => {
+    if (!slot1?.plan_parsed?.tree) return { mode: 'simple' as const, steps: [], branches: [], finalSteps: [] };
     
     interface RawStep { clause: string; nodeId: string; }
     
@@ -676,28 +716,79 @@ export const MiniExplainPanel: React.FC = () => {
       return steps;
     }
 
-    const rawSteps = collectSteps(slot1.plan_parsed.tree);
+    function deduplicateAndSortSteps(rawSteps: RawStep[]): PipelineStep[] {
+      const seen = new Map<string, PipelineStep>();
+      for (const step of rawSteps) {
+        if (seen.has(step.clause)) {
+          seen.get(step.clause)!.nodeIds.push(step.nodeId);
+        } else {
+          seen.set(step.clause, { clause: step.clause, nodeIds: [step.nodeId] });
+        }
+      }
+      const deduped = Array.from(seen.values());
+      return deduped.sort((a, b) => {
+        const aIndex = SQL_ORDER.findIndex(c => a.clause.startsWith(c));
+        const bIndex = SQL_ORDER.findIndex(c => b.clause.startsWith(c));
+        const safeA = aIndex === -1 ? 99 : aIndex;
+        const safeB = bIndex === -1 ? 99 : bIndex;
+        return safeA - safeB;
+      });
+    }
 
-    // deduplicate
-    const seen = new Map<string, PipelineStep>();
-    for (const step of rawSteps) {
-      if (seen.has(step.clause)) {
-        seen.get(step.clause)!.nodeIds.push(step.nodeId);
+    const mode = getPipelineMode(slot1.plan_parsed.tree);
+
+    if (mode === 'simple') {
+      const rawSteps = collectSteps(slot1.plan_parsed.tree);
+      return {
+        mode: 'simple' as const,
+        steps: deduplicateAndSortSteps(rawSteps),
+        branches: [],
+        finalSteps: []
+      };
+    }
+
+    // Complex mode
+    let splitNode = slot1.plan_parsed.tree;
+    const finalRawSteps: RawStep[] = [];
+    
+    while (splitNode && (!splitNode.Plans || splitNode.Plans.length < 2)) {
+      const clause = toClause(splitNode);
+      if (clause) {
+        finalRawSteps.push({ clause, nodeId: splitNode.node_id });
+      }
+      if (splitNode.Plans && splitNode.Plans.length === 1) {
+        splitNode = splitNode.Plans[0];
       } else {
-        seen.set(step.clause, { clause: step.clause, nodeIds: [step.nodeId] });
+        break;
       }
     }
 
-    const deduped = Array.from(seen.values());
+    const branches: PipelineBranch[] = [];
+    if (splitNode && splitNode.Plans && splitNode.Plans.length >= 2) {
+      for (const child of splitNode.Plans) {
+        branches.push({
+          label: detectBranchLabel(child),
+          steps: deduplicateAndSortSteps(collectSteps(child))
+        });
+      }
+      const splitClause = toClause(splitNode);
+      if (splitClause) {
+        finalRawSteps.push({ clause: splitClause, nodeId: splitNode.node_id });
+      }
+    } else if (splitNode) {
+      // If it doesn't really branch, but was marked complex
+      const clause = toClause(splitNode);
+      if (clause) {
+        finalRawSteps.push({ clause, nodeId: splitNode.node_id });
+      }
+    }
 
-    // sort
-    return deduped.sort((a, b) => {
-      const aIndex = SQL_ORDER.findIndex(c => a.clause.startsWith(c));
-      const bIndex = SQL_ORDER.findIndex(c => b.clause.startsWith(c));
-      const safeA = aIndex === -1 ? 99 : aIndex;
-      const safeB = bIndex === -1 ? 99 : bIndex;
-      return safeA - safeB;
-    });
+    return {
+      mode: 'complex' as const,
+      steps: [],
+      branches,
+      finalSteps: deduplicateAndSortSteps(finalRawSteps)
+    };
   }, [slot1]);
 
   const lineColorsMap = useMemo(() => {
@@ -890,31 +981,94 @@ export const MiniExplainPanel: React.FC = () => {
             <div className="font-mono text-sm bg-black/5 dark:bg-white/5 border border-glass-border rounded-lg p-4 space-y-1">
               
               {/* Query Pipeline */}
-              {pipelineSteps.length > 0 && (
-                <div className="flex flex-wrap items-center gap-1 mb-3 px-1">
-                  {pipelineSteps.map((step, i) => {
-                    // Check if all nodeIds of this step are in activePipelineNodeIds
-                    const isActive = step.nodeIds.every(id => activePipelineNodeIds.includes(id));
-                    
-                    return (
-                      <React.Fragment key={step.nodeIds.join(',')}>
-                        <span
-                          onClick={() => {
-                            setClickedBranchId(null);
-                            setActivePipelineNodeIds(step.nodeIds);
-                            // Highlight the node in the tree but do not open the details modal
-                            setSelectedNodeId(null);
-                          }}
-                          className={`px-2 py-0.5 rounded text-xs cursor-pointer transition-colors ${isActive ? 'bg-primary/20 text-primary font-medium' : 'bg-black/5 dark:bg-white/5 text-muted-foreground hover:bg-black/10 hover:dark:bg-white/10'}`}
-                        >
-                          {step.clause}
-                        </span>
-                        {i < pipelineSteps.length - 1 && (
-                          <span className="text-muted-foreground/40 text-xs">→</span>
-                        )}
-                      </React.Fragment>
-                    );
-                  })}
+              {(pipelineData.steps.length > 0 || pipelineData.branches.length > 0) && (
+                <div className="mb-3">
+                  {pipelineData.mode === 'simple' ? (
+                    <div className="flex flex-wrap items-center gap-1 px-1">
+                      {pipelineData.steps.map((step, i) => {
+                        const isActive = step.nodeIds.every(id => activePipelineNodeIds.includes(id));
+                        return (
+                          <React.Fragment key={step.nodeIds.join(',')}>
+                            <span
+                              onClick={() => {
+                                setClickedBranchId(null);
+                                setActivePipelineNodeIds(step.nodeIds);
+                                setSelectedNodeId(null);
+                              }}
+                              className={`px-2 py-0.5 rounded text-xs cursor-pointer transition-colors ${isActive ? 'bg-primary/20 text-primary font-medium' : 'bg-black/5 dark:bg-white/5 text-muted-foreground hover:bg-black/10 hover:dark:bg-white/10'}`}
+                            >
+                              {step.clause}
+                            </span>
+                            {i < pipelineData.steps.length - 1 && (
+                              <span className="text-muted-foreground/40 text-xs">→</span>
+                            )}
+                          </React.Fragment>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div className="flex flex-col gap-2">
+                      <div className="flex flex-wrap gap-2">
+                        {pipelineData.branches.map((branch, branchIdx) => (
+                          <div key={branchIdx} className="border border-glass-border rounded bg-black/5 dark:bg-white/5 overflow-hidden">
+                            <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground bg-black/5 dark:bg-white/5 px-2 py-1 border-b border-glass-border">
+                              ┌─ {branch.label}
+                            </div>
+                            <div className="flex flex-wrap items-center gap-1 p-2">
+                              {branch.steps.map((step, i) => {
+                                const isActive = step.nodeIds.every(id => activePipelineNodeIds.includes(id));
+                                return (
+                                  <React.Fragment key={step.nodeIds.join(',')}>
+                                    <span
+                                      onClick={() => {
+                                        setClickedBranchId(null);
+                                        setActivePipelineNodeIds(step.nodeIds);
+                                        setSelectedNodeId(null);
+                                      }}
+                                      className={`px-2 py-0.5 rounded text-xs cursor-pointer transition-colors ${isActive ? 'bg-primary/20 text-primary font-medium' : 'bg-background hover:bg-hover text-muted-foreground'}`}
+                                    >
+                                      {step.clause}
+                                    </span>
+                                    {i < branch.steps.length - 1 && (
+                                      <span className="text-muted-foreground/40 text-xs">→</span>
+                                    )}
+                                  </React.Fragment>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      
+                      {pipelineData.finalSteps.length > 0 && (
+                        <div className="flex flex-wrap items-center gap-1 px-1 mt-1">
+                          {pipelineData.branches.length > 0 && (
+                            <span className="text-muted-foreground/40 text-xs mr-1">JOIN ↔</span>
+                          )}
+                          {pipelineData.finalSteps.map((step, i) => {
+                            const isActive = step.nodeIds.every(id => activePipelineNodeIds.includes(id));
+                            return (
+                              <React.Fragment key={step.nodeIds.join(',')}>
+                                <span
+                                  onClick={() => {
+                                    setClickedBranchId(null);
+                                    setActivePipelineNodeIds(step.nodeIds);
+                                    setSelectedNodeId(null);
+                                  }}
+                                  className={`px-2 py-0.5 rounded text-xs cursor-pointer transition-colors ${isActive ? 'bg-primary/20 text-primary font-medium' : 'bg-black/5 dark:bg-white/5 text-muted-foreground hover:bg-black/10 hover:dark:bg-white/10'}`}
+                                >
+                                  {step.clause}
+                                </span>
+                                {i < pipelineData.finalSteps.length - 1 && (
+                                  <span className="text-muted-foreground/40 text-xs">→</span>
+                                )}
+                              </React.Fragment>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               )}
 
