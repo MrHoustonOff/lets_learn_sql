@@ -45,7 +45,9 @@
     "animated": "Animated",
     "solid": "Solid",
     "save_layout": "Save layout",
-    "reset_layout": "Reset layout"
+    "reset_layout": "Reset layout",
+    "clear_layout": "Clear layout",
+    "clear_layout_tooltip": "Completely clear saved layout and rebuild graph"
   },
   "table_details": {
     "limit_warning": "Only numbers from 0 to 100 are allowed for LIMIT",

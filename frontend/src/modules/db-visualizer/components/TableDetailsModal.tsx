@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import type { TableSchema } from '../types';
-import { X, Database, Key, Link, AlertCircle, Hash, TableProperties, Fingerprint, Play } from 'lucide-react';
+import { X, Database, Key, Link, AlertCircle, Hash, TableProperties, Fingerprint, Play, Copy, Check } from 'lucide-react';
 
 import { DataTable } from '../../../components/ui/DataTable';
 
@@ -18,6 +18,36 @@ export const TableDetailsModal: React.FC<TableDetailsModalProps> = ({ table, onC
   const [data, setData] = useState<{ columns: string[], rows: any[][] } | null>(null);
   const [loadingData, setLoadingData] = useState(false);
   const [dataError, setDataError] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+
+  const handleCopyDDL = () => {
+    let ddl = `CREATE TABLE "${table.schema}"."${table.name}" (\n`;
+    const cols = table.columns.map(c => {
+      let line = `  "${c.name}" ${c.type}`;
+      if (!c.nullable) line += ` NOT NULL`;
+      if (c.default) line += ` DEFAULT ${c.default}`;
+      return line;
+    });
+    
+    const pks = table.columns.filter(c => c.isPrimaryKey).map(c => `"${c.name}"`);
+    if (pks.length > 0) {
+      cols.push(`  PRIMARY KEY (${pks.join(', ')})`);
+    }
+    
+    ddl += cols.join(',\n');
+    ddl += `\n);\n`;
+
+    if (table.indexes && table.indexes.length > 0) {
+      ddl += `\n`;
+      table.indexes.forEach(idx => {
+        ddl += `${idx.definition};\n`;
+      });
+    }
+
+    navigator.clipboard.writeText(ddl);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   const fetchSampleData = async (overrideLimit?: string) => {
     setLoadingData(true);
@@ -95,7 +125,7 @@ export const TableDetailsModal: React.FC<TableDetailsModalProps> = ({ table, onC
       <div className="relative w-full max-w-6xl min-h-[75vh] max-h-[90vh] flex flex-col bg-glass backdrop-blur-2xl border border-glass-border rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
         
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-glass-border bg-hover">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-primary/20 bg-primary/5">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-primary/20 text-primary rounded-lg">
               <Database size={24} />
@@ -112,12 +142,21 @@ export const TableDetailsModal: React.FC<TableDetailsModalProps> = ({ table, onC
               </p>
             </div>
           </div>
-          <button 
-            onClick={() => onClose()}
-            className="p-2 rounded-xl hover:bg-hover text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <X size={20} />
-          </button>
+          <div className="flex items-center gap-2">
+            <button 
+              onClick={handleCopyDDL}
+              title={t('db_visualizer:table_details.copy_ddl') || 'Copy DDL'}
+              className="p-2 rounded-xl hover:bg-black/5 dark:hover:bg-white/5 text-muted-foreground hover:text-foreground transition-colors flex items-center justify-center relative"
+            >
+              {copied ? <Check size={20} className="text-success" /> : <Copy size={20} />}
+            </button>
+            <button 
+              onClick={() => onClose()}
+              className="p-2 rounded-xl hover:bg-black/5 dark:hover:bg-white/5 text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <X size={20} />
+            </button>
+          </div>
         </div>
 
         {/* Tabs */}
@@ -159,40 +198,43 @@ export const TableDetailsModal: React.FC<TableDetailsModalProps> = ({ table, onC
                 
                 {/* Columns Table */}
                 <section>
-                  <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider mb-3 flex items-center gap-2">
-                    <TableProperties size={16} className="text-primary" /> {t('db_visualizer:table_details.columns')}
-                  </h3>
-                  <div className="border border-glass-border rounded-xl overflow-hidden bg-hover max-h-[45vh] flex flex-col">
+                  <div className="flex items-center gap-2 mb-3">
+                    <TableProperties size={16} className="text-muted-foreground" />
+                    <h3 className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
+                      {t('db_visualizer:table_details.columns')}
+                    </h3>
+                  </div>
+                  <div className="border border-glass-border rounded-xl overflow-hidden bg-black/5 dark:bg-white/5 max-h-[45vh] flex flex-col shadow-sm">
                     <div className="overflow-y-auto overflow-x-auto">
                       <table className="w-full text-left text-sm relative">
-                        <thead className="bg-hover text-muted-foreground text-xs uppercase tracking-wider sticky top-0 z-10 backdrop-blur-md shadow-sm">
-                          <tr className="divide-x divide-glass-border/50">
-                            <th className="px-4 py-3 font-medium">{t('db_visualizer:table_details.keys')}</th>
-                            <th className="px-4 py-3 font-medium">{t('db_visualizer:table_details.name')}</th>
-                            <th className="px-4 py-3 font-medium">{t('db_visualizer:table_details.type')}</th>
-                            <th className="px-4 py-3 font-medium">Null</th>
-                            <th className="px-4 py-3 font-medium">{t('db_visualizer:table_details.default')}</th>
+                        <thead className="bg-primary/10 text-primary text-[10px] uppercase tracking-wider sticky top-0 z-10">
+                          <tr className="divide-x divide-primary/10">
+                            <th className="px-4 py-2.5 font-bold">{t('db_visualizer:table_details.keys')}</th>
+                            <th className="px-4 py-2.5 font-bold">{t('db_visualizer:table_details.name')}</th>
+                            <th className="px-4 py-2.5 font-bold">{t('db_visualizer:table_details.type')}</th>
+                            <th className="px-4 py-2.5 font-bold">Null</th>
+                            <th className="px-4 py-2.5 font-bold">{t('db_visualizer:table_details.default')}</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-glass-border">
                         {table.columns?.map(col => (
-                          <tr key={col.name} className="hover:bg-hover transition-colors divide-x divide-glass-border/50">
-                            <td className="px-4 py-3">
+                          <tr key={col.name} className="hover:bg-black/5 dark:hover:bg-white/5 transition-colors divide-x divide-glass-border">
+                            <td className="px-4 py-2.5">
                               <div className="flex items-center gap-1">
-                                {col.isPrimaryKey && <span title="Primary Key"><Key size={14} className="text-warning" /></span>}
-                                {col.isForeignKey && <span title="Foreign Key"><Link size={14} className="text-info" /></span>}
-                                {!col.isPrimaryKey && !col.isForeignKey && col.isUnique && <span title="Unique"><AlertCircle size={14} className="text-accent-alt" /></span>}
+                                {col.isPrimaryKey && <span title="Primary Key"><Key size={14} className="text-warning opacity-80" /></span>}
+                                {col.isForeignKey && <span title="Foreign Key"><Link size={14} className="text-info opacity-80" /></span>}
+                                {!col.isPrimaryKey && !col.isForeignKey && col.isUnique && <span title="Unique"><AlertCircle size={14} className="text-accent-alt opacity-80" /></span>}
                               </div>
                             </td>
-                            <td className="px-4 py-3 font-medium text-foreground">{col.name}</td>
-                            <td className="px-4 py-3 font-mono text-xs text-muted-foreground">{col.type}</td>
-                            <td className="px-4 py-3">
+                            <td className="px-4 py-2.5 font-medium text-foreground/90">{col.name}</td>
+                            <td className="px-4 py-2.5 font-mono text-xs text-muted-foreground/80">{col.type}</td>
+                            <td className="px-4 py-2.5">
                               {col.nullable 
-                                ? <span className="text-muted-foreground">{t('db_visualizer:table_details.yes')}</span>
-                                : <span className="font-semibold text-foreground">{t('db_visualizer:table_details.no')}</span>}
+                                ? <span className="text-muted-foreground/60 text-xs">{t('db_visualizer:table_details.yes')}</span>
+                                : <span className="font-medium text-foreground/80 text-xs">{t('db_visualizer:table_details.no')}</span>}
                             </td>
-                            <td className="px-4 py-3 font-mono text-xs text-success">
-                              {col.default || <span className="text-muted-foreground opacity-50">-</span>}
+                            <td className="px-4 py-2.5 font-mono text-xs text-success/80">
+                              {col.default || <span className="text-muted-foreground opacity-30">-</span>}
                             </td>
                           </tr>
                         ))}
@@ -207,20 +249,23 @@ export const TableDetailsModal: React.FC<TableDetailsModalProps> = ({ table, onC
                   {/* Indexes */}
                   {(table.indexes?.length || 0) > 0 && (
                     <section>
-                      <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider mb-3 flex items-center gap-2">
-                        <Hash size={16} className="text-warning" /> {t('db_visualizer:table_details.indexes')}
-                      </h3>
+                      <div className="flex items-center gap-2 mb-3">
+                        <Hash size={16} className="text-muted-foreground" />
+                        <h3 className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
+                          {t('db_visualizer:table_details.indexes')}
+                        </h3>
+                      </div>
                       <div className="space-y-2">
                         {table.indexes?.map(idx => (
-                          <div key={idx.name} className="p-3 bg-hover border border-glass-border rounded-xl">
+                          <div key={idx.name} className="p-3 bg-black/5 dark:bg-white/5 border border-glass-border rounded-xl shadow-sm">
                             <div className="flex items-center justify-between mb-1">
-                              <span className="font-semibold text-sm">{idx.name}</span>
+                              <span className="font-medium text-sm text-foreground/90">{idx.name}</span>
                               <div className="flex gap-1">
-                                {idx.isPrimary && <span className="text-[10px] uppercase bg-warning/20 text-warning-text px-1.5 py-0.5 rounded">Primary</span>}
-                                {idx.isUnique && <span className="text-[10px] uppercase bg-accent-alt/20 text-accent-alt-text px-1.5 py-0.5 rounded">Unique</span>}
+                                {idx.isPrimary && <span className="text-[10px] uppercase bg-warning/10 text-warning px-1.5 py-0.5 rounded font-bold">Primary</span>}
+                                {idx.isUnique && <span className="text-[10px] uppercase bg-accent-alt/10 text-accent-alt px-1.5 py-0.5 rounded font-bold">Unique</span>}
                               </div>
                             </div>
-                            <code className="text-xs text-muted-foreground font-mono block break-all">{idx.definition}</code>
+                            <code className="text-xs text-muted-foreground/80 font-mono block break-all">{idx.definition}</code>
                           </div>
                         ))}
                       </div>
@@ -230,21 +275,24 @@ export const TableDetailsModal: React.FC<TableDetailsModalProps> = ({ table, onC
                   {/* Foreign Keys */}
                   {(table.foreignKeys?.length || 0) > 0 && (
                     <section>
-                      <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider mb-3 flex items-center gap-2">
-                        <Link size={16} className="text-info" /> {t('db_visualizer:table_details.foreign_keys')}
-                      </h3>
+                      <div className="flex items-center gap-2 mb-3">
+                        <Link size={16} className="text-muted-foreground" />
+                        <h3 className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
+                          {t('db_visualizer:table_details.foreign_keys')}
+                        </h3>
+                      </div>
                       <div className="space-y-2">
                         {table.foreignKeys?.map(fk => (
-                          <div key={fk.name} className="p-3 bg-hover border border-glass-border rounded-xl">
-                            <div className="font-semibold text-sm mb-1 break-all">{fk.name}</div>
+                          <div key={fk.name} className="p-3 bg-black/5 dark:bg-white/5 border border-glass-border rounded-xl shadow-sm">
+                            <div className="font-medium text-sm mb-1 break-all text-foreground/90">{fk.name}</div>
                             <div className="text-xs text-muted-foreground flex items-center flex-wrap gap-x-2 gap-y-1">
-                              <span className="font-mono text-foreground">{fk.column}</span>
-                              <span>→</span>
-                              <span className="font-mono text-foreground">{fk.targetTable}.{fk.targetColumn}</span>
+                              <span className="font-mono text-foreground/80">{fk.column}</span>
+                              <span className="opacity-50">→</span>
+                              <span className="font-mono text-foreground/80">{fk.targetTable}.{fk.targetColumn}</span>
                             </div>
-                            <div className="mt-2 flex gap-2 text-[10px] uppercase font-medium">
-                              <span className="bg-hover px-1.5 py-0.5 rounded text-muted-foreground">ON DEL: {fk.onDelete}</span>
-                              <span className="bg-hover px-1.5 py-0.5 rounded text-muted-foreground">ON UPD: {fk.onUpdate}</span>
+                            <div className="mt-2 flex gap-2 text-[10px] uppercase font-bold">
+                              <span className="bg-black/5 dark:bg-white/5 px-1.5 py-0.5 rounded text-muted-foreground/80 border border-glass-border">ON DEL: {fk.onDelete}</span>
+                              <span className="bg-black/5 dark:bg-white/5 px-1.5 py-0.5 rounded text-muted-foreground/80 border border-glass-border">ON UPD: {fk.onUpdate}</span>
                             </div>
                           </div>
                         ))}
@@ -255,15 +303,18 @@ export const TableDetailsModal: React.FC<TableDetailsModalProps> = ({ table, onC
                   {/* Referenced By */}
                   {(table.referencedBy?.length || 0) > 0 && (
                     <section>
-                      <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider mb-3 flex items-center gap-2">
-                        <Fingerprint size={16} className="text-success" /> {t('db_visualizer:table_details.referenced_by')}
-                      </h3>
+                      <div className="flex items-center gap-2 mb-3">
+                        <Fingerprint size={16} className="text-muted-foreground" />
+                        <h3 className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
+                          {t('db_visualizer:table_details.referenced_by')}
+                        </h3>
+                      </div>
                       <div className="space-y-2">
                         {table.referencedBy?.map(ref => (
-                          <div key={ref.constraint} className="p-3 bg-hover border border-glass-border rounded-xl">
+                          <div key={ref.constraint} className="p-3 bg-black/5 dark:bg-white/5 border border-glass-border rounded-xl shadow-sm">
                             <div className="text-xs text-muted-foreground flex items-center gap-2">
-                              <span className="font-mono text-foreground">{ref.table}.{ref.column}</span>
-                              <span>→</span>
+                              <span className="font-mono text-foreground/80">{ref.table}.{ref.column}</span>
+                              <span className="opacity-50">→</span>
                               <span>{t('db_visualizer:table_details.here')}</span>
                             </div>
                           </div>

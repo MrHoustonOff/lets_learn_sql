@@ -114,7 +114,7 @@ const ColumnFilterPopover = ({
         
         <div className="flex flex-col max-h-48 overflow-y-auto custom-scrollbar pr-1 gap-1">
           {!search && (
-            <label className="flex items-center gap-2 px-1 py-1 hover:bg-black/5 dark:hover:bg-white/5 rounded cursor-pointer transition-colors text-xs font-semibold border-b border-glass-border/30 pb-1.5 mb-1">
+            <label className="flex items-center gap-2 px-1 py-1 hover:bg-black/5 dark:hover:bg-white/5 rounded cursor-pointer transition-colors text-xs font-semibold border-b border-glass-border pb-1.5 mb-1">
               <input 
                 type="checkbox" 
                 checked={isAllSelected}
@@ -125,7 +125,7 @@ const ColumnFilterPopover = ({
             </label>
           )}
           {search && displayValues.length > 0 && (
-            <label className="flex items-center gap-2 px-1 py-1 hover:bg-black/5 dark:hover:bg-white/5 rounded cursor-pointer transition-colors text-xs font-semibold border-b border-glass-border/30 pb-1.5 mb-1 text-primary">
+            <label className="flex items-center gap-2 px-1 py-1 hover:bg-black/5 dark:hover:bg-white/5 rounded cursor-pointer transition-colors text-xs font-semibold border-b border-glass-border pb-1.5 mb-1 text-primary">
               <input 
                 type="checkbox" 
                 checked={isAllSelected}
@@ -150,7 +150,7 @@ const ColumnFilterPopover = ({
             </label>
           ))}
           {isTruncated && (
-            <div className="text-center text-[10px] text-muted-foreground py-1.5 mt-1 border-t border-glass-border/30 bg-muted/30 rounded">
+            <div className="text-center text-[10px] text-muted-foreground py-1.5 mt-1 border-t border-glass-border bg-muted/30 rounded">
               {t('data_table:shown_limit', { max: MAX_RENDER, total: displayValues.length })}
             </div>
           )}
@@ -305,7 +305,7 @@ export const DataTable: React.FC<DataTableProps> = ({ columns, rows, className =
             <ZoomIn size={14} />
           </button>
           
-          <div className="flex items-center ml-1 pl-1 border-l border-glass-border/50">
+          <div className="flex items-center ml-1 pl-1 border-l border-glass-border">
             <button 
               onClick={() => setScale(1)}
               disabled={scale === 1}
@@ -339,7 +339,7 @@ export const DataTable: React.FC<DataTableProps> = ({ columns, rows, className =
           >
             {/* SOLID HEADER (No backdrop-blur, solid bg) */}
             <thead className="bg-[#fdf4eb] dark:bg-[#281a13] border-b-2 border-primary/20 text-foreground font-semibold uppercase tracking-wider sticky top-0 z-10 shadow-sm">
-              <tr className="divide-x divide-glass-border/30">
+              <tr className="divide-x divide-glass-border">
                 {columns.map((col, i) => (
                   <th 
                     key={i} 
@@ -405,11 +405,11 @@ export const DataTable: React.FC<DataTableProps> = ({ columns, rows, className =
               </tr>
             </thead>
             
-            <tbody className="divide-y divide-glass-border/30">
+            <tbody className="divide-y divide-glass-border">
               {filteredRows.map((row, rowIndex) => (
                 <tr 
                   key={rowIndex} 
-                  className="even:bg-black/[0.02] dark:even:bg-white/[0.02] hover:bg-primary/5 dark:hover:bg-primary/10 transition-colors divide-x divide-glass-border/30 group"
+                  className="even:bg-black/[0.02] dark:even:bg-white/[0.02] hover:bg-primary/5 dark:hover:bg-primary/10 transition-colors divide-x divide-glass-border group"
                 >
                   {row.map((cell, cellIndex) => {
                     const cType = getCellType(cell);

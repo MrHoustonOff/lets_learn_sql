@@ -101,12 +101,19 @@ export const DBVisualizer: React.FC<DBVisualizerProps> = ({ schema, isMaximized 
 
   const handleResetLayout = useCallback(() => {
     if (!activeSchema) return;
-    // Просто перечитываем из базы (и накладываем сохраненный вид, если он есть)
     const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(activeSchema);
     const nodesWithSavedPositions = loadSavedLayout(layoutedNodes);
     setNodes(nodesWithSavedPositions);
     setEdges(layoutedEdges);
   }, [activeSchema, setNodes, setEdges, loadSavedLayout]);
+
+  const handleClearLayout = useCallback(() => {
+    if (!activeSchema) return;
+    localStorage.removeItem(`db_layout_${activeSchema.name}`);
+    const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(activeSchema);
+    setNodes(layoutedNodes);
+    setEdges(layoutedEdges);
+  }, [activeSchema, setNodes, setEdges]);
 
   const { draggedNode, setDraggedNode, activeDragItems } = useGraphDrag(edges);
 
@@ -201,6 +208,7 @@ export const DBVisualizer: React.FC<DBVisualizerProps> = ({ schema, isMaximized 
             onChangeAnimateEdges={setAnimateEdges}
             onSaveLayout={handleSaveLayout}
             onResetLayout={handleResetLayout}
+            onClearLayout={handleClearLayout}
           />
           
           {onToggleMaximize && (

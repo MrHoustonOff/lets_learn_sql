@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Eye, EyeOff, Waypoints, Spline, CircleDot, RotateCcw, BookOpenText, Activity, Minus, Move } from 'lucide-react';
+import { Eye, EyeOff, Waypoints, Spline, CircleDot, RotateCcw, BookOpenText, Activity, Minus, Move, Eraser } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 interface ViewMenuProps {
@@ -17,6 +17,7 @@ interface ViewMenuProps {
   onChangeAnimateEdges: (animate: boolean) => void;
   onSaveLayout?: () => void;
   onResetLayout: () => void;
+  onClearLayout: () => void;
 }
 
 export const ViewMenu: React.FC<ViewMenuProps> = ({
@@ -34,6 +35,7 @@ export const ViewMenu: React.FC<ViewMenuProps> = ({
   onChangeAnimateEdges,
   onSaveLayout,
   onResetLayout,
+  onClearLayout,
 }) => {
   const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
@@ -217,10 +219,22 @@ export const ViewMenu: React.FC<ViewMenuProps> = ({
               if (onResetLayout) onResetLayout();
               setIsOpen(false);
             }}
-            className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 transition-colors text-sm text-left w-full text-muted-foreground hover:text-foreground"
+            className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 transition-colors text-sm text-left w-full text-muted-foreground hover:text-foreground mb-1"
           >
             <RotateCcw size={16} />
             <span className="flex-1">{t('db_visualizer:view_menu.reset_layout')}</span>
+          </button>
+
+          <button
+            onClick={() => {
+              if (onClearLayout) onClearLayout();
+              setIsOpen(false);
+            }}
+            className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-destructive/10 transition-colors text-sm text-left w-full text-destructive"
+            title={t('db_visualizer:view_menu.clear_layout_tooltip') || 'Clear custom layout completely'}
+          >
+            <Eraser size={16} />
+            <span className="flex-1">{t('db_visualizer:view_menu.clear_layout', 'Clear Layout')}</span>
           </button>
       </div>
     </div>
