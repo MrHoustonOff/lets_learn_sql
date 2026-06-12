@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { ChevronDown, ChevronRight, Check, Copy } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface NodePropertiesListProps {
   node: any;
@@ -12,6 +13,7 @@ const IGNORED_KEYS = [
 ];
 
 export const NodePropertiesList: React.FC<NodePropertiesListProps> = ({ node }) => {
+  const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
 
@@ -39,7 +41,7 @@ export const NodePropertiesList: React.FC<NodePropertiesListProps> = ({ node }) 
       >
         <div className="flex items-center gap-2 text-xs font-bold text-foreground uppercase">
           {isOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
-          Детали операции ({dynamicProps.length})
+          {t('explain_ui.details_section')} ({dynamicProps.length})
         </div>
       </button>
 
@@ -50,7 +52,7 @@ export const NodePropertiesList: React.FC<NodePropertiesListProps> = ({ node }) 
               key={key}
               onClick={() => handleCopy(key, value)}
               className="flex items-start gap-4 px-4 py-2.5 border-t border-glass-border/30 cursor-pointer even:bg-muted/10 group"
-              title="Нажмите, чтобы скопировать значение"
+              title={t('explain_ui.copy_hint')}
             >
               <span className="text-muted-foreground whitespace-nowrap min-w-[150px] mt-0.5">{key}:</span>
               <span className="text-foreground break-all flex-1">{String(value)}</span>

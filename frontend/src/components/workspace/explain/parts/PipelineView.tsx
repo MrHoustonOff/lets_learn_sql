@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import { Info } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 const SQL_ORDER = [
   'FROM', 'JOIN', 'WHERE', 
@@ -239,6 +240,7 @@ export const PipelineView: React.FC<PipelineViewProps> = ({
   setClickedBranchId,
   setSelectedNodeId
 }) => {
+  const { t } = useTranslation();
   if (pipelineData.steps.length === 0 && pipelineData.branches.length === 0) {
     return null;
   }
@@ -247,7 +249,7 @@ export const PipelineView: React.FC<PipelineViewProps> = ({
     <div className="mb-3">
       <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground/50 uppercase tracking-wider mb-2 select-none">
         <Info size={12} className="shrink-0" />
-        <span>Упрощенная структура (эти данные могут быть немного неточные в отличии от дерева снизу)</span>
+        <span>{t('explain_ui.pipeline_hint')}</span>
       </div>
       {pipelineData.mode === 'simple' ? (
         <div className="flex flex-wrap items-center gap-1 px-1">

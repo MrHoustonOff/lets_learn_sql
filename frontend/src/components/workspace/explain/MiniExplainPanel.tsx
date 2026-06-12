@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { Info, AlertTriangle, Loader2, CheckCircle2, ArrowDown, ArrowUp, ArrowUpDown, ChevronRight, ChevronDown, Network } from 'lucide-react';
 import { useExplainStore, type FlatNode } from '../../../store/explainStore';
@@ -24,6 +25,7 @@ type SortKey = 'step' | 'metric';
 type SortDirection = 'asc' | 'desc';
 
 export const MiniExplainPanel: React.FC = () => {
+  const { t } = useTranslation();
   const { slot1, isLoading } = useExplainStore();
   
   const [sortKey, setSortKey] = useState<SortKey>('metric');
@@ -69,7 +71,7 @@ export const MiniExplainPanel: React.FC = () => {
     return (
       <div className="flex flex-col h-full items-center justify-center text-muted-foreground bg-background">
         <Loader2 size={32} className="animate-spin text-primary mb-4" />
-        <p>Анализ плана выполнения...</p>
+        <p>{t('explain_ui.loading')}</p>
       </div>
     );
   }
@@ -78,7 +80,7 @@ export const MiniExplainPanel: React.FC = () => {
     return (
       <div className="flex flex-col h-full items-center justify-center text-muted-foreground bg-background">
         <Info size={32} className="mb-4 opacity-50" />
-        <p>Выполните запрос, чтобы увидеть анализ плана</p>
+        <p>{t('explain_ui.empty')}</p>
       </div>
     );
   }
@@ -120,7 +122,7 @@ export const MiniExplainPanel: React.FC = () => {
                 </h3>
               </div>
               <div onClick={(e) => e.stopPropagation()}>
-                <InfoTooltip text="Относительное распределение ресурсов на узлах дерева" />
+                <InfoTooltip text={t('explain_ui.perf_breakdown_tooltip')} />
               </div>
             </div>
 
@@ -149,10 +151,10 @@ export const MiniExplainPanel: React.FC = () => {
               <thead className="bg-muted/50 border-b border-glass-border">
                 <tr>
                   <th className="px-3 py-2 text-left text-xs font-medium text-muted-foreground">
-                    Операция
+                    {t('explain_ui.col_operation')}
                   </th>
                   <th className="px-3 py-2 text-left text-xs font-medium text-muted-foreground w-1/2">
-                    Влияние
+                    {t('explain_ui.col_impact')}
                   </th>
                   <th 
                     className="px-3 py-2 text-right text-xs font-medium text-muted-foreground hover:text-foreground cursor-pointer transition-colors w-28"
@@ -189,7 +191,7 @@ export const MiniExplainPanel: React.FC = () => {
                         </span>
                       </td>
                       <td className="px-3 py-2">
-                        <div className="h-2 w-full bg-black/10 dark:bg-white/10 rounded-full overflow-hidden flex items-center">
+                        <div className="h-2 w-full bg-muted/20 rounded-full overflow-hidden flex items-center">
                           <div className={`h-full ${colorClass}`} style={{ width: `${Math.max(pct, 1)}%` }} />
                         </div>
                       </td>
@@ -229,7 +231,7 @@ export const MiniExplainPanel: React.FC = () => {
               className="flex items-center gap-1.5 text-xs font-semibold text-primary hover:bg-primary/10 px-2 py-1 rounded transition-colors"
             >
               <Network size={12} />
-              Графовое представление
+              {t('explain_ui.graph_view')}
             </button>
           </div>
           
@@ -295,7 +297,7 @@ export const MiniExplainPanel: React.FC = () => {
             ) : (
               <div className="flex items-center gap-2 text-muted-foreground">
                 <CheckCircle2 size={14} className="text-emerald-500" />
-                <span className="font-medium">Анализ завершен, замечаний нет</span>
+                <span className="font-medium">{t('explain_ui.no_issues')}</span>
               </div>
             )}
           </div>
