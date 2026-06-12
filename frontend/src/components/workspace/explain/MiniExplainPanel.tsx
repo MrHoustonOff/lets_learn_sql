@@ -138,11 +138,13 @@ const NodeDetailsOverlay: React.FC<NodeDetailsProps> = ({ nodeId, onClose, rootT
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
+        e.preventDefault();
+        e.stopPropagation();
         onClose();
       }
     };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener('keydown', handleKeyDown, { capture: true });
+    return () => window.removeEventListener('keydown', handleKeyDown, { capture: true });
   }, [onClose]);
 
   const node = findNodeById(rootTree, nodeId);
@@ -433,7 +435,11 @@ export const MiniExplainPanel: React.FC = () => {
                   const [nodeType, objectName] = node.operation.split(' → ');
 
                   return (
-                    <tr key={idx} className="hover:bg-hover transition-colors">
+                    <tr 
+                      key={idx} 
+                      className="hover:bg-hover transition-colors cursor-pointer"
+                      onClick={() => setSelectedNodeId(node.node_id)}
+                    >
                       <td className="px-3 py-2 text-foreground font-medium flex items-center gap-2">
                         <span className="flex items-center justify-center w-4 h-4 rounded bg-background border border-glass-border text-[10px] text-muted-foreground font-mono">
                           {node.step_number}
