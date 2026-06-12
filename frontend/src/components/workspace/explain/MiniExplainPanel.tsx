@@ -183,7 +183,7 @@ const NodeDetailsOverlay: React.FC<NodeDetailsProps> = ({ nodeId, onClose, rootT
       onClick={onClose}
     >
       <div 
-        className="border border-glass-border bg-background rounded-lg p-4 shadow-2xl w-full max-w-2xl relative my-auto mt-10 mb-10"
+        className="border border-glass-border bg-[hsl(var(--glass-bg))] rounded-lg p-4 shadow-2xl w-full max-w-2xl relative my-auto mt-10 mb-10"
         onClick={(e) => e.stopPropagation()} // Не закрывать при клике на саму карточку
       >
         <div className="flex items-start justify-between mb-4 border-b border-glass-border pb-3">
