@@ -18,36 +18,36 @@ export const Navbar: React.FC = () => {
           </span>
         </div>
 
-        <div className="hidden md:flex items-center gap-1 px-1.5 py-1.5 rounded-b-xl border border-t-0 border-glass-border bg-glass backdrop-blur-md shadow-sm">
+        <div className="hidden md:flex items-center gap-1 px-1.5 py-1.5 rounded-b-xl border border-t-0 border-glass-border bg-glass backdrop-blur-md shadow-[0_4px_24px_-4px_rgba(0,0,0,0.2)]">
           <NavLink 
             to="/courses" 
-            className={({ isActive }) => `flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-colors ${isActive ? 'bg-black/10 dark:bg-white/10 text-foreground' : 'text-muted-foreground hover:bg-black/5 dark:hover:bg-white/5 hover:text-foreground'}`}
+            className={({ isActive }) => `flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-300 ease-out outline-none select-none active:scale-95 ${isActive ? 'text-primary bg-primary/15 shadow-[0_0_12px_rgba(var(--primary),0.2)]' : 'text-muted-foreground hover:text-foreground hover:bg-foreground/5 hover:shadow-sm'}`}
           >
-            <BookOpen size={14} />
+            <BookOpen size={14} className={({ isActive }: any) => isActive ? "drop-shadow-[0_0_8px_rgba(var(--primary),0.5)]" : ""} />
             {t('courses')}
           </NavLink>
           <NavLink 
             to="/databases" 
-            className={({ isActive }) => `flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-colors ${isActive ? 'bg-black/10 dark:bg-white/10 text-foreground' : 'text-muted-foreground hover:bg-black/5 dark:hover:bg-white/5 hover:text-foreground'}`}
+            className={({ isActive }) => `flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-300 ease-out outline-none select-none active:scale-95 ${isActive ? 'text-primary bg-primary/15 shadow-[0_0_12px_rgba(var(--primary),0.2)]' : 'text-muted-foreground hover:text-foreground hover:bg-foreground/5 hover:shadow-sm'}`}
           >
-            <Database size={14} />
+            <Database size={14} className={({ isActive }: any) => isActive ? "drop-shadow-[0_0_8px_rgba(var(--primary),0.5)]" : ""} />
             {t('databases')}
           </NavLink>
           <NavLink 
             to="/tasks" 
-            className={({ isActive }) => `flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-colors ${isActive ? 'bg-black/10 dark:bg-white/10 text-foreground' : 'text-muted-foreground hover:bg-black/5 dark:hover:bg-white/5 hover:text-foreground'}`}
+            className={({ isActive }) => `flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-300 ease-out outline-none select-none active:scale-95 ${isActive ? 'text-primary bg-primary/15 shadow-[0_0_12px_rgba(var(--primary),0.2)]' : 'text-muted-foreground hover:text-foreground hover:bg-foreground/5 hover:shadow-sm'}`}
           >
-            <CheckSquare size={14} />
+            <CheckSquare size={14} className={({ isActive }: any) => isActive ? "drop-shadow-[0_0_8px_rgba(var(--primary),0.5)]" : ""} />
             {t('tasks')}
           </NavLink>
         </div>
       </div>
 
-      <div className="flex items-center gap-1 pointer-events-auto px-1.5 py-1.5 rounded-b-xl border border-t-0 border-glass-border bg-glass backdrop-blur-md shadow-sm">
+      <div className="flex items-center gap-1 pointer-events-auto px-1.5 py-1.5 rounded-b-xl border border-t-0 border-glass-border bg-glass backdrop-blur-md shadow-[0_4px_24px_-4px_rgba(0,0,0,0.2)]">
         {/* DEV: language switcher */}
         <button 
           onClick={() => i18n.changeLanguage(lang === 'ru' ? 'en' : 'ru')}
-          className="px-3 py-1.5 rounded-md text-xs font-bold tracking-wider text-muted-foreground hover:text-foreground hover:bg-hover transition-colors outline-none focus:outline-none"
+          className="px-3 py-1.5 rounded-lg text-xs font-extrabold tracking-widest transition-all duration-300 ease-out outline-none select-none active:scale-95 text-muted-foreground hover:text-foreground hover:bg-foreground/5 hover:shadow-sm"
           title="Change language"
         >
           {lang === 'ru' ? 'EN' : 'RU'}
@@ -55,15 +55,15 @@ export const Navbar: React.FC = () => {
 
         <button
           onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-          className="p-1.5 rounded-md hover:bg-black/5 dark:hover:bg-white/5 transition-colors text-muted-foreground hover:text-foreground outline-none focus:outline-none"
+          className="p-1.5 rounded-lg transition-all duration-300 ease-out outline-none select-none active:scale-95 text-muted-foreground hover:text-foreground hover:bg-foreground/5 hover:shadow-sm"
         >
-          {theme === 'dark' ? <Sun size={14} /> : <Moon size={14} />}
+          {theme === 'dark' ? <Sun size={15} /> : <Moon size={15} />}
         </button>
         <NavLink
           to="/profile"
-          className={({ isActive }) => `p-1.5 rounded-md transition-colors outline-none focus:outline-none ${isActive ? 'bg-black/10 dark:bg-white/10 text-foreground' : 'text-muted-foreground hover:bg-black/5 dark:hover:bg-white/5 hover:text-foreground'}`}
+          className={({ isActive }) => `p-1.5 rounded-lg transition-all duration-300 ease-out outline-none select-none active:scale-95 ${isActive ? 'text-primary bg-primary/15 shadow-[0_0_12px_rgba(var(--primary),0.2)]' : 'text-muted-foreground hover:text-foreground hover:bg-foreground/5 hover:shadow-sm'}`}
         >
-          <User size={14} />
+          <User size={15} className={({ isActive }: any) => isActive ? "drop-shadow-[0_0_8px_rgba(var(--primary),0.5)]" : ""} />
         </NavLink>
       </div>
     </nav>
