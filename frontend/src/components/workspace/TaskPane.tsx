@@ -44,10 +44,10 @@ export const TaskPane: React.FC = () => {
               ? 'bg-success/10 border-success/30 text-success shadow-sm' 
               : 'bg-transparent border-transparent text-muted-foreground hover:bg-hover hover:text-foreground'
           }`}
-          title="Пометить как решено"
+          title={t('task_pane.mark_solved_tooltip')}
         >
           <Check size={14} className={isSolved ? 'opacity-100' : 'opacity-40'} strokeWidth={isSolved ? 3 : 2} />
-          <span className="text-xs font-medium">Решено</span>
+          <span className="text-xs font-medium">{t('task_pane.solved')}</span>
         </button>
 
         <button 
@@ -57,10 +57,10 @@ export const TaskPane: React.FC = () => {
               ? 'bg-warning/10 border-warning/30 text-warning-text shadow-sm' 
               : 'bg-transparent border-transparent text-muted-foreground hover:bg-hover hover:text-foreground'
           }`}
-          title="В закладки"
+          title={t('task_pane.bookmark_tooltip')}
         >
           <Bookmark size={14} className={isBookmarked ? 'opacity-100 fill-current' : 'opacity-40'} />
-          <span className="text-xs font-medium">Пометить</span>
+          <span className="text-xs font-medium">{t('task_pane.bookmark')}</span>
         </button>
 
         <div className="w-[1px] h-4 bg-glass-border mx-1"></div>
@@ -68,7 +68,7 @@ export const TaskPane: React.FC = () => {
         <button 
           onClick={() => setMaximizedPane(isMaximized ? null : 'task')}
           className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-hover rounded-md transition-colors"
-          title={isMaximized ? "Свернуть" : "Развернуть"}
+          title={isMaximized ? t('task_pane.collapse') : t('task_pane.expand')}
         >
           {isMaximized ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
         </button>
@@ -79,20 +79,20 @@ export const TaskPane: React.FC = () => {
       <div className="flex-1 p-5 overflow-y-auto prose dark:prose-invert max-w-none text-sm scrollbar-thin">
         {activeTab === 'task' ? (
           <div className="animate-in fade-in duration-300">
-            <h3 className="mt-0 mb-4 text-lg font-bold">1. Все клиенты</h3>
-            <p>Напишите SQL запрос, который выводит все колонки из таблицы <code>customers</code>.</p>
+            <h3 className="mt-0 mb-4 text-lg font-bold">{t('task_pane.mock_title')}</h3>
+            <p dangerouslySetInnerHTML={{ __html: t('task_pane.mock_description') }} />
             
             <div className="mt-6 p-4 bg-info/10 border border-info/20 rounded-xl">
               <p className="text-info m-0 leading-relaxed">
-                <strong className="block mb-1">Подсказка:</strong> 
-                Используйте символ <code>*</code> для выбора всех колонок.
+                <strong className="block mb-1">{t('task_pane.mock_hint_title')}</strong> 
+                <span dangerouslySetInnerHTML={{ __html: t('task_pane.mock_hint_text') }} />
               </p>
             </div>
           </div>
         ) : (
           <div className="animate-in fade-in duration-300">
-            <h3 className="mt-0 mb-4 text-lg font-bold">Решение</h3>
-            <p>Оно открывается после того, как вы совершите хотя бы одну попытку решения.</p>
+            <h3 className="mt-0 mb-4 text-lg font-bold">{t('task_pane.mock_solution_title')}</h3>
+            <p>{t('task_pane.mock_solution_description')}</p>
             <pre className="bg-hover p-4 rounded-xl mt-4 border border-glass-border/50 shadow-inner">
               <code className="text-success font-mono text-[13px]">
                 SELECT * FROM public.customers;

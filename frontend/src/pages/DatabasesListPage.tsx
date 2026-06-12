@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Database, Plus } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { DatabaseDetailsModal } from '../components/workspace/DatabaseDetailsModal';
 
 export interface DatabaseMock {
@@ -21,15 +22,16 @@ const mockDatabases: DatabaseMock[] = [
 ];
 
 export const DatabasesListPage: React.FC = () => {
+  const { t } = useTranslation();
   const [selectedDb, setSelectedDb] = useState<DatabaseMock | null>(null);
 
   return (
     <div className="h-full overflow-y-auto p-8 max-w-5xl mx-auto animate-in fade-in duration-300 primary-scrollbar">
       <div className="flex items-center justify-between mb-8">
-        <h1 className="text-3xl font-bold">Базы данных</h1>
+        <h1 className="text-3xl font-bold">{t('databases')}</h1>
         <button className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl transition-colors font-medium shadow-sm">
           <Plus size={18} />
-          Подключить БД
+          {t('db_list.connect_db')}
         </button>
       </div>
 
@@ -68,7 +70,7 @@ export const DatabasesListPage: React.FC = () => {
               </p>
             ) : (
               <p className="text-sm text-muted-foreground/50 italic relative z-10 mt-auto">
-                Нет описания
+                {t('db_list.no_description')}
               </p>
             )}
 

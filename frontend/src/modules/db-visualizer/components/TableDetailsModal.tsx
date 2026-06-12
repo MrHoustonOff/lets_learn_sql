@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
+import { useTranslation } from 'react-i18next';
 import type { TableSchema } from '../types';
 import { X, Database, Key, Link, AlertCircle, Hash, TableProperties, Fingerprint, Zap, Play } from 'lucide-react';
 
@@ -11,6 +12,7 @@ interface TableDetailsModalProps {
 }
 
 export const TableDetailsModal: React.FC<TableDetailsModalProps> = ({ table, onClose }) => {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<'schema' | 'data'>('schema');
   const [limitStr, setLimitStr] = useState<string>('5');
   const [data, setData] = useState<{ columns: string[], rows: any[][] } | null>(null);
@@ -25,7 +27,7 @@ export const TableDetailsModal: React.FC<TableDetailsModalProps> = ({ table, onC
     const limitNum = parseInt(limitToUse);
     if (isNaN(limitNum) || limitNum < 0 || limitNum > 100) {
       setLoadingData(false);
-      setDataError('Доступны только цифры от 0 до 100 для LIMIT');
+      setDataError(t('db_visualizer.table_details.limit_warning'));
       return;
     }
 
@@ -129,7 +131,7 @@ export const TableDetailsModal: React.FC<TableDetailsModalProps> = ({ table, onC
             }`}
           >
             <TableProperties size={16} />
-            Структура
+            {t('db_visualizer.table_details.structure')}
           </button>
           <button
             onClick={() => setActiveTab('data')}
@@ -140,7 +142,7 @@ export const TableDetailsModal: React.FC<TableDetailsModalProps> = ({ table, onC
             }`}
           >
             <Database size={16} />
-            Пример данных
+            {t('db_visualizer.table_details.data_preview')}
           </button>
         </div>
 
@@ -158,18 +160,18 @@ export const TableDetailsModal: React.FC<TableDetailsModalProps> = ({ table, onC
                 {/* Columns Table */}
                 <section>
                   <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider mb-3 flex items-center gap-2">
-                    <TableProperties size={16} className="text-primary" /> Столбцы
+                    <TableProperties size={16} className="text-primary" /> {t('db_visualizer.table_details.columns')}
                   </h3>
                   <div className="border border-glass-border rounded-xl overflow-hidden bg-hover max-h-[45vh] flex flex-col">
                     <div className="overflow-y-auto overflow-x-auto">
                       <table className="w-full text-left text-sm relative">
                         <thead className="bg-hover text-muted-foreground text-xs uppercase tracking-wider sticky top-0 z-10 backdrop-blur-md shadow-sm">
                           <tr className="divide-x divide-glass-border/50">
-                            <th className="px-4 py-3 font-medium">Ключи</th>
-                            <th className="px-4 py-3 font-medium">Имя</th>
-                            <th className="px-4 py-3 font-medium">Тип</th>
+                            <th className="px-4 py-3 font-medium">{t('db_visualizer.table_details.keys')}</th>
+                            <th className="px-4 py-3 font-medium">{t('db_visualizer.table_details.name')}</th>
+                            <th className="px-4 py-3 font-medium">{t('db_visualizer.table_details.type')}</th>
                             <th className="px-4 py-3 font-medium">Null</th>
-                            <th className="px-4 py-3 font-medium">По умолчанию</th>
+                            <th className="px-4 py-3 font-medium">{t('db_visualizer.table_details.default')}</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-glass-border">
@@ -186,8 +188,8 @@ export const TableDetailsModal: React.FC<TableDetailsModalProps> = ({ table, onC
                             <td className="px-4 py-3 font-mono text-xs text-muted-foreground">{col.type}</td>
                             <td className="px-4 py-3">
                               {col.nullable 
-                                ? <span className="text-muted-foreground">Да</span>
-                                : <span className="font-semibold text-foreground">Нет</span>}
+                                ? <span className="text-muted-foreground">{t('db_visualizer.table_details.yes')}</span>
+                                : <span className="font-semibold text-foreground">{t('db_visualizer.table_details.no')}</span>}
                             </td>
                             <td className="px-4 py-3 font-mono text-xs text-success">
                               {col.default || <span className="text-muted-foreground opacity-50">-</span>}
@@ -206,7 +208,7 @@ export const TableDetailsModal: React.FC<TableDetailsModalProps> = ({ table, onC
                   {(table.indexes?.length || 0) > 0 && (
                     <section>
                       <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider mb-3 flex items-center gap-2">
-                        <Hash size={16} className="text-warning" /> Индексы
+                        <Hash size={16} className="text-warning" /> {t('db_visualizer.table_details.indexes')}
                       </h3>
                       <div className="space-y-2">
                         {table.indexes?.map(idx => (
@@ -229,7 +231,7 @@ export const TableDetailsModal: React.FC<TableDetailsModalProps> = ({ table, onC
                   {(table.foreignKeys?.length || 0) > 0 && (
                     <section>
                       <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider mb-3 flex items-center gap-2">
-                        <Link size={16} className="text-info" /> Внешние ключи
+                        <Link size={16} className="text-info" /> {t('db_visualizer.table_details.foreign_keys')}
                       </h3>
                       <div className="space-y-2">
                         {table.foreignKeys?.map(fk => (
@@ -254,7 +256,7 @@ export const TableDetailsModal: React.FC<TableDetailsModalProps> = ({ table, onC
                   {(table.referencedBy?.length || 0) > 0 && (
                     <section>
                       <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider mb-3 flex items-center gap-2">
-                        <Fingerprint size={16} className="text-success" /> Ссылаются на эту таблицу
+                        <Fingerprint size={16} className="text-success" /> {t('db_visualizer.table_details.referenced_by')}
                       </h3>
                       <div className="space-y-2">
                         {table.referencedBy?.map(ref => (
@@ -262,7 +264,7 @@ export const TableDetailsModal: React.FC<TableDetailsModalProps> = ({ table, onC
                             <div className="text-xs text-muted-foreground flex items-center gap-2">
                               <span className="font-mono text-foreground">{ref.table}.{ref.column}</span>
                               <span>→</span>
-                              <span>сюда</span>
+                              <span>{t('db_visualizer.table_details.here')}</span>
                             </div>
                           </div>
                         ))}
@@ -279,7 +281,7 @@ export const TableDetailsModal: React.FC<TableDetailsModalProps> = ({ table, onC
               {loadingData ? (
                 <div className="h-full flex flex-col items-center justify-center text-muted-foreground min-h-[300px]">
                   <div className="w-8 h-8 border-4 border-primary/20 border-t-primary rounded-full animate-spin mb-4"></div>
-                  <p>Загрузка данных...</p>
+                  <p>{t('db_visualizer.table_details.loading_data')}</p>
                 </div>
               ) : dataError ? (
                 <div className="h-full flex flex-col items-center justify-center text-destructive min-h-[300px] gap-4">
@@ -289,7 +291,7 @@ export const TableDetailsModal: React.FC<TableDetailsModalProps> = ({ table, onC
                     onClick={() => fetchSampleData('5')}
                     className="px-4 py-2 bg-destructive/10 text-destructive rounded-lg text-sm font-medium hover:bg-destructive/20 transition-colors"
                   >
-                    Попробовать снова
+                    {t('db_visualizer.table_details.try_again')}
                   </button>
                 </div>
               ) : data ? (
@@ -298,7 +300,7 @@ export const TableDetailsModal: React.FC<TableDetailsModalProps> = ({ table, onC
                     <div className="flex items-center gap-3 overflow-hidden flex-1">
                       <div className="flex items-center gap-2 px-2 shrink-0">
                         <Database size={16} className="text-primary" /> 
-                        <span className="text-sm font-semibold text-foreground uppercase tracking-wider hidden sm:inline-block">Данные</span>
+                        <span className="text-sm font-semibold text-foreground uppercase tracking-wider hidden sm:inline-block">{t('db_visualizer.table_details.data')}</span>
                       </div>
                       
                       <div className="h-6 w-px bg-glass-border shrink-0"></div>
@@ -318,7 +320,7 @@ export const TableDetailsModal: React.FC<TableDetailsModalProps> = ({ table, onC
                             onKeyDown={(e) => {
                               if (e.key === 'Enter') fetchSampleData();
                             }}
-                            title="Введите LIMIT от 0 до 100"
+                            title={t('db_visualizer.table_details.limit_title')}
                             className="w-12 bg-background/50 text-green-600 dark:text-green-400 font-bold outline-none border border-glass-border shadow-inner hover:border-green-500/50 focus:border-green-500 focus:bg-background text-center rounded-md transition-all py-0.5"
                           />
                         </div>
@@ -328,14 +330,14 @@ export const TableDetailsModal: React.FC<TableDetailsModalProps> = ({ table, onC
                       onClick={() => fetchSampleData()}
                       className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm transition-all rounded-lg text-xs font-medium ml-3"
                     >
-                      <Play size={14} fill="currentColor" /> Выполнить
+                      <Play size={14} fill="currentColor" /> {t('db_visualizer.table_details.execute')}
                     </button>
                   </div>
                   
                   {data.rows.length === 0 ? (
                     <div className="flex-1 flex flex-col items-center justify-center text-muted-foreground opacity-50 border border-dashed border-glass-border rounded-xl mt-4">
                       <Database size={32} className="mb-2" />
-                      <p>Таблица пуста</p>
+                      <p>{t('db_visualizer.table_details.empty_table')}</p>
                     </div>
                   ) : (
                     <div className="flex-1 overflow-hidden relative">
@@ -346,9 +348,9 @@ export const TableDetailsModal: React.FC<TableDetailsModalProps> = ({ table, onC
               ) : (
                 <div className="h-full flex flex-col items-center justify-center text-muted-foreground min-h-[300px]">
                   <Database size={48} className="opacity-20 mb-4" />
-                  <p className="text-lg font-medium text-foreground mb-1">Пример данных</p>
+                  <p className="text-lg font-medium text-foreground mb-1">{t('db_visualizer.table_details.data_preview')}</p>
                   <button onClick={() => fetchSampleData()} className="mt-6 px-4 py-2 bg-primary/10 text-primary rounded-lg text-sm font-medium hover:bg-primary/20 transition-colors">
-                    Запросить данные
+                    {t('db_visualizer.table_details.request_data')}
                   </button>
                 </div>
               )}

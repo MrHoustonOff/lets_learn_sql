@@ -74,7 +74,7 @@ export const ResultsPane: React.FC<ResultsPaneProps> = ({
           <button 
             onClick={handleToggleMaximize}
             className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-hover rounded-md transition-colors"
-            title={isMaximized ? "Свернуть" : "Развернуть"}
+            title={isMaximized ? t('sql_results.minimize') : t('sql_results.maximize')}
           >
             {isMaximized ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
           </button>
@@ -88,14 +88,14 @@ export const ResultsPane: React.FC<ResultsPaneProps> = ({
             {isLoading ? (
               <div className="absolute inset-0 flex flex-col items-center justify-center text-muted-foreground bg-background/50 backdrop-blur-sm z-50">
                 <Loader2 size={32} className="animate-spin text-primary mb-4" />
-                <p>Выполнение запроса...</p>
+                <p>{t('sql_results.running')}</p>
               </div>
             ) : error ? (
               <div className="h-full flex flex-col items-center justify-center p-6 text-center">
                 <div className="w-16 h-16 bg-destructive/10 rounded-full flex items-center justify-center mb-4">
                   <AlertCircle size={32} className="text-destructive" />
                 </div>
-                <h3 className="text-lg font-semibold text-foreground mb-2">Ошибка выполнения</h3>
+                <h3 className="text-lg font-semibold text-foreground mb-2">{t('sql_results.error')}</h3>
                 <p className="text-sm text-muted-foreground bg-destructive/5 border border-destructive/20 p-4 rounded-xl max-w-lg font-mono text-left break-all">
                   {error}
                 </p>
@@ -103,12 +103,12 @@ export const ResultsPane: React.FC<ResultsPaneProps> = ({
             ) : !result ? (
               <div className="h-full flex flex-col items-center justify-center text-muted-foreground opacity-50">
                 <Play size={32} className="mb-2" />
-                <p>Напишите SQL запрос и нажмите Run</p>
+                <p>{t('sql_results.empty')}</p>
               </div>
             ) : result.rows.length === 0 ? (
               <div className="h-full flex flex-col items-center justify-center text-muted-foreground opacity-50">
                 <Table2 size={32} className="mb-2" />
-                <p>Запрос выполнен успешно, но вернул 0 строк.</p>
+                <p>{t('sql_results.success_empty', 'Query executed successfully, but returned 0 rows.')}</p>
               </div>
             ) : (
               <div className="h-full w-full p-2">

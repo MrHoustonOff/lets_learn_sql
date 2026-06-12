@@ -20,7 +20,7 @@ export const ExplainModal: React.FC<ExplainModalProps> = ({ isOpen, onClose }) =
         <div className="h-14 border-b border-glass-border flex items-center justify-between px-6 shrink-0 bg-glass/50">
           <div className="flex items-center gap-2">
             <Network className="text-primary" size={20} />
-            <h2 className="font-semibold text-lg">Графовое представление</h2>
+            <h2 className="font-semibold text-lg">{t('explain_ui.graph_view')}</h2>
           </div>
           <button 
             onClick={onClose}

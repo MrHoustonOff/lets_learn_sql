@@ -25,7 +25,8 @@ import { PerformanceBreakdown } from './parts/PerformanceBreakdown';
 
 
 export const MiniExplainPanel: React.FC = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const lang = i18n.language === 'en' ? 'en' : 'ru';
   const { slot1, isLoading } = useExplainStore();
   
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
@@ -91,7 +92,7 @@ export const MiniExplainPanel: React.FC = () => {
                 </h3>
               </div>
               <div onClick={(e) => e.stopPropagation()}>
-                <InfoTooltip text={explainFieldsDocs.fields.plan_tree.ru} />
+                <InfoTooltip text={explainFieldsDocs.fields.plan_tree[lang]} />
               </div>
             </div>
             

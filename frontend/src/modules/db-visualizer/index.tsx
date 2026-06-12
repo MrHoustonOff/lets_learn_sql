@@ -2,6 +2,7 @@ import React, { useState, useMemo, useCallback, useRef } from 'react';
 import type { DatabaseSchema, TableSchema } from './types';
 import { useSchema } from './hooks/useSchema';
 import { Filter, Maximize2, Minimize2, X } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { ReactFlow, Background, BackgroundVariant, Controls, useNodesState, useEdgesState } from '@xyflow/react';
 import type { Node, Edge } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
@@ -34,6 +35,7 @@ const edgeTypes = {
 };
 
 export const DBVisualizer: React.FC<DBVisualizerProps> = ({ schema, isMaximized = true, onToggleMaximize, onClose }) => {
+  const { t } = useTranslation();
   const [showRelations, setShowRelations] = useState(true);
   const [showMarkers, setShowMarkers] = useState(true);
   const [showLegend, setShowLegend] = useState(true);
@@ -126,7 +128,7 @@ export const DBVisualizer: React.FC<DBVisualizerProps> = ({ schema, isMaximized 
       <div className="h-full w-full flex items-center justify-center bg-background text-muted-foreground">
         <div className="flex flex-col items-center gap-4">
           <div className="w-8 h-8 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
-          <div>Загрузка схемы базы данных...</div>
+          <div>{t('db_visualizer.loading')}</div>
         </div>
       </div>
     );
@@ -137,7 +139,7 @@ export const DBVisualizer: React.FC<DBVisualizerProps> = ({ schema, isMaximized 
       <div className="h-full w-full flex items-center justify-center bg-background text-destructive">
         <div className="flex flex-col items-center gap-2 max-w-md text-center">
           <X size={32} />
-          <div className="font-semibold text-lg">Ошибка загрузки схемы</div>
+          <div className="font-semibold text-lg">{t('db_visualizer.load_error')}</div>
           <div className="text-sm opacity-80">{error}</div>
         </div>
       </div>
@@ -145,7 +147,7 @@ export const DBVisualizer: React.FC<DBVisualizerProps> = ({ schema, isMaximized 
   }
 
   if (!activeSchema) {
-    return <div className="text-foreground p-4">No schema provided.</div>;
+    return <div className="text-foreground p-4">{t('db_visualizer.no_schema')}</div>;
   }
 
   return (
@@ -167,7 +169,7 @@ export const DBVisualizer: React.FC<DBVisualizerProps> = ({ schema, isMaximized 
             }`}
           >
             <Filter size={16} />
-            <span>Фильтры</span>
+            <span>{t('db_visualizer.filter_button')}</span>
           </button>
           
           {/* Сама панель фильтров (появляется под кнопкой) */}
@@ -204,7 +206,7 @@ export const DBVisualizer: React.FC<DBVisualizerProps> = ({ schema, isMaximized 
           {onToggleMaximize && (
             <button 
               onClick={onToggleMaximize}
-              title={isMaximized ? "Свернуть" : "Развернуть"}
+              title={isMaximized ? t('sql_results.minimize') : t('sql_results.maximize')}
               className="p-2.5 rounded-xl hover:bg-hover transition-colors bg-glass backdrop-blur-md border border-glass-border shadow-sm"
             >
               {isMaximized ? <Minimize2 size={20} /> : <Maximize2 size={20} />}
@@ -214,7 +216,7 @@ export const DBVisualizer: React.FC<DBVisualizerProps> = ({ schema, isMaximized 
           {onClose && (
             <button 
               onClick={onClose}
-              title="Закрыть"
+              title={t('close')}
               className="p-2.5 rounded-xl hover:bg-hover transition-colors bg-glass backdrop-blur-md border border-glass-border shadow-sm text-muted-foreground hover:text-foreground"
             >
               <X size={20} />

@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { ArrowLeft, CheckCircle2, Circle, Star, ArrowRight, Database } from 'lucide-react';
 import { DBViewerModal } from '../components/workspace/DBViewerModal';
 
 export const CourseDetailsPage: React.FC = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const [selectedDb, setSelectedDb] = useState<string | null>(null);
 
@@ -70,7 +72,7 @@ export const CourseDetailsPage: React.FC = () => {
           className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-6 font-medium text-sm"
         >
           <ArrowLeft size={16} />
-          Курсы (Esc)
+          {t('courses_page.back_to_courses')}
         </button>
 
         <div className="mb-10">
@@ -94,15 +96,15 @@ export const CourseDetailsPage: React.FC = () => {
               ))}
             </div>
             <span className="text-glass-border">|</span>
-            <span>{courseData.totalTasks} задачи</span>
+            <span>{courseData.totalTasks} {t('courses_page.tasks')}</span>
             <span className="text-glass-border">|</span>
-            <span>{courseData.totalSections} разделов</span>
+            <span>{courseData.totalSections} {t('courses_page.sections')}</span>
           </div>
         </div>
 
       <div className="mb-12">
         <div className="flex items-center justify-between text-sm mb-3">
-          <span className="font-semibold text-lg">Общий прогресс</span>
+          <span className="font-semibold text-lg">{t('overall_progress')}</span>
           <span className="text-muted-foreground font-mono font-medium">
             <span className="text-foreground">{courseData.progress}%</span> &nbsp;&nbsp; {courseData.completedTasks}/{courseData.totalTasks}
           </span>
@@ -152,7 +154,7 @@ export const CourseDetailsPage: React.FC = () => {
                   </div>
 
                   <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 text-xs font-medium bg-primary/10 text-primary hover:bg-primary/20 px-3 py-1.5 rounded-lg pointer-events-none">
-                    Решить <ArrowRight size={14} />
+                    {t('courses_page.solve')} <ArrowRight size={14} />
                   </div>
                 </li>
               ))}

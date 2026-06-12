@@ -22,14 +22,14 @@ export const Navbar: React.FC = () => {
             className={({ isActive }) => `flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-medium transition-colors ${isActive ? 'bg-black/10 dark:bg-white/10 text-foreground' : 'text-muted-foreground hover:bg-black/5 dark:hover:bg-white/5 hover:text-foreground'}`}
           >
             <BookOpen size={12} />
-            Курсы
+            {t('courses')}
           </NavLink>
           <NavLink 
             to="/databases" 
             className={({ isActive }) => `flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-medium transition-colors ${isActive ? 'bg-black/10 dark:bg-white/10 text-foreground' : 'text-muted-foreground hover:bg-black/5 dark:hover:bg-white/5 hover:text-foreground'}`}
           >
             <Database size={12} />
-            Базы данных
+            {t('databases')}
           </NavLink>
           <NavLink 
             to="/tasks" 
