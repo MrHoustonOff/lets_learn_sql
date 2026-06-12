@@ -1,61 +1,22 @@
-import React, { useState, useMemo, useEffect, useRef } from 'react';
-import { createPortal } from 'react-dom';
-import { Info, AlertTriangle, Loader2, CheckCircle2, ArrowDown, ArrowUp, ArrowUpDown, X, ChevronLeft, ChevronRight, Copy, Check, ChevronDown, Activity, Network } from 'lucide-react';
+import React, { useState, useMemo } from 'react';
+
+import { Info, AlertTriangle, Loader2, CheckCircle2, ArrowDown, ArrowUp, ArrowUpDown, ChevronRight, ChevronDown, Network } from 'lucide-react';
 import { useExplainStore, type FlatNode } from '../../../store/explainStore';
 import { ExplainModal } from '../ExplainModal';
-import { findNodeById, getCostColor } from './utils';
+import { getCostColor } from './utils';
 import { NodeDetailsOverlay } from './NodeDetailsOverlay';
 
 import pgExplainDocs from '../../../i18n/pg_explain_docs.json';
 import explainFieldsDocs from '../../../i18n/explain_fields_i18n.json';
 
 import { InfoTooltip } from '../../ui/InfoTooltip';
-import { PlanTreeNode } from './parts/PlanTextTree';
+import { PlanTree } from './parts/PlanTextTree';
 import { PipelineView, usePipelineData } from './parts/PipelineView';
 
 // Хелпер для поиска узла в дереве
 
 
-const BRANCH_COLORS = [
-  'bg-blue-500/50',
-  'bg-emerald-500/50',
-  'bg-purple-500/50',
-  'bg-amber-500/50',
-  'bg-pink-500/50',
-  'bg-cyan-500/50',
-  'bg-rose-500/50',
-];
 
-const getDescendantsMetrics = (node: any): { count: number, maxCost: number } => {
-  let count = 0;
-  let maxCost = node["Total Cost"] || 0;
-  if (node.Plans) {
-    for (const child of node.Plans) {
-      count += 1;
-      const childMetrics = getDescendantsMetrics(child);
-      count += childMetrics.count;
-      maxCost = Math.max(maxCost, childMetrics.maxCost);
-    }
-  }
-  return { count, maxCost };
-};
-
-
-
-        </div>
-      )}
-
-      {isCollapsed && children.length > 0 && (() => {
-        const metrics = getDescendantsMetrics(node);
-        return (
-          <div className="text-xs text-muted-foreground/60 italic pl-6 ml-5 mt-1 pb-2">
-            [свёрнуто: {metrics.count} узлов, макс. стоимость: {metrics.maxCost.toFixed(2)}]
-          </div>
-        );
-      })()}
-    </div>
-  );
-};
 
 
 
@@ -76,34 +37,6 @@ export const MiniExplainPanel: React.FC = () => {
   const [clickedBranchId, setClickedBranchId] = useState<string | null>(null);
 
   const pipelineData = usePipelineData(slot1?.plan_parsed?.tree);
-
-  const lineColorsMap = useMemo(() => {
-    const map = new Map<string, string>();
-    if (!slot1?.plan_parsed?.tree) return map;
-    
-    let colorIndex = 0;
-
-    const assignColors = (node: any, inheritedColor: string) => {
-      map.set(node.node_id, inheritedColor);
-      const children = node.Plans || [];
-      
-      if (children.length === 0) return;
-      
-      if (children.length === 1) {
-        assignColors(children[0], inheritedColor);
-        return;
-      }
-      
-      children.forEach((child: any) => {
-        const color = BRANCH_COLORS[colorIndex % BRANCH_COLORS.length];
-        colorIndex++;
-        assignColors(child, color);
-      });
-    };
-
-    assignColors(slot1.plan_parsed.tree, 'bg-glass-border');
-    return map;
-  }, [slot1]);
 
   const handleSort = (key: SortKey) => {
     if (sortKey === key) {
@@ -317,12 +250,9 @@ export const MiniExplainPanel: React.FC = () => {
                 setSelectedNodeId={setSelectedNodeId}
               />
 
-              <PlanTreeNode 
-                node={slot1.plan_parsed.tree} 
-                flatNodesMap={flatNodesMap} 
-                lineColorsMap={lineColorsMap}
-                isLast={true} 
-                isRoot={true}
+              <PlanTree
+                rootTree={slot1.plan_parsed.tree}
+                flatNodesMap={flatNodesMap}
                 onSelectNode={setSelectedNodeId}
                 clickedBranchId={clickedBranchId}
                 setClickedBranchId={setClickedBranchId}
