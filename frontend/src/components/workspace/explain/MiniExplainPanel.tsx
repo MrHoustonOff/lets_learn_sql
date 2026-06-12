@@ -266,23 +266,23 @@ const NodeDetailsOverlay: React.FC<NodeDetailsProps> = ({ nodeId, onClose, rootT
               className="flex items-center justify-between bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 px-4 py-2.5 transition-colors w-full text-left"
             >
               <div className="flex items-center gap-2 text-xs font-bold text-foreground uppercase">
-                <ChevronRightIcon size={16} className={`transform transition-transform ${isDetailsOpen ? 'rotate-90' : ''}`} />
+                {isDetailsOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
                 Детали операции ({dynamicProps.length})
               </div>
             </button>
             
             {isDetailsOpen && (
-              <div className="flex flex-col text-sm font-mono bg-background/30 animate-in slide-in-from-top-1 duration-200">
+              <div className="flex flex-col text-sm font-mono bg-background/30">
                 {dynamicProps.map(([key, value]) => (
                   <div 
                     key={key} 
                     onClick={() => handleCopy(key, value)}
-                    className="flex items-start gap-4 px-4 py-2.5 border-t border-glass-border/30 cursor-pointer transition-colors even:bg-black/[0.02] dark:even:bg-white/[0.02] hover:bg-primary/10 group"
+                    className="flex items-start gap-4 px-4 py-2.5 border-t border-glass-border/30 cursor-pointer even:bg-black/[0.02] dark:even:bg-white/[0.02] group"
                     title="Нажмите, чтобы скопировать значение"
                   >
                     <span className="text-muted-foreground whitespace-nowrap min-w-[150px] mt-0.5">{key}:</span>
                     <span className="text-foreground break-all flex-1">{String(value)}</span>
-                    <div className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground shrink-0 mt-0.5">
+                    <div className="opacity-0 group-hover:opacity-100 text-muted-foreground shrink-0 mt-0.5">
                       {copiedKey === key ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
                     </div>
                   </div>
