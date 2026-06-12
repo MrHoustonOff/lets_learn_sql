@@ -78,26 +78,33 @@ export const MiniExplainPanel: React.FC = () => {
         {/* Diagnostics & Recommendations */}
         {slot1.plan_parsed.diagnostics && slot1.plan_parsed.diagnostics.length > 0 && (
           <section className="bg-glass border border-glass-border p-4 rounded-xl shadow-sm space-y-3 animate-in fade-in slide-in-from-top-4 duration-200">
-            <div className="flex items-center gap-2 mb-1">
-              <AlertTriangle className="text-warning shrink-0" size={18} />
-              <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-                {t('explain_ui:diagnostics_title')}
-              </h3>
+            <div className="flex items-center justify-between mb-1 select-none">
+              <div className="flex items-center gap-2">
+                <AlertTriangle className="text-warning shrink-0" size={18} />
+                <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                  {t('explain_ui:diagnostics_title')}
+                </h3>
+              </div>
+              <InfoTooltip text={t('explain_ui:diagnostics_disclaimer')} />
             </div>
             <div className="flex flex-col gap-2">
               {slot1.plan_parsed.diagnostics.map((diag, idx) => {
                 let Icon = CheckCircle2;
-                let cardStyle = "bg-emerald-500/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400";
+                let borderStyle = "border-l-success";
+                let iconColor = "text-success";
                 
                 if (diag.severity === "warning") {
                   Icon = AlertTriangle;
-                  cardStyle = "bg-amber-500/10 border-amber-500/20 text-amber-600 dark:text-amber-400";
+                  borderStyle = "border-l-warning";
+                  iconColor = "text-warning";
                 } else if (diag.severity === "critical") {
                   Icon = AlertTriangle;
-                  cardStyle = "bg-destructive/10 border-destructive/20 text-destructive";
+                  borderStyle = "border-l-destructive";
+                  iconColor = "text-destructive";
                 } else if (diag.severity === "info") {
                   Icon = Info;
-                  cardStyle = "bg-primary/10 border-primary/20 text-primary";
+                  borderStyle = "border-l-primary";
+                  iconColor = "text-primary";
                 }
 
                 const diagText = diag.code 
@@ -105,9 +112,12 @@ export const MiniExplainPanel: React.FC = () => {
                   : diag.message;
 
                 return (
-                  <div key={idx} className={`flex items-start gap-3 p-3 rounded-lg border text-sm ${cardStyle}`}>
-                    <Icon size={16} className="shrink-0 mt-0.5" />
-                    <span className="font-semibold">{diagText}</span>
+                  <div 
+                    key={idx} 
+                    className={`border border-glass-border border-l-2 ${borderStyle} bg-black/5 dark:bg-white/5 p-3.5 rounded-lg flex items-start gap-3 text-sm text-foreground shadow-sm transition-all hover:bg-black/10 dark:hover:bg-white/10`}
+                  >
+                    <Icon size={16} className={`${iconColor} shrink-0 mt-0.5`} />
+                    <span className="font-medium leading-relaxed">{diagText}</span>
                   </div>
                 );
               })}

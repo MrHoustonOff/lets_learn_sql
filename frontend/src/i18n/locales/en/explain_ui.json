@@ -31,6 +31,7 @@
   "rows_est": "Rows~",
   "planner_accuracy_warning": "Planner was off by ~{{ratio}}x (Expected {{expected}}, actual {{actual}})",
   "diagnostics_title": "Recommendations & Diagnostics",
+  "diagnostics_disclaimer": "These recommendations are generated automatically based on heuristic analysis and can be inaccurate or serve for informational purposes only.",
   "has_recommendations": "Optimization recommendations available",
   "diagnostics": {
     "seq_scan_large": "Seq Scan on large table '{{relation}}' (rows: {{rows}}). Consider adding an index.",
