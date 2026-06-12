@@ -550,8 +550,8 @@ type SortDirection = 'asc' | 'desc';
 export const MiniExplainPanel: React.FC = () => {
   const { slot1, isLoading } = useExplainStore();
   
-  const [sortKey, setSortKey] = useState<SortKey>('step');
-  const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
+  const [sortKey, setSortKey] = useState<SortKey>('cost');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [isCostBreakdownOpen, setIsCostBreakdownOpen] = useState(true);
   const [isPlanTreeOpen, setIsPlanTreeOpen] = useState(true);
@@ -644,14 +644,8 @@ export const MiniExplainPanel: React.FC = () => {
             <table className="w-full text-sm">
               <thead className="bg-black/10 dark:bg-white/10 border-b border-glass-border">
                 <tr>
-                  <th 
-                    className="px-3 py-2 text-left text-xs font-medium text-muted-foreground hover:text-foreground cursor-pointer transition-colors"
-                    onClick={() => handleSort('step')}
-                  >
-                    <div className="flex items-center gap-1">
-                      Операция (порядок)
-                      {renderSortIcon('step')}
-                    </div>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-muted-foreground">
+                    Операция
                   </th>
                   <th className="px-3 py-2 text-left text-xs font-medium text-muted-foreground w-1/2">
                     Влияние на стоимость
@@ -681,9 +675,6 @@ export const MiniExplainPanel: React.FC = () => {
                       onClick={() => setSelectedNodeId(node.node_id)}
                     >
                       <td className="px-3 py-2 text-foreground font-medium flex items-center gap-2">
-                        <span className="flex items-center justify-center w-4 h-4 rounded bg-background border border-glass-border text-[10px] text-muted-foreground font-mono">
-                          {node.step_number}
-                        </span>
                         <span>
                           {nodeType} {objectName && <span className="text-muted-foreground font-normal">→ {objectName}</span>}
                         </span>
