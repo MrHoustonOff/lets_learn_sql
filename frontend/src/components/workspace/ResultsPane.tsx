@@ -35,56 +35,56 @@ export const ResultsPane: React.FC<ResultsPaneProps> = ({
   };
 
   return (
-    <div className={`h-full flex flex-col transition-all duration-300 ${isMaximized ? 'absolute inset-0 z-[100] bg-background rounded-2xl' : 'bg-transparent relative'}`}>
+    <div className={`h-full flex flex-col transition-all duration-300 min-h-0 min-w-0 ${isMaximized ? 'absolute inset-0 z-[100] bg-background rounded-2xl' : 'bg-transparent relative'}`}>
       {/* Header Tabs */}
-      <div className="h-10 border-b border-glass-border flex items-center justify-between px-2 shrink-0 bg-hover relative z-50">
-        <div className="flex items-center gap-1">
+      <div className="h-10 border-b border-glass-border flex items-center justify-between px-2 shrink-0 bg-hover relative z-50 min-w-0">
+        <div className="flex items-center gap-1 min-w-0">
           <button 
             onClick={() => setActiveTab('result')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-md transition-all ${
+            className={`flex items-center justify-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-md transition-all min-w-0 ${
               activeTab === 'result' 
                 ? 'bg-background text-foreground shadow-sm border border-border/40' 
                 : 'text-muted-foreground hover:text-foreground hover:bg-hover border border-transparent'
             }`}
           >
-            <Table2 size={14} />
-            {t('result')}
-            {result && !isLoading && !error && <span className="ml-1 text-[10px] opacity-50 bg-foreground/10 px-1.5 rounded-full">{result.row_count}</span>}
+            <Table2 size={14} className="shrink-0" />
+            <span className="truncate">{t('result')}</span>
+            {result && !isLoading && !error && <span className="ml-1 text-[10px] opacity-50 bg-foreground/10 px-1.5 rounded-full shrink-0">{result.row_count}</span>}
           </button>
           <button 
             onClick={() => setActiveTab('explain')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-md transition-all ${
+            className={`flex items-center justify-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-md transition-all min-w-0 ${
               activeTab === 'explain' 
                 ? 'bg-warning/10 text-warning-text shadow-sm border border-warning/20' 
                 : 'text-muted-foreground hover:text-warning-text hover:bg-hover border border-transparent'
             }`}
           >
-            <Activity size={14} className={activeTab === 'explain' ? "fill-current" : ""} />
-            {t('explain')}
+            <Activity size={14} className={`shrink-0 ${activeTab === 'explain' ? "fill-current" : ""}`} />
+            <span className="truncate">{t('explain')}</span>
           </button>
         </div>
         
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1 shrink-0 ml-1">
           {/* Removed full_analysis button */}
           {result?.duration_ms && !isLoading && !error && (
             <span className="text-[10px] text-muted-foreground mr-2 font-mono">
               {result.duration_ms.toFixed(1)} ms
             </span>
           )}
-          <div className="w-px h-4 bg-glass-border mx-1" />
+          <div className="w-px h-4 bg-glass-border mx-1 shrink-0" />
           <button 
             onClick={handleToggleMaximize}
-            className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-hover rounded-md transition-colors outline-none focus:outline-none"
+            className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-hover rounded-md transition-colors outline-none focus:outline-none shrink-0"
             title={isMaximized ? t('sql_results:minimize') : t('sql_results:maximize')}
           >
-            {isMaximized ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
+            {isMaximized ? <Minimize2 size={14} className="shrink-0" /> : <Maximize2 size={14} className="shrink-0" />}
           </button>
-          {slotId && !isMaximized && <DragHandle slotId={slotId} className="ml-1" />}
+          {slotId && !isMaximized && <DragHandle slotId={slotId} className="ml-1 shrink-0" />}
         </div>
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-auto relative bg-background">
+      <div className="flex-1 overflow-auto relative bg-background min-h-0 min-w-0">
         {activeTab === 'result' ? (
           <>
             {isLoading ? (

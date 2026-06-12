@@ -17,65 +17,65 @@ export const TaskPane: React.FC<TaskPaneProps> = ({ slotId }) => {
   const isMaximized = maximizedPane === 'task';
 
   return (
-    <div className={`h-full flex flex-col transition-all duration-300 ${isMaximized ? 'absolute inset-0 z-[100] bg-background rounded-2xl' : 'bg-transparent'}`}>
-      <div className="h-10 border-b border-glass-border flex items-center px-2 shrink-0 bg-hover justify-between relative z-50">
-        <div className="flex items-center gap-1">
+    <div className={`h-full flex flex-col transition-all duration-300 min-h-0 min-w-0 ${isMaximized ? 'absolute inset-0 z-[100] bg-background rounded-2xl' : 'bg-transparent'}`}>
+      <div className="h-10 border-b border-glass-border flex items-center px-2 shrink-0 bg-hover justify-between relative z-50 min-w-0">
+        <div className="flex items-center gap-1 min-w-0">
           <button 
           onClick={() => setActiveTab('task')}
-          className={`px-3 py-1.5 text-sm font-medium rounded-md transition-all ${
+          className={`flex items-center justify-center px-3 py-1.5 text-sm font-medium rounded-md transition-all min-w-0 ${
             activeTab === 'task' 
               ? 'bg-background text-foreground shadow-sm border border-border/40' 
               : 'text-muted-foreground hover:text-foreground hover:bg-hover border border-transparent'
           }`}
         >
-          {t('task')}
+          <span className="truncate">{t('task')}</span>
         </button>
         <button 
           onClick={() => setActiveTab('solution')}
-          className={`px-3 py-1.5 text-sm font-medium rounded-md transition-all ${
+          className={`flex items-center justify-center px-3 py-1.5 text-sm font-medium rounded-md transition-all min-w-0 ${
             activeTab === 'solution' 
               ? 'bg-background text-foreground shadow-sm border border-border/40' 
               : 'text-muted-foreground hover:text-foreground hover:bg-hover border border-transparent'
           }`}
         >
-          {t('solution')}
+          <span className="truncate">{t('solution')}</span>
         </button>
       </div>
-      <div className="flex items-center gap-1">
+      <div className="flex items-center gap-1 shrink-0 ml-1">
         <button 
           onClick={() => setIsSolved(!isSolved)}
-          className={`flex items-center gap-1.5 px-2 py-1 rounded-md transition-all border ${
+          className={`flex items-center justify-center gap-1.5 px-2 py-1 rounded-md transition-all border min-w-0 ${
             isSolved 
               ? 'bg-success/10 border-success/30 text-success shadow-sm' 
               : 'bg-transparent border-transparent text-muted-foreground hover:bg-hover hover:text-foreground'
           }`}
           title={t('task_pane:mark_solved_tooltip')}
         >
-          <Check size={14} className={isSolved ? 'opacity-100' : 'opacity-40'} strokeWidth={isSolved ? 3 : 2} />
-          <span className="text-xs font-medium">{t('task_pane:solved')}</span>
+          <Check size={14} className={`shrink-0 ${isSolved ? 'opacity-100' : 'opacity-40'}`} strokeWidth={isSolved ? 3 : 2} />
+          <span className="text-xs font-medium truncate hidden sm:inline">{t('task_pane:solved')}</span>
         </button>
 
         <button 
           onClick={() => setIsBookmarked(!isBookmarked)}
-          className={`flex items-center gap-1.5 px-2 py-1 rounded-md transition-all border ${
+          className={`flex items-center justify-center gap-1.5 px-2 py-1 rounded-md transition-all border min-w-0 ${
             isBookmarked 
               ? 'bg-warning/10 border-warning/30 text-warning-text shadow-sm' 
               : 'bg-transparent border-transparent text-muted-foreground hover:bg-hover hover:text-foreground'
           }`}
           title={t('task_pane:bookmark_tooltip')}
         >
-          <Bookmark size={14} className={isBookmarked ? 'opacity-100 fill-current' : 'opacity-40'} />
-          <span className="text-xs font-medium">{t('task_pane:bookmark')}</span>
+          <Bookmark size={14} className={`shrink-0 ${isBookmarked ? 'opacity-100 fill-current' : 'opacity-40'}`} />
+          <span className="text-xs font-medium truncate hidden sm:inline">{t('task_pane:bookmark')}</span>
         </button>
 
         <div className="w-[1px] h-4 bg-glass-border mx-1"></div>
 
         <button 
           onClick={() => setMaximizedPane(isMaximized ? null : 'task')}
-          className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-hover rounded-md transition-colors outline-none focus:outline-none"
+          className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-hover rounded-md transition-colors outline-none focus:outline-none shrink-0"
           title={isMaximized ? t('task_pane:collapse') : t('task_pane:expand')}
         >
-          {isMaximized ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
+          {isMaximized ? <Minimize2 size={14} className="shrink-0" /> : <Maximize2 size={14} className="shrink-0" />}
         </button>
         
         {!isMaximized && <DragHandle slotId={slotId} className="ml-1" />}
@@ -83,7 +83,7 @@ export const TaskPane: React.FC<TaskPaneProps> = ({ slotId }) => {
       </div>
 
       {/* Content */}
-      <div className="flex-1 p-5 overflow-y-auto prose dark:prose-invert max-w-none text-sm scrollbar-thin">
+      <div className="flex-1 p-5 overflow-y-auto prose dark:prose-invert max-w-none text-sm scrollbar-thin min-h-0">
         {activeTab === 'task' ? (
           <div className="animate-in fade-in duration-300">
             <h3 className="mt-0 mb-4 text-lg font-bold">{t('task_pane:mock_title')}</h3>

@@ -41,30 +41,31 @@ export const SqlEditorPane: React.FC<SqlEditorPaneProps> = ({
   };
 
   return (
-    <div className={`h-full flex flex-col transition-all duration-300 ${isMaximized ? 'absolute inset-0 z-[100] bg-background rounded-2xl' : 'bg-transparent'}`}>
-      <div className="h-10 border-b border-glass-border flex items-center justify-between px-3 shrink-0 bg-hover relative z-50">
-        <span className="text-sm font-semibold text-foreground uppercase tracking-wider text-[11px] opacity-70">{t('sql_editor:title')}</span>
-        <div className="flex items-center gap-1.5">
+    <div className={`h-full flex flex-col transition-all duration-300 min-h-0 min-w-0 ${isMaximized ? 'absolute inset-0 z-[100] bg-background rounded-2xl' : 'bg-transparent'}`}>
+      <div className="h-10 border-b border-glass-border flex items-center justify-between px-3 shrink-0 bg-hover relative z-50 min-w-0">
+        <span className="text-sm font-semibold text-foreground uppercase tracking-wider text-[11px] opacity-70 truncate mr-2 shrink-0">{t('sql_editor:title')}</span>
+        <div className="flex items-center gap-1.5 shrink-0 ml-auto min-w-0">
           <button 
             onClick={() => executeQuery()}
             disabled={isLoading}
-            className="flex items-center gap-1.5 text-xs font-semibold bg-success/10 text-success hover:bg-success/20 px-3 py-1.5 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex items-center justify-center gap-1.5 text-xs font-semibold bg-success/10 text-success hover:bg-success/20 px-3 py-1.5 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed min-w-0"
           >
-            {isLoading ? <Loader2 size={12} className="animate-spin" /> : <Play size={12} className="fill-current" />}
-            {t('sql_editor:run')} <span className="opacity-50 font-normal hidden sm:inline ml-1">(Ctrl+Enter)</span>
+            {isLoading ? <Loader2 size={12} className="animate-spin shrink-0" /> : <Play size={12} className="fill-current shrink-0" />}
+            <span className="truncate">{t('sql_editor:run')}</span>
+            <span className="opacity-50 font-normal hidden sm:inline ml-1 shrink-0">(Ctrl+Enter)</span>
           </button>
-          <div className="w-px h-4 bg-glass-border mx-1" />
+          <div className="w-px h-4 bg-glass-border mx-1 shrink-0" />
           <button 
             onClick={handleToggleMaximize}
-            className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-hover rounded-md transition-colors outline-none focus:outline-none"
+            className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-hover rounded-md transition-colors outline-none focus:outline-none shrink-0"
             title={isMaximized ? t('sql_editor:collapse') : t('sql_editor:expand')}
           >
-            {isMaximized ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
+            {isMaximized ? <Minimize2 size={14} className="shrink-0" /> : <Maximize2 size={14} className="shrink-0" />}
           </button>
-          {slotId && !isMaximized && <DragHandle slotId={slotId} className="ml-1" />}
+          {slotId && !isMaximized && <DragHandle slotId={slotId} className="ml-1 shrink-0" />}
         </div>
       </div>
-      <div className="flex-1 overflow-hidden relative code-editor-wrapper">
+      <div className="flex-1 overflow-hidden relative code-editor-wrapper min-h-0 min-w-0">
         <CodeMirror
           value={query}
           height="100%"
