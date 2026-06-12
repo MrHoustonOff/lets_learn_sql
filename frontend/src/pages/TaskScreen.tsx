@@ -45,9 +45,9 @@ export const TaskScreen: React.FC = () => {
   const { defaultLayout: rightLayout, onLayoutChanged: rightOnLayout } = useDefaultLayout({ id: 'llpg_right_vertical_v5' });
 
   const handleResetProportions = () => {
-    mainGroupRef.current?.setLayout([50, 50]);
-    leftGroupRef.current?.setLayout([50, 50]);
-    rightGroupRef.current?.setLayout([50, 50]);
+    mainGroupRef.current?.setLayout({ main_left: 50, main_right: 50 });
+    leftGroupRef.current?.setLayout({ left_top: 50, left_bottom: 50 });
+    rightGroupRef.current?.setLayout({ right_top: 50, right_bottom: 50 });
   };
   // Обработка Esc для выхода из полноэкранного режима панелей
   useEffect(() => {
