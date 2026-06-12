@@ -10,37 +10,38 @@ import { DroppableSlot } from '../components/workspace/DroppableSlot';
 import { ResizeHandle } from '../components/workspace/ResizeHandle';
 import { ViewMenu } from '../components/workspace/ViewMenu';
 
-const LAYOUT_KEY = 'task_screen_layout_v6';
-const MIN_HORIZONTAL_PCT = 30;
-const MIN_VERTICAL_PCT = 25;
+const LAYOUT_KEY = 'task_screen_layout_v7';
+const MIN_HORIZONTAL_PX = 320;
+const MIN_VERTICAL_PX = 150;
 
 type LayoutMap = { [panelId: string]: number };
 
-function clampLayout(layout: LayoutMap | undefined, defaultLayout: LayoutMap, min: number): LayoutMap {
+function clampLayout(layout: LayoutMap | undefined, defaultLayout: LayoutMap): LayoutMap {
   if (!layout || typeof layout !== 'object' || Array.isArray(layout)) return defaultLayout;
   const values = Object.values(layout);
   if (values.length !== Object.keys(defaultLayout).length) return defaultLayout;
-  if (values.some(s => typeof s !== 'number' || s < min)) return defaultLayout;
+  // Layout values are percentages (0-100), ensure they are valid numbers
+  if (values.some(s => typeof s !== 'number' || s < 0 || s > 100)) return defaultLayout;
   return layout;
 }
 
-function useCustomLayout(id: string, minSize: number, defaultLayoutMap: LayoutMap) {
+function useCustomLayout(id: string, defaultLayoutMap: LayoutMap) {
   const defaultLayout = React.useMemo(() => {
     try {
       const raw = localStorage.getItem(`${LAYOUT_KEY}_${id}`);
       if (!raw) return defaultLayoutMap;
       const parsed = JSON.parse(raw);
-      return clampLayout(parsed, defaultLayoutMap, minSize);
+      return clampLayout(parsed, defaultLayoutMap);
     } catch {
       return defaultLayoutMap;
     }
-  }, [id, minSize, defaultLayoutMap]);
+  }, [id, defaultLayoutMap]);
 
   const onLayoutChanged = React.useCallback((layout: LayoutMap) => {
-    if (Object.values(layout).every(s => typeof s === 'number' && s >= minSize)) {
+    if (Object.values(layout).every(s => typeof s === 'number')) {
       localStorage.setItem(`${LAYOUT_KEY}_${id}`, JSON.stringify(layout));
     }
-  }, [id, minSize]);
+  }, [id]);
 
   return { defaultLayout, onLayoutChanged };
 }
@@ -52,15 +53,23 @@ export const TaskScreen: React.FC = () => {
   const leftGroupRef = useRef<GroupImperativeHandle>(null);
   const rightGroupRef = useRef<GroupImperativeHandle>(null);
 
-  const { defaultLayout: mainLayout, onLayoutChanged: mainOnLayout } = useCustomLayout('main_horizontal', MIN_HORIZONTAL_PCT, { main_left: 50, main_right: 50 });
-  const { defaultLayout: leftLayout, onLayoutChanged: leftOnLayout } = useCustomLayout('left_vertical', MIN_VERTICAL_PCT, { left_top: 50, left_bottom: 50 });
-  const { defaultLayout: rightLayout, onLayoutChanged: rightOnLayout } = useCustomLayout('right_vertical', MIN_VERTICAL_PCT, { right_top: 50, right_bottom: 50 });
+  const { defaultLayout: mainLayout, onLayoutChanged: mainOnLayout } = useCustomLayout('main_horizontal', { main_left: 50, main_right: 50 });
+  const { defaultLayout: leftLayout, onLayoutChanged: leftOnLayout } = useCustomLayout('left_vertical', { left_top: 50, left_bottom: 50 });
+  const { defaultLayout: rightLayout, onLayoutChanged: rightOnLayout } = useCustomLayout('right_vertical', { right_top: 50, right_bottom: 50 });
 
   const handleResetProportions = () => {
     mainGroupRef.current?.setLayout({ main_left: 50, main_right: 50 });
     leftGroupRef.current?.setLayout({ left_top: 50, left_bottom: 50 });
     rightGroupRef.current?.setLayout({ right_top: 50, right_bottom: 50 });
   };
+
+  // Cleanup old layout versions
+  useEffect(() => {
+    ['task_screen_layout_v5', 'task_screen_layout_v6', 'task_screen_layout_v5_main_horizontal', 'task_screen_layout_v6_main_horizontal', 'task_screen_layout_v5_left_vertical', 'task_screen_layout_v6_left_vertical', 'task_screen_layout_v5_right_vertical', 'task_screen_layout_v6_right_vertical', 'llpg_main_horizontal_v5', 'llpg_main_horizontal_v6', 'llpg_left_vertical_v5', 'llpg_left_vertical_v6', 'llpg_right_vertical_v5', 'llpg_right_vertical_v6'].forEach(k => {
+      localStorage.removeItem(k);
+    });
+  }, []);
+
   // Обработка Esc для выхода из полноэкранного режима панелей
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -119,18 +128,18 @@ export const TaskScreen: React.FC = () => {
         >
         
         {/* ================= LEFT HALF ================= */}
-        <Panel id="main_left" defaultSize={50} minSize={MIN_HORIZONTAL_PCT} collapsible={false}>
-          <PanelGroup groupRef={leftGroupRef} defaultLayout={leftLayout} onLayoutChanged={leftOnLayout} orientation="vertical" id="llpg_left_vertical_v6" className="w-full h-full">
+        <Panel id="main_left" defaultSize="50%" minSize={MIN_HORIZONTAL_PX} collapsible={false}>
+          <PanelGroup groupRef={leftGroupRef} defaultLayout={leftLayout} onLayoutChanged={leftOnLayout} orientation="vertical" id="llpg_left_vertical_v7" className="w-full h-full">
             
             {/* Top Left Slot */}
-            <Panel id="left_top" defaultSize={50} minSize={MIN_VERTICAL_PCT} collapsible={false}>
+            <Panel id="left_top" defaultSize="50%" minSize={MIN_VERTICAL_PX} collapsible={false}>
               {renderPane('topLeft')}
             </Panel>
 
             <ResizeHandle direction="horizontal" />
 
             {/* Bottom Left Slot */}
-            <Panel id="left_bottom" defaultSize={50} minSize={MIN_VERTICAL_PCT} collapsible={false}>
+            <Panel id="left_bottom" defaultSize="50%" minSize={MIN_VERTICAL_PX} collapsible={false}>
               {renderPane('bottomLeft')}
             </Panel>
             
@@ -140,18 +149,18 @@ export const TaskScreen: React.FC = () => {
         <ResizeHandle direction="vertical" />
 
         {/* ================= RIGHT HALF ================= */}
-        <Panel id="main_right" defaultSize={50} minSize={MIN_HORIZONTAL_PCT} collapsible={false}>
-          <PanelGroup groupRef={rightGroupRef} defaultLayout={rightLayout} onLayoutChanged={rightOnLayout} orientation="vertical" id="llpg_right_vertical_v6" className="w-full h-full">
+        <Panel id="main_right" defaultSize="50%" minSize={MIN_HORIZONTAL_PX} collapsible={false}>
+          <PanelGroup groupRef={rightGroupRef} defaultLayout={rightLayout} onLayoutChanged={rightOnLayout} orientation="vertical" id="llpg_right_vertical_v7" className="w-full h-full">
             
             {/* Top Right Slot */}
-            <Panel id="right_top" defaultSize={50} minSize={MIN_VERTICAL_PCT} collapsible={false}>
+            <Panel id="right_top" defaultSize="50%" minSize={MIN_VERTICAL_PX} collapsible={false}>
               {renderPane('topRight')}
             </Panel>
 
             <ResizeHandle direction="horizontal" />
 
             {/* Bottom Right Slot */}
-            <Panel id="right_bottom" defaultSize={50} minSize={MIN_VERTICAL_PCT} collapsible={false}>
+            <Panel id="right_bottom" defaultSize="50%" minSize={MIN_VERTICAL_PX} collapsible={false}>
               {renderPane('bottomRight')}
             </Panel>
 
