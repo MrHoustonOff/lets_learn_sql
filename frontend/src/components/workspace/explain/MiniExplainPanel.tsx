@@ -110,7 +110,7 @@ const getDescendantsMetrics = (node: any): { count: number, maxCost: number } =>
 const SQL_ORDER = [
   'FROM', 'JOIN', 'WHERE', 
   'GROUP BY', 'HAVING', 'WINDOW', 
-  'SUBQUERY', 'LIMIT'
+  'SUBQUERY', 'ORDER BY', 'LIMIT'
 ];
 
 interface PipelineStep {
@@ -151,8 +151,8 @@ function getPipelineMode(rootNode: any): 'simple' | 'complex' {
 }
 
 function detectBranchLabel(node: any): string {
-  if (containsNodeType(node, 'WindowAgg')) return 'CTE / Window';
-  if (containsNodeType(node, 'Aggregate')) return 'CTE / Group';
+  if (containsNodeType(node, 'WindowAgg')) return 'Subquery / Window';
+  if (containsNodeType(node, 'Aggregate')) return 'Subquery / Group';
   if (node['Node Type'] === 'Subquery Scan') return 'Subquery';
   if (node['Node Type'] === 'CTE Scan') return 'CTE';
   return 'Branch';
@@ -160,7 +160,12 @@ function detectBranchLabel(node: any): string {
 
 function toClause(node: any): string | null {
   const type = node['Node Type'];
-  const filter = node['Filter'] || node['Index Cond'] || node['Hash Cond'] || null;
+  const filter = node['Filter'] || null;
+
+  const cleanCond = (cond: string | null) => {
+    if (!cond) return null;
+    return cond.replace(/\b[a-zA-Z_]+\d*\.([a-zA-Z_]+)\b/g, '$1');
+  };
 
   switch (type) {
     case 'Seq Scan':
@@ -168,19 +173,19 @@ function toClause(node: any): string | null {
     case 'Index Only Scan':
     case 'Bitmap Heap Scan':
       if (filter) {
-        return `FROM ${node['Relation Name']} WHERE ${filter}`;
+        return `FROM ${node['Relation Name']} WHERE ${cleanCond(filter)}`;
       }
       return `FROM ${node['Relation Name']}`;
 
     case 'Hash Join':
-      return node['Hash Cond'] ? `JOIN ON ${node['Hash Cond']}` : `JOIN`;
+      return node['Hash Cond'] ? `JOIN ON ${cleanCond(node['Hash Cond'])}` : `JOIN`;
 
     case 'Merge Join':
-      return node['Merge Cond'] ? `JOIN ON ${node['Merge Cond']}` : `JOIN`;
+      return node['Merge Cond'] ? `JOIN ON ${cleanCond(node['Merge Cond'])}` : `JOIN`;
 
     case 'Nested Loop':
       if (node['Join Filter']) {
-        return `JOIN ON ${node['Join Filter']}`;
+        return `JOIN ON ${cleanCond(node['Join Filter'])}`;
       }
       return `JOIN`;
 
@@ -198,6 +203,8 @@ function toClause(node: any): string | null {
 
     case 'Sort':
     case 'Incremental Sort':
+      return `ORDER BY`;
+
     case 'Hash':
     case 'Materialize':
     case 'Memoize':
@@ -725,7 +732,18 @@ export const MiniExplainPanel: React.FC = () => {
           seen.set(step.clause, { clause: step.clause, nodeIds: [step.nodeId] });
         }
       }
+      
       const deduped = Array.from(seen.values());
+
+      // Merge plain 'JOIN' into 'JOIN ON ...' if both exist
+      const plainJoinIndex = deduped.findIndex(s => s.clause === 'JOIN');
+      const joinOnIndex = deduped.findIndex(s => s.clause.startsWith('JOIN ON'));
+      
+      if (plainJoinIndex !== -1 && joinOnIndex !== -1) {
+        deduped[joinOnIndex].nodeIds.push(...deduped[plainJoinIndex].nodeIds);
+        deduped.splice(plainJoinIndex, 1);
+      }
+
       return deduped.sort((a, b) => {
         const aIndex = SQL_ORDER.findIndex(c => a.clause.startsWith(c));
         const bIndex = SQL_ORDER.findIndex(c => b.clause.startsWith(c));
