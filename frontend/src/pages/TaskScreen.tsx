@@ -111,18 +111,18 @@ export const TaskScreen: React.FC = () => {
         >
         
         {/* ================= LEFT HALF ================= */}
-        <Panel id="main_left" defaultSize={50} minSize={minHorizontalPct} className={`transition-all duration-300 ${isLeftMaximized ? 'z-[100]' : ''}`}>
-          <PanelGroup groupRef={leftGroupRef} defaultLayout={leftLayout} onLayoutChanged={leftOnLayout} orientation="vertical" id="llpg_left_vertical_v4" className="w-full h-full">
+        <Panel id="main_left" defaultSize={50} minSize={minHorizontalPct} className={`!overflow-visible ${isLeftMaximized ? 'z-[100]' : ''}`}>
+          <PanelGroup groupRef={leftGroupRef} defaultLayout={leftLayout} onLayoutChanged={leftOnLayout} orientation="vertical" id="llpg_left_vertical_v4" className="w-full h-full !overflow-visible">
             
             {/* Top Left Slot */}
-            <Panel id="left_top" defaultSize={50} minSize={minVerticalPct} className={`transition-all duration-300 ${maximizedPane === slots.topLeft ? 'z-[100]' : ''}`}>
+            <Panel id="left_top" defaultSize={50} minSize={minVerticalPct} className={`!overflow-visible ${maximizedPane === slots.topLeft ? 'z-[100]' : ''}`}>
               {renderPane('topLeft')}
             </Panel>
 
             <ResizeHandle direction="horizontal" />
 
             {/* Bottom Left Slot */}
-            <Panel id="left_bottom" defaultSize={50} minSize={minVerticalPct} className={`transition-all duration-300 ${maximizedPane === slots.bottomLeft ? 'z-[100]' : ''}`}>
+            <Panel id="left_bottom" defaultSize={50} minSize={minVerticalPct} className={`!overflow-visible ${maximizedPane === slots.bottomLeft ? 'z-[100]' : ''}`}>
               {renderPane('bottomLeft')}
             </Panel>
             
@@ -132,18 +132,18 @@ export const TaskScreen: React.FC = () => {
         <ResizeHandle direction="vertical" />
 
         {/* ================= RIGHT HALF ================= */}
-        <Panel id="main_right" defaultSize={50} minSize={minHorizontalPct} className={`transition-all duration-300 ${isRightMaximized ? 'z-[100]' : ''}`}>
-          <PanelGroup groupRef={rightGroupRef} defaultLayout={rightLayout} onLayoutChanged={rightOnLayout} orientation="vertical" id="llpg_right_vertical_v4" className="w-full h-full">
+        <Panel id="main_right" defaultSize={50} minSize={minHorizontalPct} className={`!overflow-visible ${isRightMaximized ? 'z-[100]' : ''}`}>
+          <PanelGroup groupRef={rightGroupRef} defaultLayout={rightLayout} onLayoutChanged={rightOnLayout} orientation="vertical" id="llpg_right_vertical_v4" className="w-full h-full !overflow-visible">
             
             {/* Top Right Slot */}
-            <Panel id="right_top" defaultSize={50} minSize={minVerticalPct} className={`transition-all duration-300 ${maximizedPane === slots.topRight ? 'z-[100]' : ''}`}>
+            <Panel id="right_top" defaultSize={50} minSize={minVerticalPct} className={`!overflow-visible ${maximizedPane === slots.topRight ? 'z-[100]' : ''}`}>
               {renderPane('topRight')}
             </Panel>
 
             <ResizeHandle direction="horizontal" />
 
             {/* Bottom Right Slot */}
-            <Panel id="right_bottom" defaultSize={50} minSize={minVerticalPct} className={`transition-all duration-300 ${maximizedPane === slots.bottomRight ? 'z-[100]' : ''}`}>
+            <Panel id="right_bottom" defaultSize={50} minSize={minVerticalPct} className={`!overflow-visible ${maximizedPane === slots.bottomRight ? 'z-[100]' : ''}`}>
               {renderPane('bottomRight')}
             </Panel>
 

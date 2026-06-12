@@ -17,7 +17,7 @@ export const TaskPane: React.FC<TaskPaneProps> = ({ slotId }) => {
   const isMaximized = maximizedPane === 'task';
 
   return (
-    <div className={`h-full flex flex-col transition-all duration-300 min-h-0 min-w-0 ${isMaximized ? 'absolute inset-0 z-[100] bg-background rounded-2xl' : 'bg-transparent'}`}>
+    <div className={`h-full flex flex-col overflow-hidden transition-all duration-300 min-h-0 min-w-0 ${isMaximized ? 'absolute inset-0 z-[100] bg-background rounded-2xl' : 'bg-transparent'}`}>
       <div className="h-10 border-b border-glass-border flex items-center px-2 shrink-0 bg-hover justify-between relative z-50 min-w-0">
         <div className="flex items-center gap-1 min-w-0">
           <button 

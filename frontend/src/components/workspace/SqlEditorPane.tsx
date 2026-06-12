@@ -41,7 +41,7 @@ export const SqlEditorPane: React.FC<SqlEditorPaneProps> = ({
   };
 
   return (
-    <div className={`h-full flex flex-col transition-all duration-300 min-h-0 min-w-0 ${isMaximized ? 'absolute inset-0 z-[100] bg-background rounded-2xl' : 'bg-transparent'}`}>
+    <div className={`h-full flex flex-col overflow-hidden transition-all duration-300 min-h-0 min-w-0 ${isMaximized ? 'absolute inset-0 z-[100] bg-background rounded-2xl' : 'bg-transparent'}`}>
       <div className="h-10 border-b border-glass-border flex items-center justify-between px-3 shrink-0 bg-hover relative z-50 min-w-0">
         <span className="text-sm font-semibold text-foreground uppercase tracking-wider text-[11px] opacity-70 truncate mr-2 min-w-0 shrink">{t('sql_editor:title')}</span>
         <div className="flex items-center gap-1.5 shrink min-w-0 ml-auto">
