@@ -126,7 +126,7 @@ export const MiniExplainPanel: React.FC = () => {
 
             {/* Toggle COST/TIME */}
             {slot1?.plan_parsed?.tree['Actual Total Time'] !== undefined && (
-              <div className="flex gap-1 bg-black/10 dark:bg-white/5 border border-glass-border p-0.5 rounded-md text-[10px] font-bold">
+              <div className="flex gap-1 bg-muted/50 border border-glass-border p-0.5 rounded-md text-[10px] font-bold">
                 <button 
                   onClick={() => { setActiveMetric('cost'); setSortKey('metric'); }}
                   className={`px-3 py-1 uppercase rounded transition-colors ${activeMetric === 'cost' ? 'bg-primary/20 text-primary' : 'text-muted-foreground hover:text-foreground'}`}
@@ -144,9 +144,9 @@ export const MiniExplainPanel: React.FC = () => {
           </div>
           
           {isCostBreakdownOpen && (
-            <div className="bg-black/5 dark:bg-white/5 border border-glass-border rounded-lg overflow-hidden">
+            <div className="bg-muted/30 border border-glass-border rounded-lg overflow-hidden">
             <table className="w-full text-sm">
-              <thead className="bg-black/10 dark:bg-white/10 border-b border-glass-border">
+              <thead className="bg-muted/50 border-b border-glass-border">
                 <tr>
                   <th className="px-3 py-2 text-left text-xs font-medium text-muted-foreground">
                     Операция
@@ -235,7 +235,7 @@ export const MiniExplainPanel: React.FC = () => {
           
           {isPlanTreeOpen && (
             <div 
-              className="font-mono text-sm bg-black/5 dark:bg-white/5 border border-glass-border rounded-lg p-4 space-y-1 cursor-default"
+              className="font-mono text-sm bg-muted/30 border border-glass-border rounded-lg p-4 space-y-1 cursor-default"
               onClick={() => {
                 setClickedBranchId(null);
                 setActivePipelineNodeIds([]);

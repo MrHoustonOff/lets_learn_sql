@@ -244,7 +244,7 @@ export const NodeDetailsOverlay: React.FC<NodeDetailsProps> = ({ nodeId, onClose
             if (!actualTotalTime && !sharedHits && !sharedReads && !peakMemory && !accuracyWarning) return null;
 
             return (
-              <div className="mb-4 border border-glass-border bg-black/5 dark:bg-white/5 rounded-lg p-4">
+              <div className="mb-4 border border-glass-border bg-muted/30 rounded-lg p-4">
                 <h4 className="text-xs font-bold text-muted-foreground uppercase mb-3 flex items-center gap-2">
                   Аналитика (Insights)
                 </h4>
@@ -305,7 +305,7 @@ export const NodeDetailsOverlay: React.FC<NodeDetailsProps> = ({ nodeId, onClose
             <div className="border border-glass-border rounded-lg overflow-hidden">
               <button 
                 onClick={() => setIsDetailsOpen(!isDetailsOpen)}
-                className="flex items-center justify-between bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 px-4 py-2.5 transition-colors w-full text-left"
+                className="flex items-center justify-between bg-muted/30 hover:bg-muted/50 px-4 py-2.5 transition-colors w-full text-left"
               >
                 <div className="flex items-center gap-2 text-xs font-bold text-foreground uppercase">
                   {isDetailsOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}

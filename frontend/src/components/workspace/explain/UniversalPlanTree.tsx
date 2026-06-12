@@ -38,7 +38,7 @@ const ExplainNodeComponent = ({ data }: { data: any }) => {
   const handleMouseEnter = () => {
     hoverTimer.current = setTimeout(() => {
       setHoveredNode(node.node_id);
-    }, 1000);
+    }, 400);
   };
 
   const handleMouseLeave = () => {
