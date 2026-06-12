@@ -2,6 +2,8 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { Info, AlertTriangle, Loader2, CheckCircle2, ArrowDown, ArrowUp, ArrowUpDown, X, ChevronLeft, ChevronRight, Copy, Check, ChevronDown } from 'lucide-react';
 import { useExplainStore, type FlatNode } from '../../../store/explainStore';
 
+import pgExplainDocs from '../../../i18n/pg_explain_docs.json';
+
 // Хелпер для поиска узла в дереве
 const findNodeById = (node: any, id: string): any => {
   if (node.node_id === id) return node;
@@ -12,23 +14,6 @@ const findNodeById = (node: any, id: string): any => {
     }
   }
   return null;
-};
-
-// Глоссарий типов узлов PostgreSQL
-const getNodeDescription = (nodeType: string): string => {
-  const descriptions: Record<string, string> = {
-    'Seq Scan': 'Читает таблицу от начала до конца. Нормально для маленьких таблиц. Проблема на больших без нужного индекса.',
-    'Index Scan': 'Идёт по B-tree индексу к нужным строкам. Быстро и оптимально.',
-    'Bitmap Index Scan': 'Сначала собирает битовую карту подходящих строк, потом читает их. Эффективен при большом % совпадений.',
-    'Hash Join': 'Строит хэш-таблицу из одного набора строк, ищет совпадения в другом. Хорош для больших таблиц без индекса.',
-    'Nested Loop': 'Для каждой строки внешнего набора ищет совпадения во внутреннем. Очень медленно для больших таблиц.',
-    'Merge Join': 'Объединяет два уже отсортированных набора. Быстро, если оба входа уже отсортированы.',
-    'Gather': 'Объединяет результаты от параллельных воркеров. Признак параллельного выполнения.',
-    'Materialize': 'Сохраняет результат подзапроса в памяти для повторного использования.',
-    'Sort': 'Сортирует данные. Если памяти (work_mem) не хватает, может уйти в медленную сортировку на диск.'
-  };
-  
-  return descriptions[nodeType] || 'Выполняет специализированную операцию над данными.';
 };
 
 // Хелпер для цвета в зависимости от стоимости
@@ -298,7 +283,9 @@ const NodeDetailsOverlay: React.FC<NodeDetailsProps> = ({ nodeId, onClose, rootT
         {/* Документация/описание типа узла */}
         <div className="mb-4 bg-primary/5 border border-primary/20 rounded-lg p-3 text-sm text-foreground/90 leading-relaxed flex items-start gap-2">
           <Info size={16} className="text-primary shrink-0 mt-0.5" />
-          <span>{getNodeDescription(nodeType)}</span>
+          <span>
+            {((pgExplainDocs as any)[nodeType] && (pgExplainDocs as any)[nodeType].ru) || 'Выполняет специализированную операцию над данными.'}
+          </span>
         </div>
 
         <div className="mt-6 border-t border-glass-border pt-4">
