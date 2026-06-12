@@ -5,6 +5,15 @@ import { useAppLang } from '../../i18n';
 import { useTheme } from '../theme-provider';
 import { Moon, Sun, User, BookOpen, CheckSquare, Database, AppWindow } from 'lucide-react';
 
+const baseTabClasses = "transition-all duration-300 active:duration-75 ease-out outline-none select-none active:scale-95 bg-glass backdrop-blur-md border border-glass-border shadow-[0_8px_24px_-4px_rgba(0,0,0,0.2)] text-muted-foreground hover:text-foreground hover:bg-foreground/5";
+const hangingTabClasses = `-translate-y-[1px] rounded-b-2xl border-t-0 ${baseTabClasses}`;
+
+const navLinkClasses = ({ isActive }: { isActive: boolean }) => 
+  `${hangingTabClasses} flex items-center gap-2 px-5 py-2 text-xs font-bold [&.active>svg]:drop-shadow-[0_0_8px_rgba(var(--primary),0.5)] ${isActive ? '!text-primary !bg-primary/5' : ''}`;
+
+const iconBtnClasses = `${hangingTabClasses} p-2.5`;
+const langBtnClasses = `${hangingTabClasses} px-4 py-2 text-xs font-extrabold tracking-widest`;
+
 export const Navbar: React.FC = () => {
   const { t, i18n } = useTranslation();
   const lang = useAppLang();
@@ -19,24 +28,15 @@ export const Navbar: React.FC = () => {
         </div>
 
         <div className="hidden md:flex items-center gap-2">
-          <NavLink 
-            to="/courses" 
-            className={({ isActive }) => `-translate-y-[1px] flex items-center gap-2 px-5 py-2 rounded-b-2xl text-xs font-bold transition-all duration-300 active:duration-75 ease-out outline-none select-none active:scale-95 bg-glass backdrop-blur-md border border-t-0 border-glass-border shadow-[0_8px_24px_-4px_rgba(0,0,0,0.2)] [&.active>svg]:drop-shadow-[0_0_8px_rgba(var(--primary),0.5)] ${isActive ? 'text-primary bg-primary/5' : 'text-muted-foreground hover:text-foreground hover:bg-foreground/5'}`}
-          >
+          <NavLink to="/courses" className={navLinkClasses}>
             <BookOpen size={14} />
             {t('courses')}
           </NavLink>
-          <NavLink 
-            to="/databases" 
-            className={({ isActive }) => `-translate-y-[1px] flex items-center gap-2 px-5 py-2 rounded-b-2xl text-xs font-bold transition-all duration-300 active:duration-75 ease-out outline-none select-none active:scale-95 bg-glass backdrop-blur-md border border-t-0 border-glass-border shadow-[0_8px_24px_-4px_rgba(0,0,0,0.2)] [&.active>svg]:drop-shadow-[0_0_8px_rgba(var(--primary),0.5)] ${isActive ? 'text-primary bg-primary/5' : 'text-muted-foreground hover:text-foreground hover:bg-foreground/5'}`}
-          >
+          <NavLink to="/databases" className={navLinkClasses}>
             <Database size={14} />
             {t('databases')}
           </NavLink>
-          <NavLink 
-            to="/tasks" 
-            className={({ isActive }) => `-translate-y-[1px] flex items-center gap-2 px-5 py-2 rounded-b-2xl text-xs font-bold transition-all duration-300 active:duration-75 ease-out outline-none select-none active:scale-95 bg-glass backdrop-blur-md border border-t-0 border-glass-border shadow-[0_8px_24px_-4px_rgba(0,0,0,0.2)] [&.active>svg]:drop-shadow-[0_0_8px_rgba(var(--primary),0.5)] ${isActive ? 'text-primary bg-primary/5' : 'text-muted-foreground hover:text-foreground hover:bg-foreground/5'}`}
-          >
+          <NavLink to="/tasks" className={navLinkClasses}>
             <CheckSquare size={14} />
             {t('tasks')}
           </NavLink>
@@ -47,7 +47,7 @@ export const Navbar: React.FC = () => {
         {/* DEV: language switcher */}
         <button 
           onClick={() => i18n.changeLanguage(lang === 'ru' ? 'en' : 'ru')}
-          className="-translate-y-[1px] px-4 py-2 rounded-b-2xl text-xs font-extrabold tracking-widest transition-all duration-300 active:duration-75 ease-out outline-none select-none active:scale-95 bg-glass backdrop-blur-md border border-t-0 border-glass-border shadow-[0_8px_24px_-4px_rgba(0,0,0,0.2)] text-muted-foreground hover:text-foreground hover:bg-foreground/5"
+          className={langBtnClasses}
           title="Change language"
         >
           {lang === 'ru' ? 'EN' : 'RU'}
@@ -55,14 +55,11 @@ export const Navbar: React.FC = () => {
 
         <button
           onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-          className="-translate-y-[1px] p-2.5 rounded-b-2xl transition-all duration-300 active:duration-75 ease-out outline-none select-none active:scale-95 bg-glass backdrop-blur-md border border-t-0 border-glass-border shadow-[0_8px_24px_-4px_rgba(0,0,0,0.2)] text-muted-foreground hover:text-foreground hover:bg-foreground/5"
+          className={iconBtnClasses}
         >
           {theme === 'dark' ? <Sun size={15} /> : <Moon size={15} />}
         </button>
-        <NavLink
-          to="/profile"
-          className={({ isActive }) => `-translate-y-[1px] p-2.5 rounded-b-2xl transition-all duration-300 active:duration-75 ease-out outline-none select-none active:scale-95 bg-glass backdrop-blur-md border border-t-0 border-glass-border shadow-[0_8px_24px_-4px_rgba(0,0,0,0.2)] [&.active>svg]:drop-shadow-[0_0_8px_rgba(var(--primary),0.5)] ${isActive ? 'text-primary bg-primary/5' : 'text-muted-foreground hover:text-foreground hover:bg-foreground/5'}`}
-        >
+        <NavLink to="/profile" className={({ isActive }) => `${iconBtnClasses} [&.active>svg]:drop-shadow-[0_0_8px_rgba(var(--primary),0.5)] ${isActive ? '!text-primary !bg-primary/5' : ''}`}>
           <User size={15} />
         </NavLink>
       </div>
