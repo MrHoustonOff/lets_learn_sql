@@ -38,73 +38,61 @@ const ExplainNodeComponent = ({ data }: { data: any }) => {
   const duration = node['Actual Total Time'];
   const rows = node['Actual Rows'] !== undefined ? node['Actual Rows'] * (node['Actual Loops'] || 1) : node['Plan Rows'];
   
-  // Определяем уровень метрики
+  // Выбор цвета бордера в зависимости от метрики
   let colorKey = 'none';
   if (metric === 'COST' && flatData) {
     colorKey = getCostLevel(flatData.cost_pct);
   } else if (metric === 'DURATION' && data.maxTime > 0) {
-    colorKey = getCostLevel(((duration || 0) / data.maxTime) * 100);
+    const dur = duration || 0;
+    colorKey = getCostLevel((dur / data.maxTime) * 100);
   } else if (metric === 'ROWS' && data.maxRows > 0) {
-    colorKey = getCostLevel(((rows || 0) / data.maxRows) * 100);
+    const r = rows || 0;
+    colorKey = getCostLevel((r / data.maxRows) * 100);
   }
 
-  // Цветовой акцент: только левый бордер + dot-индикатор
-  const accentBorder = colorKey === 'bad'    ? 'border-l-destructive'
-                     : colorKey === 'warning' ? 'border-l-amber-500'
-                     : colorKey === 'good'    ? 'border-l-emerald-500'
-                     : 'border-l-transparent';
+  let cardClass = 'bg-[hsl(var(--glass-bg))] border-glass-border text-foreground';
+  let titleClass = 'text-foreground';
+  let textClass = 'text-muted-foreground';
 
-  const accentDot = colorKey === 'bad'    ? 'bg-destructive'
-                  : colorKey === 'warning' ? 'bg-amber-500'
-                  : colorKey === 'good'    ? 'bg-emerald-500'
-                  : 'bg-muted-foreground/30';
-
-  const titleClass = colorKey === 'bad'    ? 'text-destructive'
-                   : colorKey === 'warning' ? 'text-amber-400'
-                   : colorKey === 'good'    ? 'text-emerald-400'
-                   : 'text-foreground';
+  if (colorKey === 'bad') {
+    cardClass = 'bg-destructive/20 border-destructive shadow-[0_0_15px_rgba(220,38,38,0.2)] text-foreground';
+    titleClass = 'text-red-400';
+  } else if (colorKey === 'warning') {
+    cardClass = 'bg-amber-500/20 border-amber-500/70 shadow-[0_0_15px_rgba(245,158,11,0.2)] text-foreground';
+    titleClass = 'text-amber-400';
+  } else if (colorKey === 'good') {
+    cardClass = 'bg-emerald-500/20 border-emerald-500/70 shadow-[0_0_15px_rgba(16,185,129,0.2)] text-foreground';
+    titleClass = 'text-emerald-400';
+  }
 
   const isDimmed = data.isDimmed;
 
   return (
     <div
-      className={`
-        relative min-w-[210px] rounded-lg border border-glass-border border-l-2 ${accentBorder}
-        bg-background/95 shadow-sm
-        cursor-pointer transition-all duration-200
-        ${isHovered ? 'ring-2 ring-primary/40 shadow-md scale-[1.03]' : 'hover:shadow-md hover:scale-[1.01]'}
-        ${isDimmed ? 'opacity-25 saturate-50' : ''}
-      `}
+      className={`relative min-w-[200px] backdrop-blur-md rounded-xl border shadow-lg p-3 cursor-pointer transition-all duration-200 ${cardClass} ${isHovered ? 'ring-4 ring-primary/50 scale-[1.05]' : 'hover:scale-[1.02]'} ${isDimmed ? 'opacity-30 grayscale-[30%]' : ''}`}
       onMouseEnter={() => setHoveredNode(node.node_id)}
       onMouseLeave={() => setHoveredNode(null)}
     >
       <Handle type="target" position={Position.Top} className="opacity-0" />
 
-      {/* Header */}
-      <div className="flex items-center gap-2 px-3 pt-3 pb-2 border-b border-glass-border/50">
-        <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${accentDot}`} />
-        <h3 className={`font-semibold text-sm leading-none ${titleClass}`}>{nodeType}</h3>
+      <div className="flex justify-between items-start mb-2">
+        <h3 className={`font-bold text-sm flex items-center gap-1.5 ${titleClass}`}>
+          {nodeType}
+        </h3>
       </div>
 
-      {/* Metrics */}
-      <div className="flex flex-col gap-1 px-3 py-2.5 text-xs font-mono">
-        <div className="flex justify-between gap-6">
-          <span className="text-muted-foreground">Time</span>
-          <span className="text-foreground font-medium tabular-nums">
-            {duration !== undefined ? `${duration.toFixed(2)} ms` : '—'}
-          </span>
+      <div className={`flex flex-col gap-0.5 text-xs font-mono mt-2 ${textClass}`}>
+        <div className="flex justify-between gap-4">
+          <span className="opacity-70">Time:</span>
+          <span className="font-semibold">{duration !== undefined ? `${duration.toFixed(2)} ms` : '—'}</span>
         </div>
-        <div className="flex justify-between gap-6">
-          <span className="text-muted-foreground">Rows</span>
-          <span className="text-foreground font-medium tabular-nums">
-            {rows !== undefined ? Math.round(rows).toLocaleString() : '—'}
-          </span>
+        <div className="flex justify-between gap-4">
+          <span className="opacity-70">Rows:</span>
+          <span className="font-semibold">{rows !== undefined ? Math.round(rows).toLocaleString() : '—'}</span>
         </div>
-        <div className="flex justify-between gap-6">
-          <span className="text-muted-foreground">Cost</span>
-          <span className="text-foreground font-medium tabular-nums">
-            {node['Total Cost'] !== undefined ? node['Total Cost'].toFixed(2) : '—'}
-          </span>
+        <div className="flex justify-between gap-4">
+          <span className="opacity-70">Cost:</span>
+          <span className="font-semibold">{node['Total Cost'] !== undefined ? node['Total Cost'].toFixed(2) : '—'}</span>
         </div>
       </div>
 
@@ -213,14 +201,13 @@ const UniversalPlanTreeInner: React.FC<UniversalPlanTreeInnerProps> = ({ onClose
       
       if (parentId) {
         g.setEdge(parentId, id);
-        // source = child, target = parent → анимация идёт снизу вверх (поток данных SQL)
         newEdges.push({
           id: `e-${parentId}-${id}`,
-          source: id,
-          target: parentId,
+          source: parentId,
+          target: id,
           type: 'smoothstep',
           animated: true,
-          style: { stroke: 'hsl(var(--muted-foreground))', strokeWidth: 1.5, opacity: 0.45 },
+          style: { stroke: 'hsl(var(--muted-foreground))', strokeWidth: 2, opacity: 0.5 },
         });
       }
     };
@@ -295,11 +282,11 @@ const UniversalPlanTreeInner: React.FC<UniversalPlanTreeInnerProps> = ({ onClose
     })));
 
     setEdges(eds => eds.map(e => {
-      // e.source = child, e.target = parent (после свапа)
-      // Подсвечиваем рёбра ведущие ОТ потомков hovered-узла (или от самого hovered)
+      // e.source = parent, e.target = child
+      // Подсвечиваем рёбра от hovered-узла вниз к потомкам
       const isHighlighted = hoveredNodeId && (e.source === hoveredNodeId || descendants.has(e.source));
-      // Тусклые — рёбра которые ведут К предкам (выше hovered-узла)
-      const isAncestorEdge = hasHover && !isHighlighted && ancestors.has(e.target);
+      // Тусклые — рёбра предков (выше hovered-узла)
+      const isAncestorEdge = hasHover && !isHighlighted && ancestors.has(e.source);
 
       if (!hasHover) {
         return { ...e, animated: true, style: { stroke: 'hsl(var(--muted-foreground))', strokeWidth: 2, opacity: 0.5 } };
