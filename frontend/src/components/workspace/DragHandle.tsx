@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useUIStore, type SlotId } from '../../store/uiStore';
+import { DND_FORMATS } from '../../lib/constants';
 
 interface DragHandleProps {
   slotId: SlotId;
@@ -15,7 +16,7 @@ export const DragHandle: React.FC<DragHandleProps> = ({ slotId, className = '' }
     setDraggingSlot(slotId);
     
     // Set data for HTML5 drag and drop using a custom type so text editors don't catch it
-    e.dataTransfer.setData('application/vnd.llpg.slot', slotId);
+    e.dataTransfer.setData(DND_FORMATS.SLOT_ID, slotId);
     // Fallback for some browsers that require standard types, but use an empty string
     e.dataTransfer.setData('text/plain', '');
     e.dataTransfer.effectAllowed = 'move';

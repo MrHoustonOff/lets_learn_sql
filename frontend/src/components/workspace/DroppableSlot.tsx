@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useUIStore, type SlotId } from '../../store/uiStore';
+import { DND_FORMATS } from '../../lib/constants';
 
 interface DroppableSlotProps {
   slotId: SlotId;
@@ -39,7 +40,7 @@ export const DroppableSlot: React.FC<DroppableSlotProps> = ({ slotId, children }
     e.preventDefault();
     setIsDragOver(false);
     
-    const sourceSlot = e.dataTransfer.getData('application/vnd.llpg.slot') as SlotId;
+    const sourceSlot = e.dataTransfer.getData(DND_FORMATS.SLOT_ID) as SlotId;
     if (sourceSlot && sourceSlot !== slotId) {
       // Defer state update so the browser can finish the drag-and-drop sequence naturally
       // before React unmounts the dragged element. This prevents freezes/crashes.
