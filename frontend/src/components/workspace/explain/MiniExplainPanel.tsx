@@ -244,18 +244,33 @@ const NodeDetailsOverlay: React.FC<NodeDetailsProps> = ({ nodeId, onClose, rootT
           </div>
         </div>
 
+        {/* Дополнительные параметры (динамический рендер всего, что есть в узле) */}
+        <div className="mb-4">
+          <h4 className="text-xs font-bold text-muted-foreground uppercase mb-2">Детали операции</h4>
+          <div className="bg-background/50 border border-glass-border/50 rounded-lg p-3 text-sm font-mono overflow-x-auto">
+            {Object.entries(node).map(([key, value]) => {
+              // Пропускаем базовые поля, которые мы уже вывели или которые системные
+              const ignoredKeys = ['Node Type', 'Relation Name', 'Index Name', 'Total Cost', 'Plan Rows', 'Plan Width', 'Plans', 'node_id', 'Parent Relationship', 'Startup Cost', 'Alias'];
+              
+              if (ignoredKeys.includes(key) || typeof value === 'object' || value === undefined || value === null) {
+                return null;
+              }
+
+              return (
+                <div key={key} className="flex gap-2 py-1 border-b border-glass-border/20 last:border-0">
+                  <span className="text-muted-foreground whitespace-nowrap min-w-[150px]">{key}:</span>
+                  <span className="text-foreground break-all">{String(value)}</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
         {/* Документация/описание типа узла */}
         <div className="mb-4 bg-primary/5 border border-primary/20 rounded-lg p-3 text-sm text-foreground/90 leading-relaxed flex items-start gap-2">
           <Info size={16} className="text-primary shrink-0 mt-0.5" />
           <span>{getNodeDescription(nodeType)}</span>
         </div>
-
-        {filter && (
-          <div className="mb-4 bg-background/50 p-3 rounded border border-glass-border/50 text-sm font-mono">
-            <span className="text-muted-foreground block mb-1">Filter/Cond:</span> 
-            <span className="break-all">{filter}</span>
-          </div>
-        )}
 
         <div className="mt-6 border-t border-glass-border pt-4">
           <h4 className="text-xs font-bold text-muted-foreground uppercase mb-2">
