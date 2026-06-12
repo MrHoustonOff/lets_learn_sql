@@ -107,6 +107,70 @@ const getDescendantsMetrics = (node: any): { count: number, maxCost: number } =>
   return { count, maxCost };
 };
 
+const SQL_ORDER = [
+  'FROM', 'JOIN', 'WHERE', 
+  'GROUP BY', 'HAVING', 'WINDOW', 
+  'SUBQUERY', 'LIMIT'
+];
+
+interface PipelineStep {
+  clause: string;
+  nodeIds: string[];
+}
+
+function toClause(node: any): string | null {
+  const type = node['Node Type'];
+  const filter = node['Filter'] || node['Index Cond'] || node['Hash Cond'] || null;
+
+  switch (type) {
+    case 'Seq Scan':
+    case 'Index Scan':
+    case 'Index Only Scan':
+    case 'Bitmap Heap Scan':
+      if (filter) {
+        return `FROM ${node['Relation Name']} WHERE ${filter}`;
+      }
+      return `FROM ${node['Relation Name']}`;
+
+    case 'Hash Join':
+      return node['Hash Cond'] ? `JOIN ON ${node['Hash Cond']}` : `JOIN`;
+
+    case 'Merge Join':
+      return node['Merge Cond'] ? `JOIN ON ${node['Merge Cond']}` : `JOIN`;
+
+    case 'Nested Loop':
+      if (node['Join Filter']) {
+        return `JOIN ON ${node['Join Filter']}`;
+      }
+      return `JOIN`;
+
+    case 'Aggregate':
+      return `GROUP BY`;
+
+    case 'WindowAgg':
+      return `WINDOW`;
+
+    case 'Subquery Scan':
+      return `SUBQUERY`;
+
+    case 'Limit':
+      return `LIMIT`;
+
+    case 'Sort':
+    case 'Incremental Sort':
+    case 'Hash':
+    case 'Materialize':
+    case 'Memoize':
+    case 'Gather':
+    case 'Gather Merge':
+    case 'Bitmap Index Scan':
+      return null;
+
+    default:
+      return null;
+  }
+}
+
 interface PlanTreeNodeProps {
   node: any;
   flatNodesMap: Map<string, FlatNode>;
@@ -116,11 +180,14 @@ interface PlanTreeNodeProps {
   onSelectNode: (nodeId: string) => void;
   clickedBranchId: string | null;
   setClickedBranchId: (id: string | null) => void;
+  activePipelineNodeIds: string[];
+  setActivePipelineNodeIds: (ids: string[]) => void;
 }
 
 const PlanTreeNode: React.FC<PlanTreeNodeProps> = ({ 
   node, flatNodesMap, lineColorsMap, isLast, isRoot = false, onSelectNode,
   clickedBranchId, setClickedBranchId,
+  activePipelineNodeIds, setActivePipelineNodeIds,
 }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const nodeId = node.node_id;
@@ -138,8 +205,14 @@ const PlanTreeNode: React.FC<PlanTreeNodeProps> = ({
   const filter = node["Filter"] || node["Index Cond"] || node["Hash Cond"];
   const children = node["Plans"] || [];
 
+  const isPipelineHighlight = activePipelineNodeIds.length > 0 && activePipelineNodeIds.includes(nodeId);
+  const isBranchHighlight = clickedBranchId ? nodeId.startsWith(clickedBranchId) : false;
+  
+  const isHighlighted = isPipelineHighlight || isBranchHighlight;
+  const isDimmed = (activePipelineNodeIds.length > 0 || clickedBranchId) && !isHighlighted;
+
   return (
-    <div className={`relative group transition-colors duration-200 ${!isRoot ? 'pl-6' : ''}`}>
+    <div className={`relative group transition-colors duration-200 ${!isRoot ? 'pl-6' : ''} ${isHighlighted ? 'bg-primary/5 rounded-md ring-1 ring-primary/20' : ''} ${isDimmed ? 'opacity-40 grayscale-[50%]' : ''}`}>
       {/* Линии отступов для не-корневых узлов */}
       {!isRoot && (
         <>
@@ -151,9 +224,10 @@ const PlanTreeNode: React.FC<PlanTreeNodeProps> = ({
       )}
 
       <div 
-        className={`flex flex-col hover:bg-hover p-1 -mx-1 rounded relative z-10 cursor-pointer transition-colors ${clickedBranchId === nodeId ? 'ring-1 ring-primary/30 bg-primary/10' : ''}`}
+        className={`flex flex-col hover:bg-hover p-1 -mx-1 rounded relative z-10 cursor-pointer transition-colors ${clickedBranchId === nodeId ? 'ring-1 ring-primary/50 bg-primary/10' : ''}`}
         onClick={(e) => {
           e.stopPropagation();
+          setActivePipelineNodeIds([]);
           setClickedBranchId(nodeId === clickedBranchId ? null : nodeId);
           onSelectNode(nodeId);
         }}
@@ -208,6 +282,8 @@ const PlanTreeNode: React.FC<PlanTreeNodeProps> = ({
                   onSelectNode={onSelectNode}
                   clickedBranchId={clickedBranchId}
                   setClickedBranchId={setClickedBranchId}
+                  activePipelineNodeIds={activePipelineNodeIds}
+                  setActivePipelineNodeIds={setActivePipelineNodeIds}
                 />
               </div>
             );
@@ -579,8 +655,50 @@ export const MiniExplainPanel: React.FC = () => {
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [isCostBreakdownOpen, setIsCostBreakdownOpen] = useState(true);
   const [isPlanTreeOpen, setIsPlanTreeOpen] = useState(true);
-  
+  const [activePipelineNodeIds, setActivePipelineNodeIds] = useState<string[]>([]);
   const [clickedBranchId, setClickedBranchId] = useState<string | null>(null);
+
+  const pipelineSteps = useMemo(() => {
+    if (!slot1?.plan_parsed?.tree) return [];
+    
+    interface RawStep { clause: string; nodeId: string; }
+    
+    function collectSteps(n: any): RawStep[] {
+      const steps: RawStep[] = [];
+      const children = n.Plans || [];
+      for (const child of children) {
+        steps.push(...collectSteps(child));
+      }
+      const clause = toClause(n);
+      if (clause) {
+        steps.push({ clause, nodeId: n.node_id });
+      }
+      return steps;
+    }
+
+    const rawSteps = collectSteps(slot1.plan_parsed.tree);
+
+    // deduplicate
+    const seen = new Map<string, PipelineStep>();
+    for (const step of rawSteps) {
+      if (seen.has(step.clause)) {
+        seen.get(step.clause)!.nodeIds.push(step.nodeId);
+      } else {
+        seen.set(step.clause, { clause: step.clause, nodeIds: [step.nodeId] });
+      }
+    }
+
+    const deduped = Array.from(seen.values());
+
+    // sort
+    return deduped.sort((a, b) => {
+      const aIndex = SQL_ORDER.findIndex(c => a.clause.startsWith(c));
+      const bIndex = SQL_ORDER.findIndex(c => b.clause.startsWith(c));
+      const safeA = aIndex === -1 ? 99 : aIndex;
+      const safeB = bIndex === -1 ? 99 : bIndex;
+      return safeA - safeB;
+    });
+  }, [slot1]);
 
   const lineColorsMap = useMemo(() => {
     const map = new Map<string, string>();
@@ -771,29 +889,31 @@ export const MiniExplainPanel: React.FC = () => {
           {isPlanTreeOpen && (
             <div className="font-mono text-sm bg-black/5 dark:bg-white/5 border border-glass-border rounded-lg p-4 space-y-1">
               
-              {/* Breadcrumbs */}
-              {clickedBranchId && (
-                <div className="flex flex-wrap items-center gap-1 mb-3 px-1 text-xs text-muted-foreground font-sans bg-background/50 p-2 rounded border border-glass-border">
-                  {clickedBranchId.split('_').reduce((acc: string[], part: string, idx: number) => {
-                    if (idx === 0) return [part];
-                    acc.push(acc[idx - 1] + '_' + part);
-                    return acc;
-                  }, []).map((pathId: string, idx: number, arr: string[]) => {
-                    const bNode = findNodeById(slot1.plan_parsed.tree, pathId);
-                    if (!bNode) return null;
-                    const isLast = idx === arr.length - 1;
+              {/* Query Pipeline */}
+              {pipelineSteps.length > 0 && (
+                <div className="flex flex-wrap items-center gap-1 mb-3 px-1">
+                  {pipelineSteps.map((step, i) => {
+                    // Check if all nodeIds of this step are in activePipelineNodeIds
+                    const isActive = step.nodeIds.every(id => activePipelineNodeIds.includes(id));
+                    
                     return (
-                      <React.Fragment key={pathId}>
-                        <span 
-                          className={`cursor-pointer hover:text-foreground transition-colors px-1 rounded hover:bg-hover ${isLast ? 'text-primary font-bold bg-primary/10' : ''}`}
+                      <React.Fragment key={step.nodeIds.join(',')}>
+                        <span
                           onClick={() => {
-                            setClickedBranchId(pathId);
-                            setSelectedNodeId(pathId);
+                            setClickedBranchId(null);
+                            setActivePipelineNodeIds(step.nodeIds);
+                            // Highlight the first node in the details panel, or just the first one if multiple
+                            if (step.nodeIds.length > 0) {
+                              setSelectedNodeId(step.nodeIds[0]);
+                            }
                           }}
+                          className={`px-2 py-0.5 rounded text-xs cursor-pointer transition-colors ${isActive ? 'bg-primary/20 text-primary font-medium' : 'bg-black/5 dark:bg-white/5 text-muted-foreground hover:bg-black/10 hover:dark:bg-white/10'}`}
                         >
-                          {bNode["Node Type"]}
+                          {step.clause}
                         </span>
-                        {!isLast && <span className="opacity-50">→</span>}
+                        {i < pipelineSteps.length - 1 && (
+                          <span className="text-muted-foreground/40 text-xs">→</span>
+                        )}
                       </React.Fragment>
                     );
                   })}
@@ -809,6 +929,8 @@ export const MiniExplainPanel: React.FC = () => {
                 onSelectNode={setSelectedNodeId}
                 clickedBranchId={clickedBranchId}
                 setClickedBranchId={setClickedBranchId}
+                activePipelineNodeIds={activePipelineNodeIds}
+                setActivePipelineNodeIds={setActivePipelineNodeIds}
               />
             </div>
           )}
