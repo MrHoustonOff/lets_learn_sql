@@ -57,6 +57,14 @@
     "planner_accuracy": {
       "ru": "Насколько сильно реальное количество строк (Actual Rows) разошлось с тем, что ожидал планировщик (Plan Rows). Сильное расхождение приводит к неоптимальным планам — планировщик выбирает стратегию джоинов и типы сканирования исходя из оценок строк.",
       "en": "How much the actual row count differed from what the planner estimated. The planner picks join strategies and scan types based on row estimates, so large divergence often leads to suboptimal plans."
+    },
+    "cost_breakdown": {
+      "ru": "Влияние операций на общую стоимость запроса.\n\nПоказывает, какой процент от общей стоимости (или времени) занял каждый узел.\nИспользуйте это, чтобы быстро найти самое «тяжелое» место (bottleneck) в вашем запросе.",
+      "en": "Impact of operations on total query cost.\n\nShows what percentage of total cost (or time) each node consumed.\nUse this to quickly find the bottleneck in your query."
+    },
+    "plan_tree": {
+      "ru": "Иерархия выполнения запроса.\n\nДерево показывает вложенность операций. Выполнение идет снизу вверх (от дочерних узлов к родительским).\nИспользуйте дерево для понимания структуры: как соединяются таблицы и где именно происходит отсев данных.",
+      "en": "Query execution hierarchy.\n\nThe tree shows operation nesting. Execution goes bottom-up (from children to parents).\nUse the tree to understand the structure: how tables are joined and where data is filtered."
     }
   }
 }

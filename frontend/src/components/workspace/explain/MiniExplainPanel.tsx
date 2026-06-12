@@ -1,19 +1,68 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { Info, AlertTriangle, Loader2, CheckCircle2, ArrowDown, ArrowUp, ArrowUpDown, X, ChevronLeft, ChevronRight, Copy, Check, ChevronDown } from 'lucide-react';
 import { useExplainStore, type FlatNode } from '../../../store/explainStore';
 
 import pgExplainDocs from '../../../i18n/pg_explain_docs.json';
 import explainFieldsDocs from '../../../i18n/explain_fields_i18n.json';
 
-const InfoTooltip = ({ text }: { text: string }) => (
-  <div className="relative group inline-flex items-center ml-1 align-middle">
-    <Info size={14} className="text-muted-foreground/50 hover:text-primary cursor-help transition-colors" />
-    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 p-2 bg-popover text-popover-foreground text-xs rounded-md shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 delay-500 z-[60] border border-glass-border pointer-events-none break-words font-sans font-normal normal-case">
-      {text}
-      <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-glass-border" />
-    </div>
-  </div>
-);
+const InfoTooltip = ({ text }: { text: string }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [pos, setPos] = useState({ top: 0, left: 0, translateY: '0', translateX: '-50%' });
+
+  const handleMouseEnter = (e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const tooltipHeight = 150; // approximate max height
+    const tooltipWidth = 288; // 72 tailwind spacing = 18rem = 288px
+    
+    let top = rect.top - 8; // Pop upwards by default
+    let translateY = '-100%';
+    let left = rect.left + rect.width / 2;
+    let translateX = '-50%';
+
+    if (top - tooltipHeight < 0) {
+      // Not enough space above, pop downwards
+      top = rect.bottom + 8;
+      translateY = '0';
+    }
+
+    if (left - tooltipWidth / 2 < 10) {
+      left = 10;
+      translateX = '0';
+    } else if (left + tooltipWidth / 2 > window.innerWidth - 10) {
+      left = window.innerWidth - 10;
+      translateX = '-100%';
+    }
+
+    setPos({ top, left, translateY, translateX });
+    setIsOpen(true);
+  };
+
+  return (
+    <>
+      <div 
+        className="inline-flex items-center ml-1 align-middle"
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={() => setIsOpen(false)}
+      >
+        <Info size={14} className="text-muted-foreground/50 hover:text-primary cursor-help transition-colors" />
+      </div>
+      {isOpen && createPortal(
+        <div 
+          className="fixed z-[99999] w-72 p-3 bg-popover text-popover-foreground text-xs rounded-md shadow-2xl border border-glass-border pointer-events-none whitespace-pre-wrap font-sans font-normal normal-case leading-relaxed animate-in fade-in zoom-in-95 duration-200"
+          style={{ 
+            top: `${pos.top}px`, 
+            left: `${pos.left}px`,
+            transform: `translate(${pos.translateX}, ${pos.translateY})`
+          }}
+        >
+          {text}
+        </div>,
+        document.body
+      )}
+    </>
+  );
+};
 
 // Хелпер для поиска узла в дереве
 const findNodeById = (node: any, id: string): any => {
@@ -484,7 +533,7 @@ const NodeDetailsOverlay: React.FC<NodeDetailsProps> = ({ nodeId, onClose, rootT
         </div>
       </div>
     </div>
-
+  );
 };
 
 type SortKey = 'step' | 'cost';
@@ -569,7 +618,7 @@ export const MiniExplainPanel: React.FC = () => {
             <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
               Cost Breakdown
             </h3>
-            <Info size={14} className="text-muted-foreground/50 cursor-help" title="Влияние операций на общую стоимость запроса" />
+            <InfoTooltip text={explainFieldsDocs.fields.cost_breakdown.ru} />
           </div>
           
           <div className="bg-black/5 dark:bg-white/5 border border-glass-border rounded-lg overflow-hidden">
@@ -643,7 +692,7 @@ export const MiniExplainPanel: React.FC = () => {
             <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
               Plan Tree
             </h3>
-            <Info size={14} className="text-muted-foreground/50 cursor-help" title="Иерархия выполнения запроса" />
+            <InfoTooltip text={explainFieldsDocs.fields.plan_tree.ru} />
           </div>
           <div className="font-mono text-sm bg-black/5 dark:bg-white/5 border border-glass-border rounded-lg p-4 space-y-1">
             <PlanTreeNode 
