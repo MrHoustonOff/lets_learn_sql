@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { AppWindow, RefreshCw, LayoutTemplate } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useUIStore } from '../../store/uiStore';
+import { InfoTooltip } from '../ui/InfoTooltip';
 
 interface ViewMenuProps {
   onResetProportions: () => void;
@@ -51,18 +52,24 @@ export const ViewMenu: React.FC<ViewMenuProps> = ({ onResetProportions }) => {
 
           <button 
             onClick={handleResetProportions}
-            className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-xs font-semibold text-foreground hover:bg-white/10 dark:hover:bg-white/10 transition-colors outline-none group"
+            className="w-full flex items-center px-2.5 py-2 rounded-lg text-xs font-semibold text-foreground hover:bg-white/10 dark:hover:bg-white/10 transition-colors outline-none group"
           >
-            <RefreshCw size={14} className="text-muted-foreground group-hover:text-primary transition-colors" />
-            {t('view_menu.reset_proportions', 'Reset proportions')}
+            <RefreshCw size={14} className="text-muted-foreground group-hover:text-primary transition-colors mr-2.5 flex-shrink-0" />
+            <span className="flex-1 text-left">{t('view_menu.reset_proportions', 'Reset proportions')}</span>
+            <div onClick={(e) => e.stopPropagation()} className="flex-shrink-0 ml-2">
+              <InfoTooltip text={t('view_menu.reset_proportions_tooltip')} />
+            </div>
           </button>
 
           <button 
             onClick={handleResetSlots}
-            className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-xs font-semibold text-foreground hover:bg-white/10 dark:hover:bg-white/10 transition-colors outline-none group"
+            className="w-full flex items-center px-2.5 py-2 rounded-lg text-xs font-semibold text-foreground hover:bg-white/10 dark:hover:bg-white/10 transition-colors outline-none group"
           >
-            <LayoutTemplate size={14} className="text-muted-foreground group-hover:text-primary transition-colors" />
-            {t('view_menu.reset_slots', 'Default panels layout')}
+            <LayoutTemplate size={14} className="text-muted-foreground group-hover:text-primary transition-colors mr-2.5 flex-shrink-0" />
+            <span className="flex-1 text-left">{t('view_menu.reset_slots', 'Default panels layout')}</span>
+            <div onClick={(e) => e.stopPropagation()} className="flex-shrink-0 ml-2">
+              <InfoTooltip text={t('view_menu.reset_slots_tooltip')} />
+            </div>
           </button>
         </div>
       )}
