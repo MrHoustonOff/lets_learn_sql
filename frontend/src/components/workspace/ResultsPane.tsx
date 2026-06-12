@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Table2, Activity, Maximize2, Minimize2, Loader2, AlertCircle, Play } from 'lucide-react';
-import { ExplainModal } from './ExplainModal';
 import { MiniExplainPanel } from './explain/MiniExplainPanel';
 import { useUIStore } from '../../store/uiStore';
 import { useQueryStore } from '../../store/queryStore';
@@ -20,7 +19,6 @@ export const ResultsPane: React.FC<ResultsPaneProps> = ({
 }) => {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<'result' | 'explain'>('result');
-  const [isExplainModalOpen, setIsExplainModalOpen] = useState(false);
   const { maximizedPane, setMaximizedPane } = useUIStore();
   const { result, isLoading, error, maxRowsToDisplay } = useQueryStore();
   const { options } = useExplainStore();
@@ -66,15 +64,7 @@ export const ResultsPane: React.FC<ResultsPaneProps> = ({
         </div>
         
         <div className="flex items-center gap-1">
-          {activeTab === 'explain' && (
-            <button 
-              onClick={() => setIsExplainModalOpen(true)}
-              className="flex items-center gap-1.5 text-xs font-semibold text-warning-text hover:bg-warning/10 px-2 py-1 rounded transition-colors mr-1"
-            >
-              <Maximize2 size={12} />
-              {t('full_analysis')}
-            </button>
-          )}
+          {/* Removed full_analysis button */}
           {result?.duration_ms && !isLoading && !error && (
             <span className="text-[10px] text-muted-foreground mr-2 font-mono">
               {result.duration_ms.toFixed(1)} ms
@@ -136,11 +126,6 @@ export const ResultsPane: React.FC<ResultsPaneProps> = ({
           <MiniExplainPanel />
         )}
       </div>
-
-      <ExplainModal 
-        isOpen={isExplainModalOpen} 
-        onClose={() => setIsExplainModalOpen(false)} 
-      />
     </div>
   );
 };
