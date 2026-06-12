@@ -64,7 +64,7 @@ export const ResultsPane: React.FC<ResultsPaneProps> = ({
           </button>
         </div>
         
-        <div className="flex items-center gap-1 shrink-0 ml-1">
+        <div className="flex items-center gap-1 shrink min-w-0 ml-1">
           {/* Removed full_analysis button */}
           {result?.duration_ms && !isLoading && !error && (
             <span className="text-[10px] text-muted-foreground mr-2 font-mono">

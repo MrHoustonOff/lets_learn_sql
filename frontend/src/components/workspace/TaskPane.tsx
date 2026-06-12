@@ -41,7 +41,7 @@ export const TaskPane: React.FC<TaskPaneProps> = ({ slotId }) => {
           <span className="truncate">{t('solution')}</span>
         </button>
       </div>
-      <div className="flex items-center gap-1 shrink-0 ml-1">
+      <div className="flex items-center gap-1 shrink min-w-0 ml-1">
         <button 
           onClick={() => setIsSolved(!isSolved)}
           className={`flex items-center justify-center gap-1.5 px-2 py-1 rounded-md transition-all border min-w-0 ${
