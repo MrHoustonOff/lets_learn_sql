@@ -158,6 +158,8 @@ const NodeDetailsOverlay: React.FC<NodeDetailsProps> = ({ nodeId, onClose, rootT
   const filter = node["Filter"] || node["Index Cond"] || node["Hash Cond"];
   const width = node["Plan Width"];
 
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+
   // Логика навигации
   const chronologicalNodes = [...flatNodes].sort((a, b) => a.step_number - b.step_number);
   const currentIndex = chronologicalNodes.findIndex(n => n.node_id === nodeId);
@@ -175,13 +177,18 @@ const NodeDetailsOverlay: React.FC<NodeDetailsProps> = ({ nodeId, onClose, rootT
     if (hasNext) onNavigate(chronologicalNodes[currentIndex + 1].node_id);
   };
 
+  const dynamicProps = Object.entries(node).filter(([key, value]) => {
+    const ignoredKeys = ['Node Type', 'Relation Name', 'Index Name', 'Total Cost', 'Plan Rows', 'Plan Width', 'Plans', 'node_id', 'Parent Relationship', 'Startup Cost', 'Alias'];
+    return !ignoredKeys.includes(key) && typeof value !== 'object' && value !== undefined && value !== null;
+  });
+
   return (
     <div 
-      className="absolute inset-0 bg-background/95 backdrop-blur-sm z-50 p-4 flex items-center justify-center animate-in fade-in zoom-in-95 duration-200"
+      className="absolute inset-0 bg-background/95 backdrop-blur-sm z-50 p-4 flex items-start justify-center overflow-y-auto animate-in fade-in zoom-in-95 duration-200"
       onClick={onClose}
     >
       <div 
-        className="border border-glass-border bg-black/5 dark:bg-white/5 rounded-lg p-4 shadow-xl w-full max-w-2xl relative"
+        className="border border-glass-border bg-black/5 dark:bg-white/5 rounded-lg p-4 shadow-xl w-full max-w-2xl relative my-auto mt-10 mb-10"
         onClick={(e) => e.stopPropagation()} // Не закрывать при клике на саму карточку
       >
         <div className="flex items-start justify-between mb-4 border-b border-glass-border pb-3">
@@ -195,14 +202,14 @@ const NodeDetailsOverlay: React.FC<NodeDetailsProps> = ({ nodeId, onClose, rootT
               </>
             )}
             {flatData && (
-              <span className="flex items-center justify-center w-5 h-5 rounded bg-background border border-glass-border text-xs text-muted-foreground font-mono ml-2">
+              <span className="flex items-center justify-center w-5 h-5 rounded bg-background border border-glass-border text-xs text-muted-foreground font-mono ml-2 shrink-0">
                 {flatData.step_number}
               </span>
             )}
           </div>
           
           {/* Навигация */}
-          <div className="flex items-center gap-1 mr-4">
+          <div className="flex items-center gap-1 mr-4 shrink-0">
             <button 
               onClick={handlePrev}
               disabled={!hasPrev}
@@ -223,7 +230,7 @@ const NodeDetailsOverlay: React.FC<NodeDetailsProps> = ({ nodeId, onClose, rootT
 
           <button 
             onClick={onClose}
-            className="p-1.5 hover:bg-hover rounded-md text-muted-foreground transition-colors"
+            className="p-1.5 hover:bg-hover rounded-md text-muted-foreground transition-colors shrink-0"
           >
             <X size={18} />
           </button>
@@ -244,27 +251,29 @@ const NodeDetailsOverlay: React.FC<NodeDetailsProps> = ({ nodeId, onClose, rootT
           </div>
         </div>
 
-        {/* Дополнительные параметры (динамический рендер всего, что есть в узле) */}
-        <div className="mb-4">
-          <h4 className="text-xs font-bold text-muted-foreground uppercase mb-2">Детали операции</h4>
-          <div className="bg-background/50 border border-glass-border/50 rounded-lg p-3 text-sm font-mono overflow-x-auto">
-            {Object.entries(node).map(([key, value]) => {
-              // Пропускаем базовые поля, которые мы уже вывели или которые системные
-              const ignoredKeys = ['Node Type', 'Relation Name', 'Index Name', 'Total Cost', 'Plan Rows', 'Plan Width', 'Plans', 'node_id', 'Parent Relationship', 'Startup Cost', 'Alias'];
-              
-              if (ignoredKeys.includes(key) || typeof value === 'object' || value === undefined || value === null) {
-                return null;
-              }
-
-              return (
-                <div key={key} className="flex gap-2 py-1 border-b border-glass-border/20 last:border-0">
-                  <span className="text-muted-foreground whitespace-nowrap min-w-[150px]">{key}:</span>
-                  <span className="text-foreground break-all">{String(value)}</span>
-                </div>
-              );
-            })}
+        {/* Дополнительные параметры (Сворачиваемый блок) */}
+        {dynamicProps.length > 0 && (
+          <div className="mb-4">
+            <button 
+              onClick={() => setIsDetailsOpen(!isDetailsOpen)}
+              className="flex items-center gap-2 text-xs font-bold text-muted-foreground uppercase mb-2 hover:text-foreground transition-colors w-full text-left"
+            >
+              <span className={`transform transition-transform ${isDetailsOpen ? 'rotate-90' : ''}`}>▶</span>
+              Детали операции ({dynamicProps.length})
+            </button>
+            
+            {isDetailsOpen && (
+              <div className="bg-background/50 border border-glass-border/50 rounded-lg p-3 text-sm font-mono overflow-x-auto animate-in slide-in-from-top-2 duration-200">
+                {dynamicProps.map(([key, value]) => (
+                  <div key={key} className="flex gap-2 py-1 border-b border-glass-border/20 last:border-0">
+                    <span className="text-muted-foreground whitespace-nowrap min-w-[150px]">{key}:</span>
+                    <span className="text-foreground break-all">{String(value)}</span>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
-        </div>
+        )}
 
         {/* Документация/описание типа узла */}
         <div className="mb-4 bg-primary/5 border border-primary/20 rounded-lg p-3 text-sm text-foreground/90 leading-relaxed flex items-start gap-2">
