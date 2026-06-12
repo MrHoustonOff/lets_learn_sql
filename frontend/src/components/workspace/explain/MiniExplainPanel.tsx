@@ -553,6 +553,8 @@ export const MiniExplainPanel: React.FC = () => {
   const [sortKey, setSortKey] = useState<SortKey>('step');
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
+  const [isCostBreakdownOpen, setIsCostBreakdownOpen] = useState(true);
+  const [isPlanTreeOpen, setIsPlanTreeOpen] = useState(true);
 
   const handleSort = (key: SortKey) => {
     if (sortKey === key) {
@@ -622,14 +624,23 @@ export const MiniExplainPanel: React.FC = () => {
         
         {/* Cost Breakdown Section */}
         <section>
-          <div className="flex items-center gap-2 mb-3">
-            <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-              Cost Breakdown
-            </h3>
-            <InfoTooltip text={explainFieldsDocs.fields.cost_breakdown.ru} />
+          <div 
+            className="flex items-center gap-2 mb-3 cursor-pointer select-none group"
+            onClick={() => setIsCostBreakdownOpen(!isCostBreakdownOpen)}
+          >
+            <div className="flex items-center gap-1">
+              {isCostBreakdownOpen ? <ChevronDown size={16} className="text-muted-foreground group-hover:text-foreground transition-colors" /> : <ChevronRight size={16} className="text-muted-foreground group-hover:text-foreground transition-colors" />}
+              <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider group-hover:text-foreground transition-colors">
+                Cost Breakdown
+              </h3>
+            </div>
+            <div onClick={(e) => e.stopPropagation()}>
+              <InfoTooltip text={explainFieldsDocs.fields.cost_breakdown.ru} />
+            </div>
           </div>
           
-          <div className="bg-black/5 dark:bg-white/5 border border-glass-border rounded-lg overflow-hidden">
+          {isCostBreakdownOpen && (
+            <div className="bg-black/5 dark:bg-white/5 border border-glass-border rounded-lg overflow-hidden">
             <table className="w-full text-sm">
               <thead className="bg-black/10 dark:bg-white/10 border-b border-glass-border">
                 <tr>
@@ -692,17 +703,28 @@ export const MiniExplainPanel: React.FC = () => {
               </tbody>
             </table>
           </div>
+          )}
         </section>
 
         {/* Plan Tree Section */}
         <section>
-          <div className="flex items-center gap-2 mb-3">
-            <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-              Plan Tree
-            </h3>
-            <InfoTooltip text={explainFieldsDocs.fields.plan_tree.ru} />
+          <div 
+            className="flex items-center gap-2 mb-3 cursor-pointer select-none group"
+            onClick={() => setIsPlanTreeOpen(!isPlanTreeOpen)}
+          >
+            <div className="flex items-center gap-1">
+              {isPlanTreeOpen ? <ChevronDown size={16} className="text-muted-foreground group-hover:text-foreground transition-colors" /> : <ChevronRight size={16} className="text-muted-foreground group-hover:text-foreground transition-colors" />}
+              <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider group-hover:text-foreground transition-colors">
+                Plan Tree
+              </h3>
+            </div>
+            <div onClick={(e) => e.stopPropagation()}>
+              <InfoTooltip text={explainFieldsDocs.fields.plan_tree.ru} />
+            </div>
           </div>
-          <div className="font-mono text-sm bg-black/5 dark:bg-white/5 border border-glass-border rounded-lg p-4 space-y-1">
+          
+          {isPlanTreeOpen && (
+            <div className="font-mono text-sm bg-black/5 dark:bg-white/5 border border-glass-border rounded-lg p-4 space-y-1">
             <PlanTreeNode 
               node={slot1.plan_parsed.tree} 
               flatNodesMap={flatNodesMap} 
@@ -711,6 +733,7 @@ export const MiniExplainPanel: React.FC = () => {
               onSelectNode={setSelectedNodeId}
             />
           </div>
+          )}
         </section>
 
       </div>
