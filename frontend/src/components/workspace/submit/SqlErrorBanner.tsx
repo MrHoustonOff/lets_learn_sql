@@ -1,0 +1,170 @@
+import React from 'react';
+import { useTranslation } from 'react-i18next';
+import { Bug, Columns, ArrowRightLeft, Clock, Check, X } from 'lucide-react';
+
+export const SqlErrorBanner: React.FC<{ error: string; duration?: number }> = ({ error, duration = 0 }) => {
+  const { t } = useTranslation('submit_report');
+
+  if (!error.startsWith('PREFLIGHT:')) {
+    // Fallback for non-preflight generic errors
+    return (
+      <div className="bg-card rounded-xl border border-glass-border p-4 sm:p-5">
+        <p className="m-0 text-[13px] text-destructive">{error}</p>
+      </div>
+    );
+  }
+
+  const parts = error.split('|');
+  const code = parts[0];
+
+  const durationStr = duration > 0 ? `${duration} мс` : '';
+
+  switch (code) {
+    case 'PREFLIGHT:TIMEOUT':
+      return (
+        <div className="bg-card rounded-xl border border-glass-border p-4 sm:p-5">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2.5">
+              <div className="w-7 h-7 rounded-md bg-warning/10 flex items-center justify-center shrink-0">
+                <Clock size={16} className="text-warning-text" />
+              </div>
+              <p className="text-[15px] font-medium m-0 text-foreground">{t('err_timeout_title', 'Запрос выполняется слишком долго')}</p>
+            </div>
+            {durationStr && <span className="text-xs text-muted-foreground">&gt; 5000 мс</span>}
+          </div>
+          <div className="bg-black/5 dark:bg-white/5 rounded-md px-3 py-2.5 mb-2.5">
+            <p className="font-mono text-[13px] leading-relaxed m-0 text-warning-text">
+              canceling statement due to statement timeout
+            </p>
+          </div>
+          <p className="text-[13px] text-foreground/80 m-0">
+            {t('err_timeout_desc', 'Выполнение прервано по таймауту (5 сек).')}
+          </p>
+        </div>
+      );
+
+    case 'PREFLIGHT:SYNTAX':
+    case 'PREFLIGHT:RUNTIME':
+    case 'PREFLIGHT:PLATFORM':
+      const errTrace = parts.slice(1).join('|');
+      const isPlatform = code === 'PREFLIGHT:PLATFORM';
+      const title = isPlatform ? t('err_platform_title', 'Внутренняя ошибка платформы') : t('err_syntax_title', 'Ошибка в запросе');
+      const [firstLine, ...rest] = errTrace.split('\n');
+      return (
+        <div className="bg-card rounded-xl border border-glass-border p-4 sm:p-5">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2.5">
+              <div className="w-7 h-7 rounded-md bg-destructive/10 flex items-center justify-center shrink-0">
+                <Bug size={16} className="text-destructive" />
+              </div>
+              <p className="text-[15px] font-medium m-0 text-foreground">{title}</p>
+            </div>
+            {durationStr && <span className="text-xs text-muted-foreground">{durationStr}</span>}
+          </div>
+          <div className="bg-black/5 dark:bg-white/5 rounded-md px-3 py-2.5 mb-2.5">
+            <p className="font-mono text-[13px] leading-relaxed m-0 text-destructive">{firstLine || errTrace}</p>
+            {rest.length > 0 && (
+              <p className="font-mono text-xs leading-relaxed mt-1 mb-0 text-muted-foreground whitespace-pre-wrap">{rest.join('\n')}</p>
+            )}
+          </div>
+          <p className="text-[13px] text-foreground/80 m-0">
+            {isPlatform 
+              ? t('err_platform_desc', 'К сожалению, эталонный запрос упал с ошибкой. Пожалуйста, сообщите администратору.') 
+              : t('err_syntax_desc', 'Postgres не смог выполнить запрос.')}
+          </p>
+        </div>
+      );
+
+    case 'PREFLIGHT:COL_COUNT':
+      const actualCount = parts[1];
+      const expectedCount = parts[2];
+      const isMore = Number(actualCount) > Number(expectedCount);
+      return (
+        <div className="bg-card rounded-xl border border-glass-border p-4 sm:p-5">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2.5">
+              <div className="w-7 h-7 rounded-md bg-destructive/10 flex items-center justify-center shrink-0">
+                <Columns size={16} className="text-destructive" />
+              </div>
+              <p className="text-[15px] font-medium m-0 text-foreground">{t('err_colcount_title', 'Несовпадение количества колонок')}</p>
+            </div>
+            {durationStr && <span className="text-xs text-muted-foreground">{durationStr}</span>}
+          </div>
+          <div className="grid grid-cols-2 gap-3 mb-2.5">
+            <div className="bg-black/5 dark:bg-white/5 rounded-md p-4">
+              <p className="text-[13px] text-foreground/80 m-0 mb-1">{t('err_colcount_expected', 'Ожидалось колонок')}</p>
+              <p className="text-2xl font-medium m-0 text-foreground">{expectedCount}</p>
+            </div>
+            <div className="bg-destructive/10 rounded-md p-4">
+              <p className="text-[13px] text-destructive m-0 mb-1">{t('err_colcount_actual', 'Получено')}</p>
+              <p className="text-2xl font-medium m-0 text-destructive">{actualCount}</p>
+            </div>
+          </div>
+          <p className="text-[13px] text-foreground/80 m-0">
+            {isMore ? t('err_colcount_desc_more', 'Ваш запрос возвращает больше колонок, чем требуется по условию.') : t('err_colcount_desc_less', 'Ваш запрос возвращает меньше колонок, чем требуется по условию.')}
+          </p>
+        </div>
+      );
+
+    case 'PREFLIGHT:COL_TYPES':
+      try {
+        const typesData = JSON.parse(parts.slice(1).join('|'));
+        return (
+          <div className="bg-card rounded-xl border border-glass-border p-4 sm:p-5">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2.5">
+                <div className="w-7 h-7 rounded-md bg-destructive/10 flex items-center justify-center shrink-0">
+                  <ArrowRightLeft size={16} className="text-destructive" />
+                </div>
+                <p className="text-[15px] font-medium m-0 text-foreground">{t('err_coltype_title', 'Несовпадение типов данных')}</p>
+              </div>
+              {durationStr && <span className="text-xs text-muted-foreground">{durationStr}</span>}
+            </div>
+            <div className="flex flex-col gap-1.5 mb-2.5">
+              {typesData.map((col: any) => {
+                if (col.match) {
+                  return (
+                    <div key={col.pos} className="grid grid-cols-[28px_minmax(0,1fr)_minmax(0,1fr)_20px] items-center gap-2.5 px-2.5 py-2 bg-black/5 dark:bg-white/5 rounded-md">
+                      <span className="text-xs text-muted-foreground">#{col.pos}</span>
+                      <div>
+                        <p className="text-[13px] m-0 text-foreground">{col.name}</p>
+                        <p className="text-xs font-mono text-foreground/80 m-0">{col.u_type}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-muted-foreground m-0">{t('err_coltype_expected', 'ожидался')}</p>
+                        <p className="text-xs font-mono text-foreground/80 m-0">{col.r_type}</p>
+                      </div>
+                      <Check size={16} className="text-success justify-self-center" />
+                    </div>
+                  );
+                } else {
+                  return (
+                    <div key={col.pos} className="grid grid-cols-[28px_minmax(0,1fr)_minmax(0,1fr)_20px] items-center gap-2.5 px-2.5 py-2 bg-destructive/10 rounded-md">
+                      <span className="text-xs text-destructive">#{col.pos}</span>
+                      <div>
+                        <p className="text-[13px] m-0 text-destructive">{col.name}</p>
+                        <p className="text-xs font-mono text-destructive m-0">{col.u_type}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-destructive m-0">{t('err_coltype_expected', 'ожидался')}</p>
+                        <p className="text-xs font-mono text-destructive m-0">{col.r_type}</p>
+                      </div>
+                      <X size={16} className="text-destructive justify-self-center" />
+                    </div>
+                  );
+                }
+              })}
+            </div>
+            <p className="text-[13px] text-foreground/80 m-0">
+              {t('err_coltype_desc', 'Одно или несколько полей имеют неверный тип данных.')}
+            </p>
+          </div>
+        );
+      } catch (e) {
+        return null;
+      }
+
+    default:
+      return null;
+  }
+};

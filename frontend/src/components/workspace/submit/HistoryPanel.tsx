@@ -32,6 +32,9 @@ export const HistoryPanel: React.FC<{
     }
   };
 
+  const getAttemptDate = (a: any) => new Date(a.date || a.created_at);
+  const getAttemptDuration = (a: any) => a.durationMs ?? a.duration_ms ?? 0;
+
   const sortedHistory = useMemo(() => {
     return [...history].sort((a, b) => {
       // User specific rule: when sorting by duration, ALWAYS put correct attempts first
@@ -39,12 +42,12 @@ export const HistoryPanel: React.FC<{
         if (a.verdict !== b.verdict) {
            return a.verdict ? -1 : 1; // Correct first
         }
-        return sortOrder === 'asc' ? a.durationMs - b.durationMs : b.durationMs - a.durationMs;
+        return sortOrder === 'asc' ? getAttemptDuration(a) - getAttemptDuration(b) : getAttemptDuration(b) - getAttemptDuration(a);
       }
       
       let comparison = 0;
       if (sortField === 'date') {
-        comparison = a.date.getTime() - b.date.getTime();
+        comparison = getAttemptDate(a).getTime() - getAttemptDate(b).getTime();
       } else if (sortField === 'verdict') {
         comparison = (a.verdict === b.verdict) ? 0 : (a.verdict ? 1 : -1);
       }
@@ -56,6 +59,7 @@ export const HistoryPanel: React.FC<{
   const currentHistory = sortedHistory.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   const formatDate = (d: Date) => {
+    if (isNaN(d.getTime())) return '';
     return new Intl.DateTimeFormat('ru-RU', {
       day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit'
     }).format(d);
@@ -93,19 +97,19 @@ export const HistoryPanel: React.FC<{
 
           {currentHistory.map((attempt) => (
             <button
-              key={attempt.id}
+              key={attempt.attempt_id || attempt.id}
               onClick={() => onOpenAttempt(attempt)}
               className={`flex items-center justify-between px-3 py-1.5 rounded-md border border-transparent transition-all w-full text-left focus:outline-none ${attempt.verdict ? 'bg-success/10 hover:bg-success/20' : 'bg-destructive/10 hover:bg-destructive/20'}`}
             >
               <div className="flex items-center gap-2">
                 <StatusIcon passed={attempt.verdict} size={14} />
                 <span className="text-xs font-medium text-foreground">
-                  {t('attempt_prefix', 'Попытка №')}{attempt.id.split('-').pop()}
+                  {t('attempt_prefix', 'Попытка №')}{(attempt.attempt_id || attempt.id)?.split('-').pop()}
                 </span>
               </div>
               <div className="flex items-center gap-4 text-2xs text-muted-foreground font-mono w-32 justify-end">
-                <span>{formatDate(attempt.date)}</span>
-                <span className="w-12 text-right">{attempt.durationMs} ms</span>
+                <span>{formatDate(getAttemptDate(attempt))}</span>
+                <span className="w-12 text-right">{getAttemptDuration(attempt)} ms</span>
               </div>
             </button>
           ))}

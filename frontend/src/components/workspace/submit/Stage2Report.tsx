@@ -1,39 +1,59 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { CollapsibleSection } from '../../ui/CollapsibleSection';
-import { StatusIcon } from '../../ui/StatusIcon';
-import { InfoTooltip } from '../../ui/InfoTooltip';
+import { Check, X, AlertTriangle } from 'lucide-react';
 
 export const Stage2Report: React.FC<{ report: any }> = ({ report }) => {
   const { t } = useTranslation('submit_report');
 
-  if (!report) return null;
+  if (!report || !report.rules || report.rules.length === 0) return null;
 
   return (
-    <CollapsibleSection 
-      title={t('stage2_rules_title', 'Дополнительные тесты')}
-      infoText="Автоматические тесты структуры вашего запроса."
-    >
-      <div className="flex flex-col gap-1.5">
+    <div className="flex flex-col gap-2 mt-4">
+      <p className="text-xs font-medium text-muted-foreground tracking-wider uppercase m-0 mb-1">
+        {t('stage2_rules_title', 'Вторичные тесты')}
+      </p>
+      
+      <div className="flex flex-col gap-2">
         {report.rules.map((r: any) => {
           const isWarning = !r.passed && r.severity === 'warning';
+          
+          let Icon = Check;
+          let iconColor = "text-success";
+          
+          if (!r.passed) {
+            if (isWarning) {
+              Icon = AlertTriangle;
+              iconColor = "text-warning-text";
+            } else {
+              Icon = X;
+              iconColor = "text-destructive";
+            }
+          }
+
           return (
-            <div key={r.rule_id} className={`flex items-center gap-2 py-1.5 px-2.5 rounded-md border transition-colors ${!r.passed ? (isWarning ? 'bg-warning/5 border-warning/20 hover:border-warning/40' : 'bg-destructive/5 border-destructive/20 hover:border-destructive/40') : 'bg-success/5 border-success/20 hover:border-success/40'}`}>
-              <StatusIcon passed={r.passed} warning={isWarning} size={14} />
-              <span className={`text-xs font-mono ${r.passed ? 'text-foreground' : isWarning ? 'text-warning-text' : 'text-destructive'}`}>
-                {r.message}
-              </span>
-              {!r.passed && (
-                <span className="text-2xs text-muted-foreground ml-2 opacity-80 max-w-[50%] truncate font-mono" title={r.detail_msg}>
-                  — {r.detail_msg}
-                </span>
-              )}
-              <InfoTooltip text="Lorem ipsum dolor sit amet, consectetur adipiscing elit." className="ml-1" />
-              <span className="ml-auto text-2xs text-muted-foreground font-mono">1 ms</span>
+            <div key={r.rule_id} className="bg-card rounded-xl border border-glass-border p-3.5 sm:px-5">
+              <div className="flex items-start gap-2.5">
+                <Icon size={18} className={`${iconColor} mt-[1px] shrink-0`} />
+                <div>
+                  <p className="text-sm m-0 text-foreground">{r.message}</p>
+                  
+                  {r.detail_msg && (
+                    <p className="text-xs text-muted-foreground m-0 mt-1">
+                      {t('found_lbl', 'Найдено:')} {r.detail_msg}
+                    </p>
+                  )}
+                  
+                  {!r.passed && r.hint && (
+                    <p className={`text-xs m-0 mt-1.5 ${isWarning ? 'text-warning-text' : 'text-destructive'}`}>
+                      {r.hint}
+                    </p>
+                  )}
+                </div>
+              </div>
             </div>
           );
         })}
       </div>
-    </CollapsibleSection>
+    </div>
   );
 };

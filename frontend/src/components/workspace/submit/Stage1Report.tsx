@@ -1,55 +1,125 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { AlertTriangle } from 'lucide-react';
-import { CollapsibleSection } from '../../ui/CollapsibleSection';
-import { InfoTooltip } from '../../ui/InfoTooltip';
-import { DataGrid } from './DataGrid';
+import { ListOrdered, Fingerprint, ArrowRightLeft, Check, X } from 'lucide-react';
+import { ReportBlockCard } from './ReportBlockCard';
 
 export const Stage1Report: React.FC<{ report: any }> = ({ report }) => {
   const { t } = useTranslation('submit_report');
 
   if (!report) return null;
 
-  return (
-    <CollapsibleSection 
-      title={t('stage1_title', 'Первичные тесты')}
-      infoText={t('stage1_info', 'Сравнение результатов вашего запроса с эталонным решением.')}
-    >
-      {/* Summary block with subtle tint */}
-      <div className={`flex items-center gap-4 text-xs mb-4 p-2.5 rounded-md border w-fit ${
-        report.user_row_count === report.ref_row_count 
-          ? 'bg-success/10 border-success/20' 
-          : 'bg-destructive/10 border-destructive/20'
-      }`}>
-        <div className="flex items-center gap-2">
-          <span className="text-muted-foreground">{t('rows_found', 'Найдено строк:')}</span>
-          <span className="font-mono font-medium">{report.user_row_count}</span>
-        </div>
-        <div className="w-px h-4 bg-glass-border"></div>
-        <div className="flex items-center gap-2">
-          <span className="text-muted-foreground">{t('rows_expected', 'Ожидалось:')}</span>
-          <span className="font-mono font-medium">{report.ref_row_count}</span>
-        </div>
-        <InfoTooltip text={t('rows_ratio_hint', 'Сравнение количества строк: если у вас их меньше, значит запрос отфильтровал нужные данные. Если больше — вывел лишние.')} className="" />
-        <div className="w-px h-4 bg-glass-border"></div>
-        <div className="flex items-center gap-1.5 text-warning-text font-medium">
-          <AlertTriangle size={13} />
-          <span className="leading-none translate-y-[1px]">{t('order_matters', 'Порядок важен')}</span>
-          <InfoTooltip text={t('order_matters_hint', 'В этой задаче требуется отсортировать результат. Позиции строк будут проверяться.')} className="" />
-        </div>
-      </div>
+  const isRowsMatch = report.user_row_count === report.ref_row_count;
+  const isHashMatch = report.hash_match;
+  const hasDiff = report.extra_rows?.total > 0 || report.missing_rows?.total > 0;
 
-      <DataGrid 
-        sample={report.extra_rows} 
-        title={t('extra_rows_title', 'Лишние строки')}
-        info={t('extra_rows_hint', 'Эти строки есть в вашем ответе, но их нет в правильном решении автора.')}
-      />
+  // Helper to format rows as comma separated
+  const formatRows = (rows: any[], max = 5) => {
+    if (!rows || rows.length === 0) return [];
+    return rows.slice(0, max).map(row => 
+      Object.values(row).map(val => String(val)).join(', ')
+    );
+  };
+
+  const extraFormatted = formatRows(report.extra_rows?.rows || []);
+  const missingFormatted = formatRows(report.missing_rows?.rows || []);
+
+  return (
+    <div className="flex flex-col gap-3 mt-4">
+      <p className="text-xs font-medium text-muted-foreground tracking-wider uppercase m-0 mb-1">
+        {t('stage1_title', 'Первичные тесты')}
+      </p>
       
-      <DataGrid 
-        sample={report.missing_rows} 
-        title={t('missing_rows_title', 'Недостающие строки')}
-        info={t('missing_rows_hint', 'Эти строки должны быть в результате, но ваш запрос их не вывел.')}
-      />
-    </CollapsibleSection>
+      {/* --- Количество строк --- */}
+      <ReportBlockCard
+        icon={<ListOrdered size={16} />}
+        iconBgClass={isRowsMatch ? "bg-success/10" : "bg-destructive/10"}
+        iconColorClass={isRowsMatch ? "text-success" : "text-destructive"}
+        title={t('rows_compare_title', 'Количество строк')}
+        tooltipText={t('rows_compare_info', 'Сравнивается количество строк, которое вернул запрос, с количеством строк в эталонном ответе.')}
+        statusIcon={isRowsMatch ? <Check size={18} className="text-success" /> : <X size={18} className="text-destructive" />}
+      >
+        <div className="grid grid-cols-2 gap-3">
+          <div className="bg-black/5 dark:bg-white/5 rounded-md p-4">
+            <p className="text-[13px] text-muted-foreground m-0 mb-1">{t('err_colcount_actual', 'Получено')}</p>
+            <p className="text-2xl font-medium m-0 text-foreground">{report.user_row_count}</p>
+          </div>
+          <div className="bg-black/5 dark:bg-white/5 rounded-md p-4">
+            <p className="text-[13px] text-muted-foreground m-0 mb-1">{t('err_colcount_expected', 'Ожидалось')}</p>
+            <p className="text-2xl font-medium m-0 text-foreground">{report.ref_row_count}</p>
+          </div>
+        </div>
+      </ReportBlockCard>
+
+      {/* --- Контрольная сумма --- */}
+      <ReportBlockCard
+        icon={<Fingerprint size={16} />}
+        iconBgClass={isHashMatch ? "bg-success/10" : "bg-destructive/10"}
+        iconColorClass={isHashMatch ? "text-success" : "text-destructive"}
+        title={t('hash_compare_title', 'Контрольная сумма')}
+        tooltipText={t('hash_compare_info', 'Хэш — это уникальная цифровая подпись данных. Он вычисляется на основе всех строк результата. Если хэши совпадают, значит данные абсолютно идентичны. Несовпадение означает, что в данных есть отличия (другие значения, лишние или недостающие строки).')}
+        statusIcon={isHashMatch ? <Check size={18} className="text-success" /> : <X size={18} className="text-destructive" />}
+      >
+        <div className="flex flex-col gap-1.5">
+          <div className="bg-black/5 dark:bg-white/5 rounded-md px-3 py-2">
+            <p className="text-xs text-muted-foreground m-0 mb-0.5">{t('err_colcount_actual', 'Получено')}</p>
+            <p className={`font-mono text-xs break-all m-0 ${isHashMatch ? 'text-success' : 'text-destructive'}`}>
+              {report.user_hash || 'N/A'}
+            </p>
+          </div>
+          <div className="bg-black/5 dark:bg-white/5 rounded-md px-3 py-2">
+            <p className="text-xs text-muted-foreground m-0 mb-0.5">{t('err_colcount_expected', 'Ожидалось')}</p>
+            <p className={`font-mono text-xs break-all m-0 ${isHashMatch ? 'text-success' : 'text-destructive'}`}>
+              {report.ref_hash || 'N/A'}
+            </p>
+          </div>
+        </div>
+      </ReportBlockCard>
+
+      {/* --- Сравнение содержимого (Diff) --- */}
+      {hasDiff && (
+        <ReportBlockCard
+          icon={<ArrowRightLeft size={16} />}
+          iconBgClass="bg-destructive/10"
+          iconColorClass="text-destructive"
+          title={t('diff_compare_title', 'Сравнение содержимого')}
+          tooltipText={t('tooltip_diff')}
+          statusIcon={<X size={18} className="text-destructive" />}
+        >
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <p className="text-xs text-muted-foreground m-0 mb-1.5">
+                {t('extra_rows_count', { count: report.extra_rows?.total || 0 })}
+              </p>
+              <div className="flex flex-col gap-1">
+                {extraFormatted.map((row, i) => (
+                  <div key={i} className="bg-black/5 dark:bg-white/5 rounded-md px-2.5 py-1.5 font-mono text-xs text-foreground break-all">
+                    {row}
+                  </div>
+                ))}
+                {extraFormatted.length === 0 && (
+                  <div className="bg-black/5 dark:bg-white/5 rounded-md px-2.5 py-1.5 font-mono text-xs text-muted-foreground">-</div>
+                )}
+              </div>
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground m-0 mb-1.5">
+                {t('missing_rows_count', { count: report.missing_rows?.total || 0 })}
+              </p>
+              <div className="flex flex-col gap-1">
+                {missingFormatted.map((row, i) => (
+                  <div key={i} className="bg-black/5 dark:bg-white/5 rounded-md px-2.5 py-1.5 font-mono text-xs text-foreground break-all">
+                    {row}
+                  </div>
+                ))}
+                {missingFormatted.length === 0 && (
+                  <div className="bg-black/5 dark:bg-white/5 rounded-md px-2.5 py-1.5 font-mono text-xs text-muted-foreground">-</div>
+                )}
+              </div>
+            </div>
+          </div>
+        </ReportBlockCard>
+      )}
+
+    </div>
   );
 };

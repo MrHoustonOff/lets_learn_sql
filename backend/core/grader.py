@@ -16,6 +16,7 @@ from dataclasses import dataclass, field
 from typing import Any
 
 import asyncpg
+import asyncpg.exceptions
 
 from core.config import settings
 from core.sql_checker import parse_sql, check_rule
@@ -279,6 +280,74 @@ async def _check_order(conn: asyncpg.Connection, user_sql: str, ref_sql: str) ->
     return diff == 0
 
 
+async def _run_preflight(conn: asyncpg.Connection, user_sql: str, ref_sql: str) -> str | None:
+    """
+    Stage 0: Preflight checks.
+    Catches syntax errors, timeouts, and metadata mismatches (column count/types)
+    before running the expensive and strict EXCEPT ALL operations.
+    Returns an error string if preflight fails, else None.
+    """
+    import asyncpg.exceptions
+
+    u_query = f"SELECT * FROM ({_wrap_subquery(user_sql)}) _validate LIMIT 0"
+    r_query = f"SELECT * FROM ({_wrap_subquery(ref_sql)}) _validate LIMIT 0"
+
+    # 1. User query syntax/runtime/timeout
+    sp = conn.transaction()
+    await sp.start()
+    try:
+        stmt_user = await conn.prepare(u_query)
+        user_cols = stmt_user.get_attributes()
+    except asyncpg.exceptions.QueryCanceledError:
+        await sp.rollback()
+        return "PREFLIGHT:TIMEOUT"
+    except asyncpg.PostgresError as e:
+        await sp.rollback()
+        return f"PREFLIGHT:SYNTAX|{e}"
+    except Exception as e:
+        await sp.rollback()
+        return f"PREFLIGHT:RUNTIME|{e}"
+    await sp.rollback()
+
+    # 2. Reference query syntax (Bug in task!)
+    sp = conn.transaction()
+    await sp.start()
+    try:
+        stmt_ref = await conn.prepare(r_query)
+        ref_cols = stmt_ref.get_attributes()
+    except Exception as e:
+        await sp.rollback()
+        return f"PREFLIGHT:PLATFORM|{e}"
+    await sp.rollback()
+
+    # 3. Compare column counts
+    if len(user_cols) != len(ref_cols):
+        return f"PREFLIGHT:COL_COUNT|{len(user_cols)}|{len(ref_cols)}"
+
+    # 4. Compare column types positionally
+    types_mismatch = False
+    col_info = []
+    for i in range(len(user_cols)):
+        u_type = user_cols[i].type.name
+        r_type = ref_cols[i].type.name
+        match = (u_type == r_type)
+        if not match:
+            types_mismatch = True
+        col_info.append({
+            "pos": i + 1,
+            "name": user_cols[i].name,
+            "u_type": u_type,
+            "r_type": r_type,
+            "match": match
+        })
+    
+    if types_mismatch:
+        import json
+        return f"PREFLIGHT:COL_TYPES|{json.dumps(col_info)}"
+
+    return None
+
+
 async def run_stage1(
     conn: asyncpg.Connection,
     user_sql: str,
@@ -291,17 +360,16 @@ async def run_stage1(
     cascading failures.
     """
 
-    # --- Validate user SQL first with a simple fetch ---
-    try:
-        await _fetch_readonly(conn, f"SELECT * FROM ({_wrap_subquery(user_sql)}) _validate LIMIT 0")
-    except asyncpg.PostgresError as e:
+    # --- Preflight (Stage 0) ---
+    preflight_error = await _run_preflight(conn, user_sql, ref_sql)
+    if preflight_error:
         return Stage1Report(
             passed=False,
             user_row_count=0, ref_row_count=0,
             user_hash=None, ref_hash=None, hash_match=None,
             except_ran=False, extra_rows=None, missing_rows=None,
             order_matters=order_matters, order_passed=None,
-            sql_error=str(e),
+            sql_error=preflight_error,
         )
 
     # --- Count rows for both ---
@@ -523,12 +591,26 @@ async def grade_submission(
             and (stage1.order_passed is not False)
         )
 
+    except asyncpg.exceptions.QueryCanceledError:
+        err_msg = "PREFLIGHT:TIMEOUT"
+        dummy_s1 = Stage1Report(
+            passed=False, user_row_count=0, ref_row_count=0,
+            user_hash=None, ref_hash=None, hash_match=None,
+            except_ran=False, extra_rows=None, missing_rows=None,
+            order_matters=order_matters, order_passed=None, sql_error=err_msg,
+        )
+        return GradeReport(
+            verdict=False, stage1=dummy_s1,
+            stage2=Stage2Report(ran=False, rules=[], all_blocking_passed=False),
+            duration_ms=round((time.monotonic() - start) * 1000, 2),
+            error=err_msg,
+        )
     except Exception as e:
         dummy_s1 = Stage1Report(
             passed=False, user_row_count=0, ref_row_count=0,
             user_hash=None, ref_hash=None, hash_match=None,
             except_ran=False, extra_rows=None, missing_rows=None,
-            order_matters=order_matters, order_passed=None, sql_error=str(e),
+            order_matters=order_matters, order_passed=None, sql_error=f"Ошибка выполнения запроса: {e}",
         )
         return GradeReport(
             verdict=False, stage1=dummy_s1,

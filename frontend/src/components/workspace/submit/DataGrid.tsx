@@ -6,7 +6,7 @@ import { InfoTooltip } from '../../ui/InfoTooltip';
 
 export const DataGrid: React.FC<{ sample: RowSample | { total: number, rows: string[][] }; title: string; info: string }> = ({ sample, title, info }) => {
   const { t } = useTranslation('submit_report');
-  if (!sample.rows || sample.rows.length === 0) return null;
+  if (!sample || !sample.rows || sample.rows.length === 0) return null;
   return (
     <div className="rounded-md border border-glass-border overflow-hidden mt-3 bg-black/5 dark:bg-white/5 shadow-inner">
       <div className="px-3 py-1.5 text-xs font-semibold bg-black/10 dark:bg-white/10 flex items-center justify-between border-b border-glass-border">

@@ -29,7 +29,7 @@ export const AttemptModal: React.FC<{
     <ModalBase 
       isOpen={!!attempt} 
       onClose={onClose}
-      title={`Попытка ${attempt?.id.split('-').pop()}`}
+      title={`Попытка ${attempt?.id?.split('-').pop() || attempt?.attempt_id}`}
     >
       <div className="flex h-full bg-background flex-1 overflow-hidden">
         {/* Left: Code */}
@@ -52,7 +52,7 @@ export const AttemptModal: React.FC<{
 
           <div className="h-10 border-t border-glass-border flex items-center justify-between px-4 shrink-0 bg-hover">
             <div className="text-xs font-mono text-muted-foreground">
-              {t('run_at', 'Запущено:')} {attempt && formatDate(attempt.date)}
+              {t('run_at', 'Запущено:')} {attempt && formatDate(attempt.date || new Date(attempt.created_at))}
             </div>
             <button 
               onClick={() => setDeleteConfirm(true)}
