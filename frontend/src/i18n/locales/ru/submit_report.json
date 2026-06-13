@@ -42,6 +42,7 @@
   "page_back": "Назад",
   "page_forward": "Вперед",
   "page_info": "Стр. {{current}}/{{total}}",
+  "sql_query_lbl": "SQL Запрос",
   "attempt_prefix": "Попытка №",
   "sort_status": "Статус",
   "sort_date": "Дата",

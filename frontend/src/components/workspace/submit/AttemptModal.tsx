@@ -35,7 +35,7 @@ export const AttemptModal: React.FC<{
         <div className="w-7/12 border-r border-glass-border flex flex-col bg-background">
           {/* Header inside the dark area for the code */}
           <div className="h-10 border-b border-glass-border flex items-center justify-between px-4 shrink-0 bg-hover">
-            <div className="text-xs font-mono text-muted-foreground">SQL Запрос</div>
+            <div className="text-xs font-mono text-muted-foreground">{t('sql_query_lbl', 'SQL Запрос')}</div>
             <button
               title={copiedCode ? t('copied', 'Скопировано') : t('copy', 'Копировать')}
               onClick={() => handleCopy(attempt?.sql || '')}

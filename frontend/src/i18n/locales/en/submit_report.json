@@ -42,6 +42,7 @@
   "page_back": "Back",
   "page_forward": "Forward",
   "page_info": "Page {{current}}/{{total}}",
+  "sql_query_lbl": "SQL Query",
   "attempt_prefix": "Attempt #",
   "sort_status": "Status",
   "sort_date": "Date",
