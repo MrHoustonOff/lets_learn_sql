@@ -133,8 +133,8 @@ export const SqlErrorBanner: React.FC<{ error: string; duration?: number }> = ({
                   return (
                     <div key={col.pos} className="grid grid-cols-[28px_minmax(0,1fr)_minmax(0,1fr)_20px] items-center gap-2.5 px-2.5 py-2 bg-black/5 dark:bg-white/5 rounded-md">
                       <span className="text-xs text-muted-foreground">#{col.pos}</span>
-                      <span className="text-[13px] text-foreground/70 truncate">{col.actual}</span>
-                      <span className="text-[13px] text-foreground/70 truncate">{col.expected}</span>
+                      <span className="text-[13px] text-foreground/70 truncate">{col.u_type}</span>
+                      <span className="text-[13px] text-foreground/70 truncate">{col.r_type}</span>
                       <Check size={16} className="text-success justify-self-end" />
                     </div>
                   );
@@ -142,8 +142,8 @@ export const SqlErrorBanner: React.FC<{ error: string; duration?: number }> = ({
                   return (
                     <div key={col.pos} className="grid grid-cols-[28px_minmax(0,1fr)_minmax(0,1fr)_20px] items-center gap-2.5 px-2.5 py-2 bg-destructive/10 border border-destructive/20 rounded-md">
                       <span className="text-xs font-medium text-destructive/70">#{col.pos}</span>
-                      <span className="text-[13px] font-medium text-destructive truncate">{col.actual}</span>
-                      <span className="text-[13px] font-medium text-success truncate">{col.expected}</span>
+                      <span className="text-[13px] font-medium text-destructive truncate">{col.u_type}</span>
+                      <span className="text-[13px] font-medium text-success truncate">{col.r_type}</span>
                       <X size={16} className="text-destructive justify-self-end" />
                     </div>
                   );
