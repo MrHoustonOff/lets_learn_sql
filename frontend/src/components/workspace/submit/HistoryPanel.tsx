@@ -4,6 +4,7 @@ import { ArrowUpDown, ArrowUp, ArrowDown, ChevronLeft, ChevronRight } from 'luci
 import { CollapsibleSection } from '../../ui/CollapsibleSection';
 import { StatusIcon } from '../../ui/StatusIcon';
 import { ConfirmModal } from '../../ui/ConfirmModal';
+import { formatDateTime } from '../../../lib/utils';
 
 type SortField = 'date' | 'verdict' | 'duration';
 type SortOrder = 'asc' | 'desc';
@@ -58,13 +59,6 @@ export const HistoryPanel: React.FC<{
 
   const currentHistory = sortedHistory.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
-  const formatDate = (d: Date) => {
-    if (isNaN(d.getTime())) return '';
-    return new Intl.DateTimeFormat('ru-RU', {
-      day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit'
-    }).format(d);
-  };
-
   const SortIcon = ({ field }: { field: SortField }) => {
     if (sortField !== field) return <ArrowUpDown size={12} className="opacity-40" />;
     return sortOrder === 'asc' ? <ArrowUp size={12} /> : <ArrowDown size={12} />;
@@ -108,7 +102,7 @@ export const HistoryPanel: React.FC<{
                 </span>
               </div>
               <div className="flex items-center gap-4 text-2xs text-muted-foreground font-mono w-32 justify-end">
-                <span>{formatDate(getAttemptDate(attempt))}</span>
+                <span>{formatDateTime(getAttemptDate(attempt))}</span>
                 <span className="w-12 text-right">{getAttemptDuration(attempt)} ms</span>
               </div>
             </button>

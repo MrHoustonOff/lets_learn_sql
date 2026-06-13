@@ -4,6 +4,7 @@ import { ShieldCheck, ShieldX, Copy, Check, Trash2 } from 'lucide-react';
 import { ModalBase } from '../../ui/ModalBase';
 import { ConfirmModal } from '../../ui/ConfirmModal';
 import { SqlCodeViewer } from '../../ui/SqlCodeViewer';
+import { formatDateTime } from '../../../lib/utils';
 
 export const AttemptModal: React.FC<{
   attempt: any | null;
@@ -12,12 +13,6 @@ export const AttemptModal: React.FC<{
   const { t } = useTranslation('submit_report');
   const [copiedCode, setCopiedCode] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState(false);
-
-  const formatDate = (d: Date) => {
-    return new Intl.DateTimeFormat('ru-RU', {
-      day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit'
-    }).format(d);
-  };
 
   const handleCopy = (code: string) => {
     navigator.clipboard.writeText(code);
@@ -52,7 +47,7 @@ export const AttemptModal: React.FC<{
 
           <div className="h-10 border-t border-glass-border flex items-center justify-between px-4 shrink-0 bg-hover">
             <div className="text-xs font-mono text-muted-foreground">
-              {t('run_at', 'Запущено:')} {attempt && formatDate(attempt.date || new Date(attempt.created_at))}
+              {t('run_at', 'Запущено:')} {attempt && formatDateTime(attempt.date || attempt.created_at)}
             </div>
             <button 
               onClick={() => setDeleteConfirm(true)}
