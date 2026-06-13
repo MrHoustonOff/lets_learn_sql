@@ -30,6 +30,7 @@ export interface Stage1Report {
   missing_rows: RowSample | null;
   order_matters: boolean;
   order_passed: boolean | null;
+  sql_error: string | null;
 }
 
 export interface RuleResult {

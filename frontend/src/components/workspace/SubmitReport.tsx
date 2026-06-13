@@ -185,6 +185,14 @@ export const SubmitReport: React.FC<SubmitReportProps> = ({
 
         <div className="rounded-xl border border-glass-border bg-glass/30 px-4 py-3 flex flex-col gap-2">
 
+          {/* SQL error — shown when user query failed to execute */}
+          {stage1.sql_error && (
+            <div className="rounded-lg border border-destructive/30 bg-destructive/5 px-3 py-2">
+              <p className="text-2xs font-medium text-destructive mb-1">Ошибка SQL:</p>
+              <p className="text-2xs font-mono text-destructive/80 break-all">{stage1.sql_error}</p>
+            </div>
+          )}
+
           {/* Row counts */}
           <div className="flex items-center gap-4 text-tiny">
             <span className="text-muted-foreground">{t('stage1_rows_user')}:</span>

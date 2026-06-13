@@ -10,7 +10,6 @@ Algorithm:
   Verdict: passed iff Stage 1 passed AND all blocking rules in Stage 2 passed.
 """
 from __future__ import annotations
-import hashlib
 import json
 import time
 from dataclasses import dataclass, field
@@ -28,8 +27,8 @@ from core.sql_checker import parse_sql, check_rule
 
 @dataclass
 class RowSample:
-    rows: list[list]          # up to 5 rows for the UI
-    total: int                 # real count without limit
+    rows: list[list]   # up to 5 rows for the UI
+    total: int         # real count without limit
 
 
 @dataclass
@@ -39,12 +38,13 @@ class Stage1Report:
     ref_row_count: int
     user_hash: str | None
     ref_hash: str | None
-    hash_match: bool | None       # None = not computed (small result)
+    hash_match: bool | None       # None = not computed
     except_ran: bool
     extra_rows: RowSample | None  # rows user has, ref doesn't
     missing_rows: RowSample | None  # rows ref has, user doesn't
     order_matters: bool
     order_passed: bool | None     # None = not checked
+    sql_error: str | None = None  # error message if user SQL failed
 
 
 @dataclass
@@ -63,21 +63,20 @@ class RuleResult:
 
 @dataclass
 class Stage2Report:
-    ran: bool                     # False if Stage 1 failed
+    ran: bool
     rules: list[RuleResult]
     all_blocking_passed: bool
 
 
 @dataclass
 class GradeReport:
-    verdict: bool                 # True = зачтено
+    verdict: bool
     stage1: Stage1Report
     stage2: Stage2Report
     duration_ms: float
-    error: str | None = None      # top-level error (e.g. syntax)
+    error: str | None = None
 
     def to_dict(self) -> dict:
-        """Serialize to JSON-safe dict for API response and attempt storage."""
         def _sample(s: RowSample | None) -> dict | None:
             if s is None:
                 return None
@@ -115,6 +114,7 @@ class GradeReport:
                 "missing_rows": _sample(s1.missing_rows),
                 "order_matters": s1.order_matters,
                 "order_passed": s1.order_passed,
+                "sql_error": s1.sql_error,
             },
             "stage2": {
                 "ran": s2.ran,
@@ -125,7 +125,7 @@ class GradeReport:
 
 
 # ---------------------------------------------------------------------------
-# Postgres connection helper (supports any db by name)
+# Helpers
 # ---------------------------------------------------------------------------
 
 async def _get_conn(db_name: str) -> asyncpg.Connection:
@@ -137,29 +137,6 @@ async def _get_conn(db_name: str) -> asyncpg.Connection:
         database=db_name,
         timeout=5.0,
     )
-
-
-# ---------------------------------------------------------------------------
-# Stage 1: result comparison
-# ---------------------------------------------------------------------------
-
-# Threshold below which we skip the hash step and go straight to EXCEPT ALL
-_HASH_SKIP_THRESHOLD = 2000
-
-
-async def _run_readonly(conn: asyncpg.Connection, sql: str, params=None) -> list[asyncpg.Record]:
-    """Execute SQL inside a transaction that is always rolled back."""
-    class _Rollback(Exception):
-        pass
-
-    result = []
-    try:
-        async with conn.transaction():
-            result = await conn.fetch(sql) if not params else await conn.fetch(sql, *params)
-            raise _Rollback()
-    except _Rollback:
-        pass
-    return result
 
 
 def _records_to_rows(records: list[asyncpg.Record], limit: int | None = None) -> list[list]:
@@ -175,62 +152,107 @@ def _records_to_rows(records: list[asyncpg.Record], limit: int | None = None) ->
     return out
 
 
-async def _count_and_hash(conn: asyncpg.Connection, user_sql: str, ref_sql: str) -> tuple[int, int, str, str]:
-    """Compute row counts and md5 hashes for both queries via a single CTE."""
-    # We use string_agg with a stable ORDER BY across all columns cast to text.
-    hash_sql = f"""
-        WITH
-          _u AS ({user_sql}),
-          _r AS ({ref_sql}),
-          _uc AS (SELECT count(*) AS n FROM _u),
-          _rc AS (SELECT count(*) AS n FROM _r),
-          _uh AS (
-            SELECT md5(string_agg(_row::text, ',' ORDER BY _row::text)) AS h
-            FROM (SELECT row(_u.*) AS _row FROM _u) _
-          ),
-          _rh AS (
-            SELECT md5(string_agg(_row::text, ',' ORDER BY _row::text)) AS h
-            FROM (SELECT row(_r.*) AS _row FROM _r) _
-          )
-        SELECT _uc.n AS u_count, _rc.n AS r_count, _uh.h AS u_hash, _rh.h AS r_hash
-        FROM _uc, _rc, _uh, _rh
+def _wrap_subquery(sql: str) -> str:
     """
-    row = await conn.fetchrow(hash_sql)
-    return (
-        int(row["u_count"]),
-        int(row["r_count"]),
-        row["u_hash"] or "",
-        row["r_hash"] or "",
-    )
+    Wrap a SQL statement in a subquery to neutralize ORDER BY / LIMIT at top level.
+    PostgreSQL requires this before EXCEPT ALL — top-level ORDER BY is not allowed inside CTE.
+    """
+    s = sql.strip().rstrip(";")
+    return f"SELECT * FROM ({s}) _wrapped_q"
 
 
-async def _except_all(
+# ---------------------------------------------------------------------------
+# Stage 1: result comparison
+# Each sub-step runs in its own transaction that is always rolled back.
+# We never share a single transaction across steps to avoid
+# InFailedSQLTransactionError cascade when one step fails.
+# ---------------------------------------------------------------------------
+
+async def _fetch_readonly(conn: asyncpg.Connection, sql: str) -> list[asyncpg.Record]:
+    """Run a query in a transaction that is always rolled back."""
+    sp = conn.transaction()
+    await sp.start()
+    try:
+        result = await conn.fetch(sql)
+    except Exception:
+        await sp.rollback()
+        raise
+    await sp.rollback()
+    return result
+
+
+async def _fetchval_readonly(conn: asyncpg.Connection, sql: str):
+    """Run a scalar query in a transaction that is always rolled back."""
+    sp = conn.transaction()
+    await sp.start()
+    try:
+        result = await conn.fetchval(sql)
+    except Exception:
+        await sp.rollback()
+        raise
+    await sp.rollback()
+    return result
+
+
+async def _fetchrow_readonly(conn: asyncpg.Connection, sql: str):
+    sp = conn.transaction()
+    await sp.start()
+    try:
+        result = await conn.fetchrow(sql)
+    except Exception:
+        await sp.rollback()
+        raise
+    await sp.rollback()
+    return result
+
+
+async def _get_row_count(conn: asyncpg.Connection, sql: str) -> int:
+    """Get row count of a query result."""
+    count_sql = f"SELECT count(*) FROM ({_wrap_subquery(sql)}) _cnt"
+    val = await _fetchval_readonly(conn, count_sql)
+    return int(val or 0)
+
+
+async def _compute_hash(conn: asyncpg.Connection, sql: str) -> str:
+    """Compute md5 hash of the sorted string representation of all rows."""
+    hash_sql = f"""
+        SELECT coalesce(
+            md5(string_agg(_t::text, '|' ORDER BY _t::text)),
+            'EMPTY'
+        ) AS h
+        FROM (
+            SELECT row_to_json(q)::text AS _t
+            FROM ({_wrap_subquery(sql)}) q
+        ) _hash_inner
+    """
+    val = await _fetchval_readonly(conn, hash_sql)
+    return str(val or "EMPTY")
+
+
+async def _except_all_counts(
     conn: asyncpg.Connection,
     user_sql: str,
     ref_sql: str,
     sample_limit: int = 50,
 ) -> tuple[RowSample, RowSample]:
     """
-    Compute both EXCEPT ALL directions per spec шаг 2.
-    Returns (extra_rows, missing_rows) as RowSample(rows=up_to_50, total=exact_count).
+    EXCEPT ALL in both directions.
+    Each wrapped to handle ORDER BY / LIMIT at top level.
+    Reference: правила_сравнения (1).md — Шаг 2
     """
-    extra_sql = f"""
-        WITH _u AS ({user_sql}), _r AS ({ref_sql})
-        SELECT * FROM _u EXCEPT ALL SELECT * FROM _r
-    """
-    missing_sql = f"""
-        WITH _u AS ({user_sql}), _r AS ({ref_sql})
-        SELECT * FROM _r EXCEPT ALL SELECT * FROM _u
-    """
-    count_extra_sql = f"SELECT count(*) FROM ({extra_sql}) _"
-    count_missing_sql = f"SELECT count(*) FROM ({missing_sql}) _"
+    u = _wrap_subquery(user_sql)
+    r = _wrap_subquery(ref_sql)
 
-    extra_records = await conn.fetch(f"{extra_sql} LIMIT {sample_limit}")
-    missing_records = await conn.fetch(f"{missing_sql} LIMIT {sample_limit}")
-    extra_total = int((await conn.fetchval(count_extra_sql)) or 0)
-    missing_total = int((await conn.fetchval(count_missing_sql)) or 0)
+    extra_sql   = f"({u}) EXCEPT ALL ({r})"
+    missing_sql = f"({r}) EXCEPT ALL ({u})"
 
-    # UI gets max 5 rows per spec "Требования к выдаче на фронтенд"
+    extra_records   = await _fetch_readonly(conn, f"{extra_sql} LIMIT {sample_limit}")
+    missing_records = await _fetch_readonly(conn, f"{missing_sql} LIMIT {sample_limit}")
+
+    extra_total   = int((await _fetchval_readonly(conn, f"SELECT count(*) FROM ({extra_sql}) _e")) or 0)
+    missing_total = int((await _fetchval_readonly(conn, f"SELECT count(*) FROM ({missing_sql}) _m")) or 0)
+
+    # UI: max 5 rows per spec "Требования к выдаче на фронтенд"
     return (
         RowSample(rows=_records_to_rows(extra_records, limit=5), total=extra_total),
         RowSample(rows=_records_to_rows(missing_records, limit=5), total=missing_total),
@@ -239,28 +261,21 @@ async def _except_all(
 
 async def _check_order(conn: asyncpg.Connection, user_sql: str, ref_sql: str) -> bool:
     """
-    Positional comparison via row_number() — spec п. 2.0.
-    Both CTEs must NOT have an internal ORDER BY (we compare output position).
+    Positional comparison via row_number().
+    Reference: правила_сравнения (1).md — п. 2.0
     """
-    order_sql = f"""
-        WITH
-          _u AS (SELECT *, row_number() OVER () AS _rn FROM ({user_sql}) _u_inner),
-          _r AS (SELECT *, row_number() OVER () AS _rn FROM ({ref_sql}) _r_inner)
-        SELECT count(*) AS mismatches
-        FROM _u
-        FULL OUTER JOIN _r ON _u._rn = _r._rn
-        WHERE _u::text IS DISTINCT FROM _r::text
-    """
-    # Simpler positional check: compare row-by-row using EXCEPT on numbered rows
+    u = _wrap_subquery(user_sql)
+    r = _wrap_subquery(ref_sql)
+
     order_check_sql = f"""
         WITH
-          _u AS (SELECT row_number() OVER () AS _pos, u.* FROM ({user_sql}) u),
-          _r AS (SELECT row_number() OVER () AS _pos, r.* FROM ({ref_sql}) r)
+          _u AS (SELECT row_number() OVER () AS _pos, u.* FROM ({u}) u),
+          _r AS (SELECT row_number() OVER () AS _pos, r.* FROM ({r}) r)
         SELECT count(*) FROM (
             SELECT * FROM _u EXCEPT ALL SELECT * FROM _r
-        ) diff
+        ) _diff
     """
-    diff = int((await conn.fetchval(order_check_sql)) or 0)
+    diff = int((await _fetchval_readonly(conn, order_check_sql)) or 0)
     return diff == 0
 
 
@@ -270,94 +285,129 @@ async def run_stage1(
     ref_sql: str,
     order_matters: bool,
 ) -> Stage1Report:
-    """Full Stage 1 comparison. All queries run inside rolled-back transactions."""
+    """
+    Full Stage 1 comparison.
+    Each sub-step runs in its own rolled-back transaction to avoid
+    cascading failures.
+    """
 
-    class _Rollback(Exception):
-        pass
+    # --- Validate user SQL first with a simple fetch ---
+    try:
+        await _fetch_readonly(conn, f"SELECT * FROM ({_wrap_subquery(user_sql)}) _validate LIMIT 0")
+    except asyncpg.PostgresError as e:
+        return Stage1Report(
+            passed=False,
+            user_row_count=0, ref_row_count=0,
+            user_hash=None, ref_hash=None, hash_match=None,
+            except_ran=False, extra_rows=None, missing_rows=None,
+            order_matters=order_matters, order_passed=None,
+            sql_error=str(e),
+        )
 
-    user_row_count = 0
-    ref_row_count = 0
+    # --- Count rows for both ---
+    try:
+        user_row_count = await _get_row_count(conn, user_sql)
+        ref_row_count  = await _get_row_count(conn, ref_sql)
+    except asyncpg.PostgresError as e:
+        return Stage1Report(
+            passed=False,
+            user_row_count=0, ref_row_count=0,
+            user_hash=None, ref_hash=None, hash_match=None,
+            except_ran=False, extra_rows=None, missing_rows=None,
+            order_matters=order_matters, order_passed=None,
+            sql_error=str(e),
+        )
+
     user_hash = None
     ref_hash = None
     hash_match = None
     except_ran = False
-    extra: RowSample | None = None
-    missing: RowSample | None = None
+    extra = None
+    missing = None
     order_passed = None
     stage1_passed = False
 
-    try:
-        async with conn.transaction():
-            # --- Step 1: count + hash ---
-            try:
-                u_count, r_count, u_hash, r_hash = await _count_and_hash(conn, user_sql, ref_sql)
-            except Exception:
-                # Hash step failed (e.g. column type issue) — fall through to EXCEPT ALL
-                u_count, r_count = 0, 0
-                u_hash, r_hash = None, None
+    # --- Step 1: Fast hash check (spec Шаг 1) ---
+    # Skip hash for empty results — go directly to EXCEPT ALL
+    if user_row_count > 0 or ref_row_count > 0:
+        try:
+            user_hash = await _compute_hash(conn, user_sql)
+            ref_hash  = await _compute_hash(conn, ref_sql)
+            hash_match = (user_hash == ref_hash) and (user_row_count == ref_row_count)
 
-            user_row_count = u_count
-            ref_row_count = r_count
-
-            if u_hash and r_hash:
-                user_hash = u_hash
-                ref_hash = r_hash
-                hash_match = (u_hash == r_hash) and (u_count == r_count)
-
-                if hash_match:
-                    # Fast path: hashes match → data is identical
-                    stage1_passed = True
-                    if order_matters:
-                        order_passed = await _check_order(conn, user_sql, ref_sql)
-                        stage1_passed = order_passed
-                    raise _Rollback()
-
-            # --- Step 2: EXCEPT ALL ---
-            except_ran = True
-            extra, missing = await _except_all(conn, user_sql, ref_sql)
-
-            if extra.total == 0 and missing.total == 0:
+            if hash_match:
+                # Fast path: data identical
                 stage1_passed = True
-                extra = None
-                missing = None
                 if order_matters:
                     order_passed = await _check_order(conn, user_sql, ref_sql)
                     stage1_passed = order_passed
-            else:
-                stage1_passed = False
 
-            raise _Rollback()
+                return Stage1Report(
+                    passed=stage1_passed,
+                    user_row_count=user_row_count, ref_row_count=ref_row_count,
+                    user_hash=user_hash, ref_hash=ref_hash, hash_match=hash_match,
+                    except_ran=False, extra_rows=None, missing_rows=None,
+                    order_matters=order_matters, order_passed=order_passed,
+                )
 
-    except _Rollback:
-        pass
+            # Counts differ → definitely wrong, skip EXCEPT ALL
+            if user_row_count != ref_row_count:
+                return Stage1Report(
+                    passed=False,
+                    user_row_count=user_row_count, ref_row_count=ref_row_count,
+                    user_hash=user_hash, ref_hash=ref_hash, hash_match=False,
+                    except_ran=False, extra_rows=None, missing_rows=None,
+                    order_matters=order_matters, order_passed=None,
+                )
+
+        except Exception:
+            # Hash step failed — fall through to EXCEPT ALL
+            user_hash = ref_hash = None
+            hash_match = None
+    else:
+        # Both returned 0 rows → match immediately
+        stage1_passed = True
+        return Stage1Report(
+            passed=True,
+            user_row_count=0, ref_row_count=0,
+            user_hash=None, ref_hash=None, hash_match=None,
+            except_ran=False, extra_rows=None, missing_rows=None,
+            order_matters=order_matters, order_passed=None,
+        )
+
+    # --- Step 2: EXCEPT ALL (spec Шаг 2) ---
+    except_ran = True
+    try:
+        extra, missing = await _except_all_counts(conn, user_sql, ref_sql)
     except asyncpg.PostgresError as e:
-        # SQL error from user query — not a verdict failure but report the error
         return Stage1Report(
             passed=False,
-            user_row_count=0,
-            ref_row_count=0,
-            user_hash=None,
-            ref_hash=None,
-            hash_match=None,
-            except_ran=False,
-            extra_rows=None,
-            missing_rows=None,
-            order_matters=order_matters,
-            order_passed=None,
+            user_row_count=user_row_count, ref_row_count=ref_row_count,
+            user_hash=user_hash, ref_hash=ref_hash, hash_match=hash_match,
+            except_ran=True, extra_rows=None, missing_rows=None,
+            order_matters=order_matters, order_passed=None,
+            sql_error=f"EXCEPT ALL error: {e}",
         )
+
+    if extra.total == 0 and missing.total == 0:
+        stage1_passed = True
+        extra = None
+        missing = None
+        if order_matters:
+            try:
+                order_passed = await _check_order(conn, user_sql, ref_sql)
+                stage1_passed = order_passed
+            except Exception:
+                order_passed = None
+    else:
+        stage1_passed = False
 
     return Stage1Report(
         passed=stage1_passed,
-        user_row_count=user_row_count,
-        ref_row_count=ref_row_count,
-        user_hash=user_hash,
-        ref_hash=ref_hash,
-        hash_match=hash_match,
-        except_ran=except_ran,
-        extra_rows=extra,
-        missing_rows=missing,
-        order_matters=order_matters,
-        order_passed=order_passed,
+        user_row_count=user_row_count, ref_row_count=ref_row_count,
+        user_hash=user_hash, ref_hash=ref_hash, hash_match=hash_match,
+        except_ran=except_ran, extra_rows=extra, missing_rows=missing,
+        order_matters=order_matters, order_passed=order_passed,
     )
 
 
@@ -377,42 +427,31 @@ async def run_stage2(
     if not rules:
         return Stage2Report(ran=True, rules=[], all_blocking_passed=True)
 
-    # Parse AST once
     try:
         ast = parse_sql(user_sql)
     except Exception as e:
-        # Unparseable SQL — all rules fail
         results = [
             RuleResult(
-                rule_id=r["id"],
-                category=r["category"],
-                condition=r["condition"],
-                params=_parse_params(r),
-                severity=r["severity"],
-                message=r["message"],
-                sort_order=r.get("sort_order", 0),
-                passed=False,
-                actual_value=None,
-                detail_msg=f"SQL parse error: {e}",
+                rule_id=r["id"], category=r["category"], condition=r["condition"],
+                params=_parse_params(r), severity=r["severity"], message=r["message"],
+                sort_order=r.get("sort_order", 0), passed=False,
+                actual_value=None, detail_msg=f"SQL parse error: {e}",
             )
             for r in rules
         ]
         return Stage2Report(ran=True, rules=results, all_blocking_passed=False)
 
-    # Fetch EXPLAIN plan once (needed for performance rules)
+    # Fetch EXPLAIN plan once for performance rules
     explain_json = None
     has_performance_rule = any(r["category"] == "performance" for r in rules)
     if has_performance_rule:
         try:
-            async with conn.transaction():
-                rows = await conn.fetch(f"EXPLAIN (FORMAT JSON) {user_sql}")
-                if rows:
-                    explain_json = json.loads(rows[0][0])
-                raise _RollbackStage2()
-        except _RollbackStage2:
-            pass
+            explain_sql = f"EXPLAIN (FORMAT JSON) {_wrap_subquery(user_sql)}"
+            rows = await _fetch_readonly(conn, explain_sql)
+            if rows:
+                explain_json = json.loads(rows[0][0])
         except Exception:
-            pass  # explain failed, performance rules will skip gracefully
+            pass
 
     results = []
     for rule in sorted(rules, key=lambda r: r.get("sort_order", 0)):
@@ -422,27 +461,14 @@ async def run_stage2(
             passed, actual_value, detail_msg = False, None, f"Rule check error: {e}"
 
         results.append(RuleResult(
-            rule_id=rule["id"],
-            category=rule["category"],
-            condition=rule["condition"],
-            params=_parse_params(rule),
-            severity=rule["severity"],
-            message=rule["message"],
-            sort_order=rule.get("sort_order", 0),
-            passed=passed,
-            actual_value=actual_value,
-            detail_msg=detail_msg,
+            rule_id=rule["id"], category=rule["category"], condition=rule["condition"],
+            params=_parse_params(rule), severity=rule["severity"], message=rule["message"],
+            sort_order=rule.get("sort_order", 0), passed=passed,
+            actual_value=actual_value, detail_msg=detail_msg,
         ))
 
-    all_blocking_passed = all(
-        r.passed for r in results if r.severity == "blocking"
-    )
-
+    all_blocking_passed = all(r.passed for r in results if r.severity == "blocking")
     return Stage2Report(ran=True, rules=results, all_blocking_passed=all_blocking_passed)
-
-
-class _RollbackStage2(Exception):
-    pass
 
 
 def _parse_params(rule: dict) -> dict:
@@ -468,23 +494,21 @@ async def grade_submission(
 ) -> GradeReport:
     """
     Full grading pipeline: Stage 1 (data comparison) + Stage 2 (rule checks).
-
     Reference: правила_сравнения (1).md — Дорожная карта реализации
     """
     start = time.monotonic()
 
-    # Empty SQL guard
     if not user_sql.strip():
         dummy_s1 = Stage1Report(
             passed=False, user_row_count=0, ref_row_count=0,
             user_hash=None, ref_hash=None, hash_match=None,
             except_ran=False, extra_rows=None, missing_rows=None,
-            order_matters=order_matters, order_passed=None,
+            order_matters=order_matters, order_passed=None, sql_error="Empty SQL",
         )
-        dummy_s2 = Stage2Report(ran=False, rules=[], all_blocking_passed=False)
         return GradeReport(
-            verdict=False, stage1=dummy_s1, stage2=dummy_s2,
-            duration_ms=0, error="Empty SQL"
+            verdict=False, stage1=dummy_s1,
+            stage2=Stage2Report(ran=False, rules=[], all_blocking_passed=False),
+            duration_ms=0, error="Empty SQL",
         )
 
     conn = await _get_conn(db_name)
@@ -492,38 +516,34 @@ async def grade_submission(
         await conn.execute(f"SET statement_timeout = '{settings.QUERY_TIMEOUT_MS}ms'")
 
         # Stage 1
-        try:
-            stage1 = await run_stage1(conn, user_sql, reference_sql, order_matters)
-        except asyncpg.PostgresError as e:
-            dummy_s1 = Stage1Report(
-                passed=False, user_row_count=0, ref_row_count=0,
-                user_hash=None, ref_hash=None, hash_match=None,
-                except_ran=False, extra_rows=None, missing_rows=None,
-                order_matters=order_matters, order_passed=None,
-            )
-            dummy_s2 = Stage2Report(ran=False, rules=[], all_blocking_passed=False)
-            return GradeReport(
-                verdict=False, stage1=dummy_s1, stage2=dummy_s2,
-                duration_ms=round((time.monotonic() - start) * 1000, 2),
-                error=str(e),
-            )
+        stage1 = await run_stage1(conn, user_sql, reference_sql, order_matters)
 
-        # Stage 2 — always runs per spec (even if stage1 failed, rules are still evaluated)
-        # But spec says "Если Этап 1 пройден — дополнительно запускается Этап 2"
-        # So we only run stage 2 if stage 1 passed.
+        # Stage 2: only if Stage 1 passed (per spec)
         if stage1.passed and rules:
             stage2 = await run_stage2(conn, user_sql, rules)
         else:
             stage2 = Stage2Report(ran=stage1.passed, rules=[], all_blocking_passed=True)
 
-        # Verdict formula per spec п. 2.7:
-        # зачтено = (Stage1 passed) AND (all blocking rules passed) AND (order ok if order_matters)
+        # Verdict formula per spec п. 2.7
         verdict = (
             stage1.passed
             and stage2.all_blocking_passed
             and (stage1.order_passed is not False)
         )
 
+    except Exception as e:
+        dummy_s1 = Stage1Report(
+            passed=False, user_row_count=0, ref_row_count=0,
+            user_hash=None, ref_hash=None, hash_match=None,
+            except_ran=False, extra_rows=None, missing_rows=None,
+            order_matters=order_matters, order_passed=None, sql_error=str(e),
+        )
+        return GradeReport(
+            verdict=False, stage1=dummy_s1,
+            stage2=Stage2Report(ran=False, rules=[], all_blocking_passed=False),
+            duration_ms=round((time.monotonic() - start) * 1000, 2),
+            error=str(e),
+        )
     finally:
         await conn.close()
 
