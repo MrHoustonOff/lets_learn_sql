@@ -1,4 +1,6 @@
 import React, { useEffect, useRef } from 'react';
+import { useParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Panel, Group as PanelGroup } from 'react-resizable-panels';
 import type { GroupImperativeHandle } from 'react-resizable-panels';
 import { DBVisualizerPane } from '../components/workspace/DBVisualizerPane';
@@ -6,6 +8,7 @@ import { TaskPane } from '../components/workspace/TaskPane';
 import { SqlEditorPane } from '../components/workspace/SqlEditorPane';
 import { ResultsPane } from '../components/workspace/ResultsPane';
 import { useUIStore, type SlotId } from '../store/uiStore';
+import { useTaskStore } from '../store/taskStore';
 import { DroppableSlot } from '../components/workspace/DroppableSlot';
 import { ResizeHandle } from '../components/workspace/ResizeHandle';
 import { ViewMenu } from '../components/workspace/ViewMenu';
@@ -47,7 +50,20 @@ function useCustomLayout(id: string, defaultLayoutMap: LayoutMap) {
 }
 
 export const TaskScreen: React.FC = () => {
+  const { id } = useParams<{ id: string }>();
+  const { t } = useTranslation();
+  const { activeTask, fetchTask, isLoading, error, setActiveTask } = useTaskStore();
   const { maximizedPane, setMaximizedPane, slots } = useUIStore();
+
+  useEffect(() => {
+    if (id) {
+      fetchTask(id);
+    }
+    return () => {
+      setActiveTask(null);
+    };
+  }, [id, fetchTask, setActiveTask]);
+
 
   const mainGroupRef = useRef<GroupImperativeHandle>(null);
   const leftGroupRef = useRef<GroupImperativeHandle>(null);
@@ -107,6 +123,22 @@ export const TaskScreen: React.FC = () => {
       </DroppableSlot>
     );
   };
+
+  if (isLoading) {
+    return (
+      <div className="h-full flex items-center justify-center">
+        <div className="text-muted-foreground animate-pulse">{t('common:loading') || 'Loading...'}</div>
+      </div>
+    );
+  }
+
+  if (error || !activeTask) {
+    return (
+      <div className="h-full flex items-center justify-center">
+        <div className="text-destructive font-semibold">Error: {error || 'Task not found'}</div>
+      </div>
+    );
+  }
 
   return (
     <div className="h-full w-full flex flex-col px-2 pb-2 pt-0 gap-2">

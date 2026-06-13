@@ -7,6 +7,7 @@ import { Play, Maximize2, Minimize2, Loader2 } from 'lucide-react';
 import { useTheme } from '../../components/theme-provider';
 import { useUIStore, type SlotId } from '../../store/uiStore';
 import { useQueryStore } from '../../store/queryStore';
+import { useTaskStore } from '../../store/taskStore';
 import { useTranslation } from 'react-i18next';
 import { DragHandle } from './DragHandle';
 
@@ -23,6 +24,7 @@ export const SqlEditorPane: React.FC<SqlEditorPaneProps> = ({
 }) => {
   const { t } = useTranslation();
   const { sql: query, setSql: setQuery, executeQuery, isLoading } = useQueryStore();
+  const { activeTask } = useTaskStore();
   const { theme } = useTheme();
   const { 
     maximizedPane, 
@@ -47,13 +49,13 @@ export const SqlEditorPane: React.FC<SqlEditorPaneProps> = ({
         e.preventDefault();
         e.stopPropagation();
         if (!isLoading) {
-          executeQuery();
+          executeQuery(activeTask?.dbName || 'northwind');
         }
       }
     };
     document.addEventListener('keydown', handleGlobalKeyDown);
     return () => document.removeEventListener('keydown', handleGlobalKeyDown);
-  }, [executeQuery, isLoading]);
+  }, [executeQuery, isLoading, activeTask]);
 
   const isMac = typeof window !== 'undefined' && /Mac|iPod|iPhone|iPad/.test(navigator.userAgent);
 
@@ -63,7 +65,7 @@ export const SqlEditorPane: React.FC<SqlEditorPaneProps> = ({
         <span className="text-mini font-semibold text-foreground uppercase tracking-wider opacity-70 truncate mr-2 min-w-0 shrink">{t('sql_editor:title')}</span>
         <div className="flex items-center gap-1.5 shrink min-w-0 ml-auto">
           <button 
-            onClick={() => executeQuery()}
+            onClick={() => executeQuery(activeTask?.dbName || 'northwind')}
             disabled={isLoading}
             className="flex items-center justify-center gap-1.5 text-xs font-semibold bg-success/10 text-success hover:bg-success/20 px-3 py-1.5 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed min-w-0"
           >
@@ -92,7 +94,7 @@ export const SqlEditorPane: React.FC<SqlEditorPaneProps> = ({
             keymap.of([{
               key: 'Mod-Enter',
               run: () => {
-                executeQuery();
+                executeQuery(activeTask?.dbName || 'northwind');
                 return true;
               }
             }]),

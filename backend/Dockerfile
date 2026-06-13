@@ -4,7 +4,11 @@ WORKDIR /app
 
 # Установка зависимостей
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt && \
+    apt-get update && apt-get install -y postgresql-client && \
+    rm -rf /var/lib/apt/lists/*
+
+VOLUME /data
 
 # Копирование кода
 COPY . .

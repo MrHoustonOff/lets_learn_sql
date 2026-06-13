@@ -3,65 +3,72 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Database, Import, Plus } from 'lucide-react';
 
-interface CourseMock {
-  id: string;
+interface CourseListItem {
+  id: number;
   title: string;
+  description: string;
+  sectionsCount: number;
   tasksCount: number;
-  sectionsCount?: number;
-  progress: number;
   dbNames: string[];
-  status: 'not_started' | 'in_progress' | 'completed' | 'no_course';
+  progress: number;
 }
-
-const MOCK_COURSES: CourseMock[] = [
-  {
-    id: 'postgres-basics',
-    title: 'Основы PostgreSQL',
-    tasksCount: 24,
-    sectionsCount: 12,
-    progress: 60,
-    dbNames: ['Northwind DB'],
-    status: 'in_progress'
-  },
-  {
-    id: 'joe-analytics',
-    title: 'Курс Джо по аналитике',
-    tasksCount: 10,
-    sectionsCount: 3,
-    progress: 0,
-    dbNames: ["Joe's Sales DB", "Events DB"],
-    status: 'not_started'
-  },
-  {
-    id: 'standalone-tasks',
-    title: 'Задачи без курса',
-    tasksCount: 7,
-    progress: 0,
-    dbNames: ['Разные БД'],
-    status: 'no_course'
-  }
-];
 
 export const CoursesListPage: React.FC = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const [courses, setCourses] = React.useState<CourseListItem[]>([]);
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState<string | null>(null);
 
-  const getButtonConfig = (status: CourseMock['status']) => {
-    switch (status) {
-      case 'not_started': return { text: t('courses_page:start'), variant: 'primary' };
-      case 'in_progress': return { text: t('courses_page:continue'), variant: 'primary' };
-      case 'completed': return { text: t('courses_page:retry'), variant: 'secondary' };
-      case 'no_course': return { text: t('courses_page:open'), variant: 'secondary' };
+  React.useEffect(() => {
+    fetch('/api/courses')
+      .then(res => {
+        if (!res.ok) throw new Error('Failed to fetch courses');
+        return res.json();
+      })
+      .then(data => {
+        setCourses(data);
+        setLoading(false);
+      })
+      .catch(err => {
+        setError(err.message);
+        setLoading(false);
+      });
+  }, []);
+
+  const getButtonConfig = (progress: number) => {
+    if (progress === 0) {
+      return { text: t('courses_page:start'), variant: 'primary' };
+    } else if (progress === 100) {
+      return { text: t('courses_page:retry'), variant: 'secondary' };
+    } else {
+      return { text: t('courses_page:continue'), variant: 'primary' };
     }
   };
 
+  if (loading) {
+    return (
+      <div className="h-full flex items-center justify-center">
+        <div className="text-muted-foreground animate-pulse">{t('common:loading') || 'Loading...'}</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="h-full flex items-center justify-center">
+        <div className="text-destructive font-semibold">Error: {error}</div>
+      </div>
+    );
+  }
+
   return (
-    <div className="h-full overflow-y-auto p-8 max-w-5xl mx-auto animate-in fade-in duration-300 primary-scrollbar">
+    <div className="flex-1 h-full w-full overflow-y-auto p-8 max-w-5xl mx-auto animate-in fade-in duration-300 primary-scrollbar">
       <h1 className="text-3xl font-bold mb-8">{t('courses')}</h1>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-        {MOCK_COURSES.map(course => {
-          const btn = getButtonConfig(course.status);
+        {courses.map(course => {
+          const btn = getButtonConfig(course.progress);
           
           return (
             <div 
@@ -69,24 +76,25 @@ export const CoursesListPage: React.FC = () => {
               className="bg-glass backdrop-blur-md border border-glass-border rounded-2xl p-6 flex flex-col hover:border-primary/30 transition-colors shadow-sm"
             >
               <div className="flex-1">
-                <h2 className="text-xl font-bold mb-2 cursor-pointer hover:text-primary transition-colors" onClick={() => navigate(`/courses/${course.id}`)}>
+                <h2 
+                  className="text-xl font-bold mb-2 cursor-pointer hover:text-primary transition-colors" 
+                  onClick={() => navigate(`/courses/${course.id}`)}
+                >
                   {course.title}
                 </h2>
                 <div className="text-sm text-muted-foreground mb-4">
-                  {course.tasksCount} {t('courses_page:tasks')} {course.sectionsCount && `· ${course.sectionsCount} ${t('courses_page:sections')}`}
+                  {course.tasksCount} {t('courses_page:tasks')} · {course.sectionsCount} {t('courses_page:sections')}
                 </div>
 
-                {course.status !== 'no_course' && (
-                  <div className="space-y-2 mb-6">
-                    <div className="h-2 w-full bg-secondary rounded-full overflow-hidden">
-                      <div 
-                        className="h-full bg-success transition-all duration-500" 
-                        style={{ width: `${course.progress}%` }} 
-                      />
-                    </div>
-                    <div className="text-xs text-right font-mono text-muted-foreground">{course.progress}%</div>
+                <div className="space-y-2 mb-6">
+                  <div className="h-2 w-full bg-secondary rounded-full overflow-hidden">
+                    <div 
+                      className="h-full bg-success transition-all duration-500" 
+                      style={{ width: `${course.progress}%` }} 
+                    />
                   </div>
-                )}
+                  <div className="text-xs text-right font-mono text-muted-foreground">{course.progress}%</div>
+                </div>
               </div>
 
               <div className="flex items-center justify-between mt-auto pt-4 border-t border-glass-border">
@@ -96,14 +104,7 @@ export const CoursesListPage: React.FC = () => {
                 </div>
                 <button 
                   onClick={() => {
-                    // Logic: jump directly to the first unfinished task if in progress, else open course.
-                    if (course.status === 'in_progress') {
-                      navigate(`/tasks/t4`); // MOCK jump to specific task
-                    } else if (course.status === 'no_course') {
-                       navigate(`/tasks`); // list of tasks?
-                    } else {
-                      navigate(`/courses/${course.id}`);
-                    }
+                    navigate(`/courses/${course.id}`);
                   }}
                   className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
                     btn.variant === 'primary' 

@@ -10,6 +10,9 @@ class Settings(BaseSettings):
     POSTGRES_USER: str = "llpg_user"
     POSTGRES_PASSWORD: str = "llpg_user_password"
 
+    # SQLite
+    SQLITE_DB_PATH: str = "/data/app.db"
+
     # Лимиты
     QUERY_TIMEOUT_MS: int = 5000     # 5 секунд макс на запрос
     QUERY_ROWS_LIMIT: int = 200      # макс строк в ответе

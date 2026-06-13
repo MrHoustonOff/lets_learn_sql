@@ -26,7 +26,7 @@ export const DatabasesListPage: React.FC = () => {
   const [selectedDb, setSelectedDb] = useState<DatabaseMock | null>(null);
 
   return (
-    <div className="h-full overflow-y-auto p-8 max-w-5xl mx-auto animate-in fade-in duration-300 primary-scrollbar">
+    <div className="flex-1 h-full w-full overflow-y-auto p-8 max-w-5xl mx-auto animate-in fade-in duration-300 custom-scrollbar">
       <div className="flex items-center justify-between mb-8">
         <h1 className="text-3xl font-bold">{t('databases')}</h1>
         <button className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl transition-colors font-medium shadow-sm">

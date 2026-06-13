@@ -1,3 +1,4 @@
+import re
 from core.config import settings
 
 FORBIDDEN_COMMANDS = [
@@ -7,6 +8,17 @@ FORBIDDEN_COMMANDS = [
     "pg_read_file", "pg_write_file",
     "copy to", "copy from",        # файловая система
 ]
+
+def validate_db_name(name: str) -> bool:
+    """
+    Проверяет имя базы данных на соответствие требованиям безопасности:
+    - Только строчные латинские буквы, цифры и подчеркивание.
+    - Начинается с буквы.
+    - Длина от 1 до 63 символов (ограничение Postgres).
+    """
+    if not name or len(name) > 63:
+        return False
+    return bool(re.match(r"^[a-z][a-z0-9_]*$", name))
 
 def validate_sql(sql: str) -> tuple[bool, str | None]:
     """

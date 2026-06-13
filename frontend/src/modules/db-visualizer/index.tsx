@@ -22,6 +22,7 @@ import { DragHandle } from '../../components/workspace/DragHandle';
 
 interface DBVisualizerProps {
   schema?: DatabaseSchema;
+  database?: string;
   isMaximized?: boolean;
   onToggleMaximize?: () => void;
   onClose?: () => void;
@@ -36,7 +37,7 @@ const edgeTypes = {
   relationEdge: RelationEdge,
 };
 
-export const DBVisualizer: React.FC<DBVisualizerProps> = ({ schema, isMaximized = true, onToggleMaximize, onClose, slotId }) => {
+export const DBVisualizer: React.FC<DBVisualizerProps> = ({ schema, database = 'northwind', isMaximized = true, onToggleMaximize, onClose, slotId }) => {
   const { t } = useTranslation();
   const [showRelations, setShowRelations] = useState(true);
   const [showMarkers, setShowMarkers] = useState(true);
@@ -53,7 +54,7 @@ export const DBVisualizer: React.FC<DBVisualizerProps> = ({ schema, isMaximized 
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
 
-  const { schema: fetchedSchema, loading, error } = useSchema();
+  const { schema: fetchedSchema, loading, error } = useSchema(database);
   const activeSchema = schema || fetchedSchema;
 
   // Загрузка сохраненного базового расположения

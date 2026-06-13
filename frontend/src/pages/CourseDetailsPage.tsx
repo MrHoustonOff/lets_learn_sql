@@ -1,13 +1,46 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft, CheckCircle2, Circle, Star, ArrowRight, Database } from 'lucide-react';
 import { DBViewerModal } from '../components/workspace/DBViewerModal';
 
+interface TaskDetails {
+  id: number;
+  title: string;
+  status: string;
+  bookmarked: boolean;
+}
+
+interface SectionDetails {
+  id: number;
+  title: string;
+  description?: string;
+  completed: number;
+  total: number;
+  progress: number;
+  tasks: TaskDetails[];
+}
+
+interface CourseDetails {
+  id: number;
+  title: string;
+  description?: string;
+  dbNames: string[];
+  totalTasks: number;
+  totalSections: number;
+  progress: number;
+  completedTasks: number;
+  sections: SectionDetails[];
+}
+
 export const CourseDetailsPage: React.FC = () => {
   const navigate = useNavigate();
+  const { id } = useParams<{ id: string }>();
   const { t } = useTranslation();
   const [selectedDb, setSelectedDb] = useState<string | null>(null);
+  const [courseData, setCourseData] = useState<CourseDetails | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   // Обработка Esc для возврата
   useEffect(() => {
@@ -21,50 +54,42 @@ export const CourseDetailsPage: React.FC = () => {
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [navigate, selectedDb]);
 
-  // Mock data - в будущем будет тянуться по id
-  const courseData = {
-    title: "Основы PostgreSQL",
-    description: "Комплексный курс по основам реляционных баз данных. Вы научитесь писать сложные SQL запросы, работать с джоинами, агрегацией и оконными функциями на живых примерах.",
-    dbNames: ["Northwind DB", "Postgres_Internal"],
-    totalTasks: 24,
-    totalSections: 12,
-    progress: 60,
-    completedTasks: 14,
-    sections: [
-      {
-        id: "sec1",
-        title: "Раздел 1: SELECT",
-        description: "Базовые выборки, фильтрация (WHERE) и сортировка (ORDER BY). Учимся доставать именно те данные, которые нам нужны.",
-        completed: 4,
-        total: 5,
-        progress: 80,
-        tasks: [
-          { id: "t1", title: "Все клиенты", status: 'done', bookmarked: false },
-          { id: "t2", title: "Фильтрация по стране", status: 'done', bookmarked: false },
-          { id: "t3", title: "Сортировка", status: 'done', bookmarked: false },
-          { id: "t4", title: "Псевдонимы колонок", status: 'todo', bookmarked: true },
-          { id: "t5", title: "DISTINCT", status: 'todo', bookmarked: false },
-        ]
-      },
-      {
-        id: "sec2",
-        title: "Раздел 2: JOIN",
-        description: "Объединяем данные из разных таблиц. Разбираем разницу между INNER, LEFT, RIGHT и FULL JOIN.",
-        completed: 2,
-        total: 6,
-        progress: 33,
-        tasks: [
-          { id: "t6", title: "INNER JOIN", status: 'done', bookmarked: false },
-          { id: "t7", title: "LEFT JOIN", status: 'done', bookmarked: true },
-          { id: "t8", title: "Несколько JOIN", status: 'todo', bookmarked: false },
-          { id: "t9", title: "Self JOIN", status: 'todo', bookmarked: false },
-        ]
-      }
-    ]
-  };
+  useEffect(() => {
+    if (!id) return;
+    setLoading(true);
+    fetch(`/api/courses/${id}`)
+      .then(res => {
+        if (!res.ok) throw new Error('Failed to fetch course details');
+        return res.json();
+      })
+      .then(data => {
+        setCourseData(data);
+        setLoading(false);
+      })
+      .catch(err => {
+        setError(err.message);
+        setLoading(false);
+      });
+  }, [id]);
+
+  if (loading) {
+    return (
+      <div className="h-full flex items-center justify-center">
+        <div className="text-muted-foreground animate-pulse">{t('common:loading') || 'Loading...'}</div>
+      </div>
+    );
+  }
+
+  if (error || !courseData) {
+    return (
+      <div className="h-full flex items-center justify-center">
+        <div className="text-destructive font-semibold">Error: {error || 'Course details not found'}</div>
+      </div>
+    );
+  }
 
   return (
-    <div className="h-full overflow-y-auto primary-scrollbar pb-12">
+    <div className="flex-1 h-full w-full overflow-y-auto custom-scrollbar pb-12">
       <div className="p-8 max-w-4xl mx-auto animate-in fade-in duration-300">
         <button 
           onClick={() => navigate('/courses')}

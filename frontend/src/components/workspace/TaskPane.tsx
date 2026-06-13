@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { useTranslation, Trans } from 'react-i18next';
+import { useTranslation } from 'react-i18next';
 import { useUIStore, type SlotId } from '../../store/uiStore';
-import { Maximize2, Minimize2, Check, Bookmark } from 'lucide-react';
+import { useTaskStore } from '../../store/taskStore';
+import { Maximize2, Minimize2, Check, Bookmark, Loader2 } from 'lucide-react';
 import { DragHandle } from './DragHandle';
 
 interface TaskPaneProps {
@@ -12,10 +13,56 @@ interface TaskPaneProps {
 export const TaskPane: React.FC<TaskPaneProps> = ({ slotId }) => {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<'task' | 'solution'>('task');
-  const [isSolved, setIsSolved] = useState(true);
-  const [isBookmarked, setIsBookmarked] = useState(false);
+  const { activeTask, toggleBookmark, toggleSolved } = useTaskStore();
   const { maximizedPane, setMaximizedPane } = useUIStore();
   const isMaximized = maximizedPane === 'task';
+
+  const [solutionData, setSolutionData] = useState<{ solution_sql: string } | null>(null);
+  const [loadingSolution, setLoadingSolution] = useState(false);
+  const [solutionError, setSolutionError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (activeTab === 'solution' && !solutionData && activeTask) {
+      setLoadingSolution(true);
+      setSolutionError(null);
+      fetch(`/api/tasks/${activeTask.id}/solution`, { method: 'POST' })
+        .then(res => {
+          if (!res.ok) throw new Error('Failed to fetch task solution');
+          return res.json();
+        })
+        .then(data => {
+          setSolutionData(data);
+          setLoadingSolution(false);
+        })
+        .catch(err => {
+          setSolutionError(err.message);
+          setLoadingSolution(false);
+        });
+    }
+  }, [activeTab, activeTask, solutionData]);
+
+  // Reset solution data when task changes
+  useEffect(() => {
+    setSolutionData(null);
+    setSolutionError(null);
+    setActiveTab('task');
+  }, [activeTask?.id]);
+
+  if (!activeTask) return null;
+
+  const isSolved = activeTask.isSolved;
+  const isBookmarked = activeTask.isBookmarked;
+
+  const renderFormattedText = (text: string | null) => {
+    if (!text) return null;
+    const parts = text.split(/(`[^`]+`)/g);
+    return parts.map((part, idx) => {
+      if (part.startsWith('`') && part.endsWith('`')) {
+        return <code key={idx}>{part.slice(1, -1)}</code>;
+      }
+      return part;
+    });
+  };
 
   const content = (
     <div className={`h-full flex flex-col transition-all duration-300 min-h-0 min-w-0 ${isMaximized ? 'fixed inset-4 z-modal bg-background rounded-2xl shadow-2xl border border-glass-border overflow-hidden' : 'bg-transparent overflow-hidden'}`}>
@@ -44,7 +91,7 @@ export const TaskPane: React.FC<TaskPaneProps> = ({ slotId }) => {
       </div>
       <div className="flex items-center gap-1 shrink min-w-0 ml-1">
         <button 
-          onClick={() => setIsSolved(!isSolved)}
+          onClick={toggleSolved}
           className={`flex items-center justify-center gap-1.5 px-2 py-1 rounded-md transition-all border min-w-0 ${
             isSolved 
               ? 'bg-success/10 border-success/30 text-success shadow-sm' 
@@ -57,7 +104,7 @@ export const TaskPane: React.FC<TaskPaneProps> = ({ slotId }) => {
         </button>
 
         <button 
-          onClick={() => setIsBookmarked(!isBookmarked)}
+          onClick={toggleBookmark}
           className={`flex items-center justify-center gap-1.5 px-2 py-1 rounded-md transition-all border min-w-0 ${
             isBookmarked 
               ? 'bg-warning/10 border-warning/30 text-warning-text shadow-sm' 
@@ -87,29 +134,42 @@ export const TaskPane: React.FC<TaskPaneProps> = ({ slotId }) => {
       <div className="flex-1 p-5 overflow-y-auto prose dark:prose-invert max-w-none text-sm scrollbar-thin min-h-0">
         {activeTab === 'task' ? (
           <div className="animate-in fade-in duration-300">
-            <h3 className="mt-0 mb-4 text-lg font-bold">{t('task_pane:mock_title')}</h3>
-            <p>
-              <Trans i18nKey="task_pane:mock_description" components={{ code: <code /> }} />
+            <h3 className="mt-0 mb-4 text-lg font-bold">{activeTask.title}</h3>
+            <p className="leading-relaxed">
+              {renderFormattedText(activeTask.description)}
             </p>
             
-            <div className="mt-6 p-4 bg-info/10 border border-info/20 rounded-xl">
-              <p className="text-info m-0 leading-relaxed">
-                <strong className="block mb-1">{t('task_pane:mock_hint_title')}</strong> 
-                <span>
-                  <Trans i18nKey="task_pane:mock_hint_text" components={{ code: <code /> }} />
-                </span>
-              </p>
-            </div>
+            {activeTask.hint && (
+              <div className="mt-6 p-4 bg-info/10 border border-info/20 rounded-xl">
+                <p className="text-info m-0 leading-relaxed">
+                  <strong className="block mb-1">{t('task_pane:mock_hint_title')}</strong> 
+                  <span>
+                    {renderFormattedText(activeTask.hint)}
+                  </span>
+                </p>
+              </div>
+            )}
           </div>
         ) : (
-          <div className="animate-in fade-in duration-300">
+          <div className="animate-in fade-in duration-300 h-full flex flex-col">
             <h3 className="mt-0 mb-4 text-lg font-bold">{t('task_pane:mock_solution_title')}</h3>
-            <p>{t('task_pane:mock_solution_description')}</p>
-            <pre className="bg-hover p-4 rounded-xl mt-4 border border-glass-border/50 shadow-inner">
-              <code className="text-success font-mono text-tiny">
-                SELECT * FROM public.customers;
-              </code>
-            </pre>
+            {loadingSolution ? (
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <Loader2 size={16} className="animate-spin" />
+                <span>{t('common:loading')}</span>
+              </div>
+            ) : solutionError ? (
+              <div className="text-destructive font-semibold">Error: {solutionError}</div>
+            ) : solutionData ? (
+              <>
+                <p>{t('task_pane:mock_solution_description')}</p>
+                <pre className="bg-hover p-4 rounded-xl mt-4 border border-glass-border/50 shadow-inner overflow-x-auto">
+                  <code className="text-success font-mono text-tiny">
+                    {solutionData.solution_sql}
+                  </code>
+                </pre>
+              </>
+            ) : null}
           </div>
         )}
       </div>

@@ -71,7 +71,7 @@ export const CourseTOC: React.FC = () => {
       />
 
       <div 
-        className={`fixed top-4 left-4 h-[calc(100vh-2rem)] bg-glass backdrop-blur-xl border border-glass-border rounded-2xl w-80 shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] z-drawer transition-transform duration-300 ease-in-out flex flex-col overflow-hidden ${
+        className={`fixed top-4 left-4 h-[calc(100vh-2rem)] bg-glass backdrop-blur-xl border border-glass-border rounded-2xl w-80 shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] z-drawer transition-transform duration-300 ease-in-out flex flex-col overflow-y-auto custom-scrollbar ${
           isCourseTocOpen ? 'translate-x-0' : '-translate-x-[120%]'
         }`}
       >
@@ -84,7 +84,7 @@ export const CourseTOC: React.FC = () => {
       </div>
 
       {/* Body */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-6 primary-scrollbar">
+      <div className="flex-1 overflow-y-auto p-4 space-y-6 custom-scrollbar">
         {/* Global Progress */}
         <div className="space-y-2">
           <div className="flex items-center justify-between text-sm">

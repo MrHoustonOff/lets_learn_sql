@@ -1,6 +1,7 @@
 import React from 'react';
 import { createPortal } from 'react-dom';
 import { useUIStore, type SlotId } from '../../store/uiStore';
+import { useTaskStore } from '../../store/taskStore';
 import { DBVisualizer } from '../../modules/db-visualizer';
 
 interface DBVisualizerPaneProps {
@@ -9,11 +10,13 @@ interface DBVisualizerPaneProps {
 
 export const DBVisualizerPane: React.FC<DBVisualizerPaneProps> = ({ slotId }) => {
   const { maximizedPane, setMaximizedPane } = useUIStore();
+  const { activeTask } = useTaskStore();
   const isMaximized = maximizedPane === 'db';
 
   const content = (
     <div className={`transition-all duration-300 ${isMaximized ? 'fixed inset-4 z-modal bg-background rounded-2xl shadow-2xl border border-glass-border overflow-hidden' : 'h-full w-full relative overflow-hidden'}`}>
       <DBVisualizer 
+        database={activeTask?.dbName || 'northwind'}
         isMaximized={isMaximized} 
         onToggleMaximize={() => setMaximizedPane(isMaximized ? null : 'db')}
         slotId={slotId}
@@ -32,3 +35,4 @@ export const DBVisualizerPane: React.FC<DBVisualizerPaneProps> = ({ slotId }) =>
 
   return content;
 };
+
