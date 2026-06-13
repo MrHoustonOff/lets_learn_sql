@@ -1,6 +1,7 @@
 {
   "title": "SQL Editor",
   "run": "Run",
+  "submit": "Submit",
   "explain": "Explain",
   "collapse": "Collapse",
   "expand": "Expand"

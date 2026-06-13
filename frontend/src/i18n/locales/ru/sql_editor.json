@@ -1,6 +1,7 @@
 {
   "title": "Редактор SQL",
-  "run": "Запуск",
+  "run": "Запустить",
+  "submit": "Проверить",
   "explain": "Explain",
   "collapse": "Свернуть",
   "expand": "Развернуть"

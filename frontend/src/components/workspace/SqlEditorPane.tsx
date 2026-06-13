@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import CodeMirror from '@uiw/react-codemirror';
 import { sql } from '@codemirror/lang-sql';
 import { keymap, EditorView } from '@codemirror/view';
-import { Play, Maximize2, Minimize2, Loader2 } from 'lucide-react';
+import { Play, Maximize2, Minimize2, Loader2, SendHorizonal } from 'lucide-react';
 import { useTheme } from '../../components/theme-provider';
 import { useUIStore, type SlotId } from '../../store/uiStore';
 import { useQueryStore } from '../../store/queryStore';
@@ -23,8 +23,8 @@ export const SqlEditorPane: React.FC<SqlEditorPaneProps> = ({
   slotId
 }) => {
   const { t } = useTranslation();
-  const { sql: query, setSql: setQuery, executeQuery, isLoading } = useQueryStore();
-  const { activeTask } = useTaskStore();
+  const { sql: query, setSql: setQuery, executeQuery, isLoading, submitQuery, isSubmitting } = useQueryStore();
+  const { activeTask, setTaskPaneTab } = useTaskStore();
   const { theme } = useTheme();
   const { 
     maximizedPane, 
@@ -66,13 +66,28 @@ export const SqlEditorPane: React.FC<SqlEditorPaneProps> = ({
         <div className="flex items-center gap-1.5 shrink min-w-0 ml-auto">
           <button 
             onClick={() => executeQuery(activeTask?.dbName || 'northwind')}
-            disabled={isLoading}
+            disabled={isLoading || isSubmitting}
             className="flex items-center justify-center gap-1.5 text-xs font-semibold bg-success/10 text-success hover:bg-success/20 px-3 py-1.5 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed min-w-0"
           >
             {isLoading ? <Loader2 size={12} className="animate-spin shrink-0" /> : <Play size={12} className="fill-current shrink-0" />}
             <span className="truncate">{t('sql_editor:run')}</span>
             <span className="opacity-50 font-normal hidden sm:inline ml-1 shrink-0">({isMac ? 'Cmd' : 'Ctrl'}+Enter)</span>
           </button>
+
+          {/* Submit / Проверить button — only shown when inside a task */}
+          {activeTask && (
+            <button
+              onClick={() => {
+                submitQuery(activeTask.id, activeTask.dbName || 'northwind');
+                setTaskPaneTab('solution');
+              }}
+              disabled={isLoading || isSubmitting}
+              className="flex items-center justify-center gap-1.5 text-xs font-semibold bg-primary/10 text-primary hover:bg-primary/20 px-3 py-1.5 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed min-w-0"
+            >
+              {isSubmitting ? <Loader2 size={12} className="animate-spin shrink-0" /> : <SendHorizonal size={12} className="shrink-0" />}
+              <span className="truncate">{t('sql_editor:submit')}</span>
+            </button>
+          )}
           <div className="w-px h-4 bg-glass-border mx-1 shrink-0" />
           <button 
             onClick={handleToggleMaximize}

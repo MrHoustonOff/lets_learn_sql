@@ -1,7 +1,7 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from core import database, sqlite_db
-from routes import query, explain, schema, tasks, databases, profile, courses
+from routes import query, explain, schema, tasks, databases, profile, courses, submit
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -32,3 +32,4 @@ app.include_router(tasks.router, prefix="/api", tags=["tasks"])
 app.include_router(databases.router, prefix="/api", tags=["databases"])
 app.include_router(profile.router, prefix="/api/profile", tags=["profile"])
 app.include_router(courses.router, prefix="/api", tags=["courses"])
+app.include_router(submit.router, prefix="/api", tags=["submit"])

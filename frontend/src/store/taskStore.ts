@@ -14,7 +14,11 @@ interface TaskState {
   activeTask: Task | null;
   isLoading: boolean;
   error: string | null;
-  
+
+  // Shared tab state: allows SqlEditorPane to switch TaskPane to 'solution' on Submit
+  taskPaneTab: 'task' | 'solution';
+  setTaskPaneTab: (tab: 'task' | 'solution') => void;
+
   setActiveTask: (task: Task | null) => void;
   fetchTask: (id: number | string) => Promise<void>;
   toggleBookmark: () => Promise<void>;
@@ -25,7 +29,10 @@ export const useTaskStore = create<TaskState>((set, get) => ({
   activeTask: null,
   isLoading: false,
   error: null,
-  
+
+  taskPaneTab: 'task',
+  setTaskPaneTab: (tab) => set({ taskPaneTab: tab }),
+
   setActiveTask: (task) => set({ activeTask: task }),
   
   fetchTask: async (id) => {
