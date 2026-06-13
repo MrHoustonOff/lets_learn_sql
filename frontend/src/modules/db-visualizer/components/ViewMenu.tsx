@@ -77,7 +77,7 @@ export const ViewMenu: React.FC<ViewMenuProps> = ({
             className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-hover transition-colors text-sm text-left w-full mb-1"
           >
             {showLegend ? (
-              <BookOpenText size={16} className="text-blue-500" />
+              <BookOpenText size={16} className="text-primary" />
             ) : (
               <BookOpenText size={16} className="text-muted-foreground" />
             )}
@@ -93,7 +93,7 @@ export const ViewMenu: React.FC<ViewMenuProps> = ({
             className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-hover transition-colors text-sm text-left w-full mb-1"
           >
             {showToolbar ? (
-              <Move size={16} className="text-blue-500" />
+              <Move size={16} className="text-primary" />
             ) : (
               <Move size={16} className="text-muted-foreground" />
             )}
@@ -114,7 +114,7 @@ export const ViewMenu: React.FC<ViewMenuProps> = ({
             className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-hover transition-colors text-sm text-left w-full"
           >
             {showRelations ? (
-              <Eye size={16} className="text-blue-500" />
+              <Eye size={16} className="text-primary" />
             ) : (
               <EyeOff size={16} className="text-muted-foreground" />
             )}
@@ -130,7 +130,7 @@ export const ViewMenu: React.FC<ViewMenuProps> = ({
             className={`flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-hover transition-colors text-sm text-left w-full ${!showRelations ? 'opacity-50 pointer-events-none' : ''}`}
           >
             {showMarkers ? (
-              <CircleDot size={16} className="text-blue-500" />
+              <CircleDot size={16} className="text-primary" />
             ) : (
               <CircleDot size={16} className="text-muted-foreground" />
             )}

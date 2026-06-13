@@ -135,7 +135,7 @@ export const CoursesListPage: React.FC = () => {
             {t('courses_page:create')}
           </button>
           {/* Tooltip */}
-          <div className="absolute -top-10 left-1/2 -translate-x-1/2 px-2 py-1 bg-black/80 dark:bg-white/90 text-white dark:text-black text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap">
+          <div className="absolute -top-10 left-1/2 -translate-x-1/2 px-2 py-1 bg-foreground text-background text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap shadow-sm">
             {t('courses_page:coming_soon')}
           </div>
         </div>
