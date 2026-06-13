@@ -1,0 +1,52 @@
+{
+  "page": {
+    "title": "Tasks",
+    "subtitle": "All course tasks in one place",
+    "search_placeholder": "Search tasks...",
+    "create": "Create task",
+    "loading": "Loading..."
+  },
+  "sidebar": {
+    "title": "Filters",
+    "reset": "Reset ({{count}})",
+    "found": "Found:",
+    "from": "of"
+  },
+  "filter": {
+    "status": {
+      "label": "Status",
+      "all": "All",
+      "solved": "Solved",
+      "unsolved": "Unsolved",
+      "flagged": "Flagged"
+    },
+    "difficulty": "Difficulty",
+    "database": "Database",
+    "tags": "Tags"
+  },
+  "difficulty": {
+    "easy": "Easy",
+    "medium": "Medium",
+    "hard": "Hard"
+  },
+  "sort": {
+    "created": "Created date",
+    "solved": "Solved date",
+    "ascending": "Ascending",
+    "descending": "Descending"
+  },
+  "row": {
+    "created": "created",
+    "solved": "solved",
+    "not_solved": "not solved",
+    "solve": "Solve",
+    "edit": "Edit",
+    "flag": "Bookmark",
+    "unflag": "Remove bookmark"
+  },
+  "empty": {
+    "title": "Nothing found",
+    "subtitle": "Try changing the filters or search query",
+    "reset": "Reset all filters"
+  }
+}

@@ -6,7 +6,8 @@ import { CoursesListPage } from './pages/CoursesListPage';
 import { CourseDetailsPage } from './pages/CourseDetailsPage';
 import { DatabasesListPage } from './pages/DatabasesListPage';
 import { ProfilePage } from './pages/ProfilePage';
-import { TasksPage, SettingsPage } from './pages/PlaceholderPages';
+import { TasksListPage } from './pages/TasksListPage';
+import { SettingsPage } from './pages/PlaceholderPages';
 
 const router = createBrowserRouter([
   {
@@ -31,7 +32,7 @@ const router = createBrowserRouter([
       },
       {
         path: 'tasks',
-        element: <TasksPage />,
+        element: <TasksListPage />,
       },
       {
         path: 'tasks/:id',

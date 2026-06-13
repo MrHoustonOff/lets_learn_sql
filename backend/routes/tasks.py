@@ -1,5 +1,6 @@
 import time
-from fastapi import APIRouter, HTTPException, Request
+import json
+from fastapi import APIRouter, HTTPException, Request, Query
 from pydantic import BaseModel
 from typing import Optional, List
 from core.sqlite_db import get_sqlite_conn
@@ -7,6 +8,193 @@ from core import database as db_module
 from core.config import settings
 
 router = APIRouter()
+
+# ---------------------------------------------------------------------------
+# Models
+# ---------------------------------------------------------------------------
+
+class TagOut(BaseModel):
+    id: int
+    name: str
+
+class TaskListItem(BaseModel):
+    id: int
+    title: str
+    difficulty: Optional[int]
+    database_id: int
+    db_name: str
+    db_display_name: str
+    is_solved: bool
+    is_flagged: bool
+    tags: List[TagOut]
+    created_at: str
+    solved_at: Optional[str]
+
+class TasksListResponse(BaseModel):
+    tasks: List[TaskListItem]
+    total: int
+    tags: List[TagOut]          # All available tags for filter
+    databases: List[dict]       # All databases for filter
+
+# ---------------------------------------------------------------------------
+# GET /tasks — list with filtering
+# ---------------------------------------------------------------------------
+
+@router.get("/tasks", response_model=TasksListResponse)
+async def list_tasks(
+    request: Request,
+    search: Optional[str] = Query(None),
+    difficulty: Optional[str] = Query(None),   # comma-separated ints e.g. "1,2,3"
+    tag_ids: Optional[str] = Query(None),       # comma-separated ints
+    database_id: Optional[int] = Query(None),
+    status: str = Query("all"),                 # all | solved | unsolved | flagged
+    sort_by: str = Query("created"),            # created | solved
+    sort_dir: str = Query("desc"),              # asc | desc
+):
+    sqlite = await get_sqlite_conn()
+    if not sqlite:
+        raise HTTPException(status_code=500, detail="Database connection not available")
+
+    user_id = getattr(request.state, "user_id", 1)
+
+    # --- Parse filter params ---
+    difficulty_ids: list[int] = []
+    if difficulty:
+        try:
+            difficulty_ids = [int(x.strip()) for x in difficulty.split(",") if x.strip()]
+        except ValueError:
+            pass
+
+    tag_id_list: list[int] = []
+    if tag_ids:
+        try:
+            tag_id_list = [int(x.strip()) for x in tag_ids.split(",") if x.strip()]
+        except ValueError:
+            pass
+
+    # --- Build query ---
+    where_clauses = ["t.status = 'published'"]
+    params: list = []
+
+    if search:
+        where_clauses.append("t.title LIKE ?")
+        params.append(f"%{search}%")
+
+    if difficulty_ids:
+        placeholders = ",".join("?" * len(difficulty_ids))
+        where_clauses.append(f"t.difficulty IN ({placeholders})")
+        params.extend(difficulty_ids)
+
+    if database_id:
+        where_clauses.append("t.database_id = ?")
+        params.append(database_id)
+
+    if status == "solved":
+        where_clauses.append(
+            "EXISTS(SELECT 1 FROM attempts a WHERE a.task_id=t.id AND a.user_id=? AND a.is_correct=1)"
+        )
+        params.append(user_id)
+    elif status == "unsolved":
+        where_clauses.append(
+            "NOT EXISTS(SELECT 1 FROM attempts a WHERE a.task_id=t.id AND a.user_id=? AND a.is_correct=1)"
+        )
+        params.append(user_id)
+    elif status == "flagged":
+        where_clauses.append(
+            "EXISTS(SELECT 1 FROM task_flags tf WHERE tf.task_id=t.id AND tf.user_id=?)"
+        )
+        params.append(user_id)
+
+    if tag_id_list:
+        for tid in tag_id_list:
+            where_clauses.append(
+                "EXISTS(SELECT 1 FROM task_tags tt WHERE tt.task_id=t.id AND tt.tag_id=?)"
+            )
+            params.append(tid)
+
+    where_sql = " AND ".join(where_clauses)
+
+    sort_field = "t.created_at" if sort_by == "created" else (
+        "(SELECT MAX(a2.created_at) FROM attempts a2 WHERE a2.task_id=t.id AND a2.is_correct=1)"
+    )
+    sort_direction = "ASC" if sort_dir == "asc" else "DESC"
+
+    query = f"""
+        SELECT
+            t.id, t.title, t.difficulty, t.database_id, t.created_at,
+            d.technical_name as db_name,
+            d.display_name as db_display_name,
+            EXISTS(
+                SELECT 1 FROM attempts a WHERE a.task_id=t.id AND a.user_id=? AND a.is_correct=1
+            ) as is_solved,
+            EXISTS(
+                SELECT 1 FROM task_flags tf WHERE tf.task_id=t.id AND tf.user_id=?
+            ) as is_flagged,
+            (
+                SELECT MAX(a3.created_at) FROM attempts a3
+                WHERE a3.task_id=t.id AND a3.user_id=? AND a3.is_correct=1
+            ) as solved_at
+        FROM tasks t
+        JOIN databases d ON t.database_id = d.id
+        WHERE {where_sql}
+        ORDER BY {sort_field} {sort_direction}
+    """
+    # user_id appears 3 times (is_solved, is_flagged, solved_at subqueries)
+    full_params = [user_id, user_id, user_id] + params
+
+    async with sqlite.execute(query, full_params) as cursor:
+        rows = await cursor.fetchall()
+
+    # Fetch tags per task in one query
+    if rows:
+        task_ids = [r["id"] for r in rows]
+        placeholders = ",".join("?" * len(task_ids))
+        tags_query = f"""
+            SELECT tt.task_id, tg.id as tag_id, tg.name
+            FROM task_tags tt
+            JOIN tags tg ON tg.id = tt.tag_id
+            WHERE tt.task_id IN ({placeholders})
+        """
+        async with sqlite.execute(tags_query, task_ids) as tcur:
+            tag_rows = await tcur.fetchall()
+
+        # Build task_id -> tags map
+        tags_map: dict[int, list[TagOut]] = {}
+        for tr in tag_rows:
+            tags_map.setdefault(tr["task_id"], []).append(
+                TagOut(id=tr["tag_id"], name=tr["name"])
+            )
+    else:
+        tags_map = {}
+
+    tasks_out = [
+        TaskListItem(
+            id=r["id"],
+            title=r["title"],
+            difficulty=r["difficulty"],
+            database_id=r["database_id"],
+            db_name=r["db_name"],
+            db_display_name=r["db_display_name"],
+            is_solved=bool(r["is_solved"]),
+            is_flagged=bool(r["is_flagged"]),
+            tags=tags_map.get(r["id"], []),
+            created_at=str(r["created_at"]),
+            solved_at=str(r["solved_at"]) if r["solved_at"] else None,
+        )
+        for r in rows
+    ]
+
+    # All available tags for filter panel
+    async with sqlite.execute("SELECT id, name FROM tags ORDER BY name") as tcur:
+        all_tags = [TagOut(id=tr["id"], name=tr["name"]) for tr in await tcur.fetchall()]
+
+    # All databases for filter panel
+    async with sqlite.execute("SELECT id, technical_name, display_name FROM databases ORDER BY display_name") as dcur:
+        all_dbs = [{"id": dr["id"], "technical_name": dr["technical_name"], "display_name": dr["display_name"]} for dr in await dcur.fetchall()]
+
+    return TasksListResponse(tasks=tasks_out, total=len(tasks_out), tags=all_tags, databases=all_dbs)
+
+
 
 class TaskResponse(BaseModel):
     id: int
