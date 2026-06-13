@@ -1,8 +1,9 @@
 import React, { useState, useMemo } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useTranslation, Trans } from 'react-i18next';
 import { ArrowUpDown, ArrowUp, ArrowDown, ChevronLeft, ChevronRight } from 'lucide-react';
 import { CollapsibleSection } from '../../ui/CollapsibleSection';
 import { StatusIcon } from '../../ui/StatusIcon';
+import { ConfirmModal } from '../../ui/ConfirmModal';
 
 type SortField = 'date' | 'verdict' | 'duration';
 type SortOrder = 'asc' | 'desc';
@@ -16,6 +17,8 @@ export const HistoryPanel: React.FC<{
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 6;
   const totalPages = Math.ceil(history.length / itemsPerPage);
+
+  const [deleteConfirm, setDeleteConfirm] = useState<'incorrect' | 'correct' | null>(null);
 
   const [sortField, setSortField] = useState<SortField>('date');
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
@@ -109,12 +112,18 @@ export const HistoryPanel: React.FC<{
         </div>
 
         {/* Footer: Danger Zone & Paginator */}
-        <div className="flex items-center justify-between mt-1 pt-3 border-t border-glass-border/30">
+        <div className="flex items-center justify-between mt-2">
           <div className="flex gap-2">
-            <button className="text-[10px] text-muted-foreground/60 hover:bg-destructive/10 hover:text-destructive transition-colors uppercase tracking-wider font-semibold px-2 py-1 rounded">
+            <button 
+              onClick={() => setDeleteConfirm('incorrect')}
+              className="text-[10px] text-muted-foreground/60 hover:bg-destructive/10 hover:text-destructive transition-colors uppercase tracking-wider font-semibold px-2 py-1 rounded"
+            >
               {t('delete_incorrect', 'Удалить неверные')}
             </button>
-            <button className="text-[10px] text-muted-foreground/60 hover:bg-destructive/10 hover:text-destructive transition-colors uppercase tracking-wider font-semibold px-2 py-1 rounded">
+            <button 
+              onClick={() => setDeleteConfirm('correct')}
+              className="text-[10px] text-muted-foreground/60 hover:bg-destructive/10 hover:text-destructive transition-colors uppercase tracking-wider font-semibold px-2 py-1 rounded"
+            >
               {t('delete_correct', 'Удалить верные')}
             </button>
           </div>
@@ -142,6 +151,46 @@ export const HistoryPanel: React.FC<{
           )}
         </div>
       </div>
+
+      <ConfirmModal
+        isOpen={deleteConfirm === 'incorrect'}
+        onClose={() => setDeleteConfirm(null)}
+        onConfirm={() => console.log('Delete incorrect mocked')}
+        title={t('delete_incorrect_title', 'Удаление неверных попыток')}
+        confirmText={t('delete_confirm_btn', 'Да, удаляй их все!')}
+        cancelText={t('cancel', 'Нет, оставь их.')}
+        variant="destructive"
+      >
+        <Trans 
+          i18nKey="delete_incorrect_confirm"
+          ns="submit_report"
+          defaults="Вы уверены, что хотите удалить <span1>неверные</span1> решения для этой задачи? Будут удалены <span2>ВСЕ</span2> попытки, не прошедшие проверку! Это действие необратимо."
+          components={{
+            span1: <span className="text-destructive font-bold" />,
+            span2: <span className="font-bold underline decoration-2 underline-offset-4" />
+          }}
+        />
+      </ConfirmModal>
+
+      <ConfirmModal
+        isOpen={deleteConfirm === 'correct'}
+        onClose={() => setDeleteConfirm(null)}
+        onConfirm={() => console.log('Delete correct mocked')}
+        title={t('delete_correct_title', 'Удаление верных попыток')}
+        confirmText={t('delete_confirm_btn', 'Да, удаляй их все!')}
+        cancelText={t('cancel', 'Нет, оставь их.')}
+        variant="destructive"
+      >
+        <Trans 
+          i18nKey="delete_correct_confirm"
+          ns="submit_report"
+          defaults="Вы уверены, что хотите удалить <span1>верные</span1> решения для этой задачи? Будут удалены <span2>ВСЕ</span2> успешные попытки! Это действие необратимо."
+          components={{
+            span1: <span className="text-success font-bold" />,
+            span2: <span className="font-bold underline decoration-2 underline-offset-4" />
+          }}
+        />
+      </ConfirmModal>
     </CollapsibleSection>
   );
 };

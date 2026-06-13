@@ -49,5 +49,11 @@
   "copied": "Copied",
   "delete_attempt": "Delete attempt",
   "run_at": "Run at:",
-  "author_solution_title": "Correct solution"
+  "author_solution_title": "Correct solution",
+  "delete_incorrect_title": "Delete Incorrect",
+  "delete_correct_title": "Delete Correct",
+  "delete_confirm_btn": "Delete",
+  "cancel": "Cancel",
+  "delete_incorrect_confirm": "Are you sure you want to delete <span1>incorrect</span1> solutions for this task? <span2>ALL</span2> failed attempts will be deleted! This action is irreversible.",
+  "delete_correct_confirm": "Are you sure you want to delete <span1>correct</span1> solutions for this task? <span2>ALL</span2> successful attempts will be deleted! This action is irreversible."
 }

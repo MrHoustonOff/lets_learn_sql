@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useTranslation, Trans } from 'react-i18next';
 import { ShieldCheck, ShieldX, Copy, Check, Trash2 } from 'lucide-react';
 import { ModalBase } from '../../ui/ModalBase';
+import { ConfirmModal } from '../../ui/ConfirmModal';
 import { SqlCodeViewer } from '../../ui/SqlCodeViewer';
 
 export const AttemptModal: React.FC<{
@@ -10,6 +11,7 @@ export const AttemptModal: React.FC<{
 }> = ({ attempt, onClose }) => {
   const { t } = useTranslation('submit_report');
   const [copiedCode, setCopiedCode] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState(false);
 
   const formatDate = (d: Date) => {
     return new Intl.DateTimeFormat('ru-RU', {
@@ -52,7 +54,10 @@ export const AttemptModal: React.FC<{
             <div className="text-xs font-mono text-muted-foreground">
               {t('run_at', 'Запущено:')} {attempt && formatDate(attempt.date)}
             </div>
-            <button className="flex items-center gap-1.5 px-2 py-1 text-xs text-muted-foreground/60 hover:text-destructive hover:bg-destructive/10 rounded-md transition-colors border border-transparent">
+            <button 
+              onClick={() => setDeleteConfirm(true)}
+              className="flex items-center gap-1.5 px-2 py-1 text-xs text-muted-foreground/60 hover:text-destructive hover:bg-destructive/10 rounded-md transition-colors border border-transparent"
+            >
               <Trash2 size={12} /> {t('delete_attempt', 'Удалить попытку')}
             </button>
           </div>
@@ -70,6 +75,40 @@ export const AttemptModal: React.FC<{
           </div>
         </div>
       </div>
+
+      <ConfirmModal
+        isOpen={deleteConfirm}
+        onClose={() => setDeleteConfirm(false)}
+        onConfirm={() => {
+          console.log('Delete single mocked');
+          setDeleteConfirm(false);
+          onClose();
+        }}
+        title={attempt?.verdict ? t('delete_single_correct_title', 'Удаление верной попытки') : t('delete_single_incorrect_title', 'Удаление неверной попытки')}
+        confirmText={t('delete_single_confirm_btn', 'Да, удаляй её!')}
+        cancelText={t('cancel_single', 'Нет, оставь её.')}
+        variant="destructive"
+      >
+        {attempt?.verdict ? (
+          <Trans 
+            i18nKey="delete_single_correct_confirm"
+            ns="submit_report"
+            defaults="Вы уверены, что хотите удалить эту <span1>верную</span1> попытку? Это действие необратимо."
+            components={{
+              span1: <span className="text-success font-bold" />
+            }}
+          />
+        ) : (
+          <Trans 
+            i18nKey="delete_single_incorrect_confirm"
+            ns="submit_report"
+            defaults="Вы уверены, что хотите удалить эту <span1>неверную</span1> попытку? Это действие необратимо."
+            components={{
+              span1: <span className="text-destructive font-bold" />
+            }}
+          />
+        )}
+      </ConfirmModal>
     </ModalBase>
   );
 };
