@@ -1,53 +1,19 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  AlertTriangle, Table2, ShieldCheck, ShieldX, Copy, Check, Trash2, KeyRound, X
+  ShieldCheck, ShieldX, Copy, Check, Trash2, KeyRound, X
 } from 'lucide-react';
-import type { GradeReport, RowSample } from '../../store/queryStore';
-import { InfoTooltip } from '../ui/InfoTooltip';
+import type { GradeReport } from '../../store/queryStore';
 import { CollapsibleSection } from '../ui/CollapsibleSection';
 import { SqlCodeViewer } from '../ui/SqlCodeViewer';
 import { ModalBase } from '../ui/ModalBase';
 import { StatusIcon } from '../ui/StatusIcon';
+import { Stage1Report } from './submit/Stage1Report';
+import { Stage2Report } from './submit/Stage2Report';
 import { MOCK_STAGE1_REPORT, MOCK_STAGE2_REPORT, MOCK_HISTORY, MOCK_REFERENCE_SQL } from './submit/submitReportMocks';
 
 // ============================================================================
 // ============================================================================
-// UI Components
-// ============================================================================
-
-const DataGrid: React.FC<{ sample: RowSample; title: string; info: string }> = ({ sample, title, info }) => {
-  const { t } = useTranslation('submit_report');
-  if (!sample.rows || sample.rows.length === 0) return null;
-  return (
-    <div className="rounded-md border border-glass-border overflow-hidden mt-3">
-      <div className="px-3 py-1.5 text-2xs font-semibold bg-hover flex items-center justify-between border-b border-glass-border">
-        <span className="flex items-center gap-1.5">
-          <Table2 size={12} className="opacity-70" />
-          <span className="leading-none translate-y-[1px]">{title}</span>
-          <InfoTooltip text={info} className="" />
-        </span>
-        <span className="opacity-60 font-normal">{t('shown_of', { shown: sample.rows.length, total: sample.total })}</span>
-      </div>
-      <div className="overflow-x-auto w-full max-w-[calc(100vw-300px)] custom-scrollbar pb-1 bg-background">
-        <table className="w-full text-2xs font-mono">
-          <tbody>
-            {sample.rows.map((row, ri) => (
-              <tr key={ri} className="border-b border-glass-border hover:bg-hover last:border-b-0">
-                {row.map((cell, ci) => (
-                  <td key={ci} className="px-3 py-1.5 whitespace-nowrap border-r border-glass-border last:border-r-0">
-                    {cell === null ? <span className="opacity-40 italic">NULL</span> : String(cell)}
-                  </td>
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
-};
-
 // ============================================================================
 // Main SubmitReport Component (Mocked)
 // ============================================================================
@@ -89,73 +55,10 @@ export const SubmitReport: React.FC<SubmitReportProps> = (_props) => {
     <div className="flex flex-col gap-6 animate-in fade-in duration-300 pb-10">
 
       {/* ======= Stage 1: Data Comparison ======= */}
-      <CollapsibleSection 
-        title={t('stage1_title', 'Первичные тесты')}
-        infoText={t('stage1_info', 'Сравнение результатов вашего запроса с эталонным решением.')}
-      >
-        {/* Summary block with subtle tint */}
-        <div className={`flex items-center gap-4 text-xs mb-4 p-2.5 rounded-md border w-fit ${
-          MOCK_STAGE1_REPORT.user_row_count === MOCK_STAGE1_REPORT.ref_row_count 
-            ? 'bg-success/10 border-success/20' 
-            : 'bg-destructive/10 border-destructive/20'
-        }`}>
-          <div className="flex items-center gap-2">
-            <span className="text-muted-foreground">{t('rows_found', 'Найдено строк:')}</span>
-            <span className="font-mono font-medium">{MOCK_STAGE1_REPORT.user_row_count}</span>
-          </div>
-          <div className="w-px h-4 bg-glass-border"></div>
-          <div className="flex items-center gap-2">
-            <span className="text-muted-foreground">{t('rows_expected', 'Ожидалось:')}</span>
-            <span className="font-mono font-medium">{MOCK_STAGE1_REPORT.ref_row_count}</span>
-          </div>
-          <InfoTooltip text={t('rows_ratio_hint', 'Сравнение количества строк: если у вас их меньше, значит запрос отфильтровал нужные данные. Если больше — вывел лишние.')} className="" />
-          <div className="w-px h-4 bg-glass-border"></div>
-          <div className="flex items-center gap-1.5 text-warning-text font-medium">
-            <AlertTriangle size={13} />
-            <span className="leading-none translate-y-[1px]">{t('order_matters', 'Порядок важен')}</span>
-            <InfoTooltip text={t('order_matters_hint', 'В этой задаче требуется отсортировать результат. Позиции строк будут проверяться.')} className="" />
-          </div>
-        </div>
-
-        <DataGrid 
-          sample={MOCK_STAGE1_REPORT.extra_rows} 
-          title={t('extra_rows_title', 'Лишние строки')}
-          info={t('extra_rows_hint', 'Эти строки есть в вашем ответе, но их нет в правильном решении автора.')}
-        />
-        
-        <DataGrid 
-          sample={MOCK_STAGE1_REPORT.missing_rows} 
-          title={t('missing_rows_title', 'Недостающие строки')}
-          info={t('missing_rows_hint', 'Эти строки должны быть в результате, но ваш запрос их не вывел.')}
-        />
-      </CollapsibleSection>
+      <Stage1Report report={MOCK_STAGE1_REPORT} />
 
       {/* ======= Stage 2: AST Rules ======= */}
-      <CollapsibleSection 
-        title={t('stage2_rules_title', 'Дополнительные тесты')}
-        infoText="Автоматические тесты структуры вашего запроса."
-      >
-        <div className="flex flex-col gap-1.5">
-          {MOCK_STAGE2_REPORT.rules.map(r => {
-            const isWarning = !r.passed && r.severity === 'warning';
-            return (
-              <div key={r.rule_id} className={`flex items-center gap-2 py-1.5 px-2.5 rounded-md border transition-colors ${!r.passed ? (isWarning ? 'bg-warning/5 border-warning/20 hover:border-warning/40' : 'bg-destructive/5 border-destructive/20 hover:border-destructive/40') : 'bg-success/5 border-success/20 hover:border-success/40'}`}>
-                <StatusIcon passed={r.passed} warning={isWarning} size={14} />
-                <span className={`text-xs font-mono ${r.passed ? 'text-foreground' : isWarning ? 'text-warning-text' : 'text-destructive'}`}>
-                  {r.message}
-                </span>
-                {!r.passed && (
-                  <span className="text-2xs text-muted-foreground ml-2 opacity-80 max-w-[50%] truncate font-mono" title={r.detail_msg}>
-                    — {r.detail_msg}
-                  </span>
-                )}
-                <InfoTooltip text="Lorem ipsum dolor sit amet, consectetur adipiscing elit." className="ml-1" />
-                <span className="ml-auto text-2xs text-muted-foreground font-mono">1 ms</span>
-              </div>
-            );
-          })}
-        </div>
-      </CollapsibleSection>
+      <Stage2Report report={MOCK_STAGE2_REPORT} />
 
       {/* ======= Verdict Banner ======= */}
       <div className="rounded-lg border px-4 py-3 flex items-center gap-3.5 border-destructive/40 bg-destructive/10">
