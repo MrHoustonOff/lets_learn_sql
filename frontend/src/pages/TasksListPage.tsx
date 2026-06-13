@@ -1,9 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  Search, SlidersHorizontal, X, ArrowUp, ArrowDown,
-  Database, GraduationCap, Plus, Tag,
-} from 'lucide-react';
+import { Search, SlidersHorizontal, X, ArrowUp, ArrowDown, Database, Tag, Plus } from 'lucide-react';
 import { FilterSection } from './tasks-list/FilterSection';
 import { FilterChip } from './tasks-list/FilterChip';
 import { DifficultyMatrix } from './tasks-list/DifficultyMatrix';
@@ -20,6 +17,8 @@ const DEFAULT_FILTERS: FilterState = {
   sortDir: 'desc',
 };
 
+const STATUS_IDS = ['all', 'solved', 'unsolved', 'flagged'] as const;
+
 export const TasksListPage: React.FC = () => {
   const { t } = useTranslation('tasks_list');
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS);
@@ -28,13 +27,10 @@ export const TasksListPage: React.FC = () => {
     setFilters(prev => ({ ...prev, [key]: value }));
   }, []);
 
-  const toggleItem = useCallback(<T,>(key: keyof FilterState, value: T) => {
+  const toggleItem = useCallback((key: 'selectedDifficulties' | 'selectedTagIds', value: number) => {
     setFilters(prev => {
-      const list = prev[key] as T[];
-      return {
-        ...prev,
-        [key]: list.includes(value) ? list.filter(v => v !== value) : [...list, value],
-      };
+      const list = prev[key];
+      return { ...prev, [key]: list.includes(value) ? list.filter(v => v !== value) : [...list, value] };
     });
   }, []);
 
@@ -53,59 +49,46 @@ export const TasksListPage: React.FC = () => {
     refetch();
   }, [refetch]);
 
-  const STATUS_OPTIONS = [
-    { id: 'all' as const,      label: t('filter.status.all') },
-    { id: 'solved' as const,   label: t('filter.status.solved') },
-    { id: 'unsolved' as const, label: t('filter.status.unsolved') },
-    { id: 'flagged' as const,  label: t('filter.status.flagged') },
-  ];
-
   return (
-    <div className="h-full w-full flex bg-background text-foreground overflow-hidden">
+    <div className="h-full w-full flex overflow-hidden bg-background">
 
-      {/* ===================== SIDEBAR ===================== */}
-      <aside className="w-72 shrink-0 border-r border-glass-border/60 flex flex-col h-full">
-        {/* Sidebar header */}
-        <div className="px-5 py-5 border-b border-glass-border/60">
-          <div className="flex items-center justify-between mb-1">
-            <div className="flex items-center gap-2">
-              <SlidersHorizontal size={15} className="text-primary" />
-              <h2 className="text-sm font-semibold">{t('sidebar.title')}</h2>
-            </div>
-            {activeFilterCount > 0 && (
-              <button
-                onClick={clearAll}
-                className="text-2xs text-muted-foreground hover:text-primary transition-colors flex items-center gap-1"
-              >
-                <X size={11} />
-                {t('sidebar.reset', { count: activeFilterCount })}
-              </button>
-            )}
+      {/* ── SIDEBAR ─────────────────────────────────────────────────────── */}
+      <aside className="w-56 shrink-0 border-r border-glass-border flex flex-col h-full bg-glass/60 backdrop-blur-sm">
+
+        {/* Header */}
+        <div className="px-4 pt-4 pb-3 border-b border-glass-border flex items-center justify-between">
+          <div className="flex items-center gap-1.5">
+            <SlidersHorizontal size={13} className="text-primary" />
+            <span className="text-xs font-semibold">{t('sidebar.title')}</span>
           </div>
-          <p className="text-2xs text-muted-foreground">
-            {t('sidebar.found')}{' '}
-            <span className="text-foreground font-medium">{total}</span>
-            {' '}{t('sidebar.from')}{' '}
-            <span className="text-foreground font-medium">{tasks.length + (isLoading ? 0 : 0)}</span>
-          </p>
+          {activeFilterCount > 0 && (
+            <button
+              onClick={clearAll}
+              className="flex items-center gap-0.5 text-2xs text-muted-foreground hover:text-primary transition-colors"
+            >
+              <X size={10} />
+              {t('sidebar.reset', { count: activeFilterCount })}
+            </button>
+          )}
         </div>
 
-        {/* Filter panels */}
-        <div className="flex-1 overflow-y-auto custom-scrollbar px-5 py-4 space-y-4">
+        {/* Filters scroll area */}
+        <div className="flex-1 overflow-y-auto custom-scrollbar px-4 py-3 space-y-4">
+
           {/* Status */}
           <FilterSection title={t('filter.status.label')}>
-            <div className="grid grid-cols-2 gap-1.5">
-              {STATUS_OPTIONS.map(opt => (
+            <div className="grid grid-cols-2 gap-1">
+              {STATUS_IDS.map(id => (
                 <button
-                  key={opt.id}
-                  onClick={() => update('status', opt.id)}
-                  className={`px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-all duration-150 outline-none ${
-                    filters.status === opt.id
-                      ? 'bg-primary text-primary-foreground border-transparent shadow-sm'
-                      : 'bg-card border-glass-border text-muted-foreground hover:text-foreground hover:border-primary/30 hover:bg-hover'
+                  key={id}
+                  onClick={() => update('status', id)}
+                  className={`px-2 py-1 rounded-md text-2xs font-medium border transition-all duration-150 outline-none ${
+                    filters.status === id
+                      ? 'bg-primary/15 border-primary/40 text-primary'
+                      : 'bg-glass border-glass-border text-muted-foreground hover:text-foreground hover:border-primary/25 hover:bg-hover'
                   }`}
                 >
-                  {opt.label}
+                  {t(`filter.status.${id}`)}
                 </button>
               ))}
             </div>
@@ -122,13 +105,15 @@ export const TasksListPage: React.FC = () => {
           {/* Database */}
           {databases.length > 0 && (
             <FilterSection title={t('filter.database')} icon={Database}>
-              <div className="flex flex-wrap gap-1.5">
+              <div className="flex flex-wrap gap-1">
                 {databases.map(db => (
                   <FilterChip
                     key={db.id}
                     label={db.display_name}
                     active={filters.selectedDatabaseId === db.id}
-                    onClick={() => update('selectedDatabaseId', filters.selectedDatabaseId === db.id ? null : db.id)}
+                    onClick={() => update('selectedDatabaseId',
+                      filters.selectedDatabaseId === db.id ? null : db.id
+                    )}
                   />
                 ))}
               </div>
@@ -138,7 +123,7 @@ export const TasksListPage: React.FC = () => {
           {/* Tags */}
           {tags.length > 0 && (
             <FilterSection title={t('filter.tags')} icon={Tag} defaultOpen={false}>
-              <div className="flex flex-wrap gap-1.5">
+              <div className="flex flex-wrap gap-1">
                 {tags.map(tag => (
                   <FilterChip
                     key={tag.id}
@@ -151,99 +136,94 @@ export const TasksListPage: React.FC = () => {
             </FilterSection>
           )}
         </div>
+
+        {/* Footer stats */}
+        <div className="px-4 py-2.5 border-t border-glass-border bg-glass/30">
+          <p className="text-2xs text-muted-foreground">
+            {t('sidebar.found')} <span className="text-foreground font-semibold tabular-nums">{total}</span>
+          </p>
+        </div>
       </aside>
 
-      {/* ===================== MAIN ===================== */}
+      {/* ── MAIN ────────────────────────────────────────────────────────── */}
       <main className="flex-1 flex flex-col h-full overflow-hidden">
-        {/* Header */}
-        <div className="px-8 py-5 border-b border-glass-border/60 flex items-center justify-between gap-4 shrink-0">
-          <div>
-            <h1 className="text-xl font-semibold tracking-tight">{t('page.title')}</h1>
-            <p className="text-2xs text-muted-foreground mt-0.5">{t('page.subtitle')}</p>
+
+        {/* Topbar */}
+        <div className="px-6 py-3.5 border-b border-glass-border flex items-center gap-3 shrink-0 bg-glass/40 backdrop-blur-sm">
+          <div className="flex-1 min-w-0">
+            <h1 className="text-base font-bold tracking-tight">{t('page.title')}</h1>
+            <p className="text-2xs text-muted-foreground">{t('page.subtitle')}</p>
           </div>
 
-          <div className="flex items-center gap-3">
-            {/* Search */}
-            <div className="relative">
-              <Search size={14} className="text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2" />
-              <input
-                value={filters.search}
-                onChange={e => update('search', e.target.value)}
-                placeholder={t('page.search_placeholder')}
-                className="bg-card border border-glass-border rounded-lg pl-9 pr-3 py-2 text-sm w-60 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 transition-all placeholder:text-muted-foreground"
-              />
-            </div>
+          {/* Search */}
+          <div className="relative">
+            <Search size={13} className="text-muted-foreground absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <input
+              value={filters.search}
+              onChange={e => update('search', e.target.value)}
+              placeholder={t('page.search_placeholder')}
+              className="bg-glass border border-glass-border rounded-lg pl-8 pr-3 py-1.5 text-xs w-52 focus:outline-none focus:ring-1 focus:ring-primary/40 focus:border-primary/50 transition-all placeholder:text-muted-foreground/60 backdrop-blur-sm"
+            />
+          </div>
 
-            {/* Sort */}
-            <div className="flex items-center bg-card border border-glass-border rounded-lg overflow-hidden">
-              <button
-                onClick={() => update('sortBy', 'created')}
-                className={`px-3 py-2 text-xs font-medium transition-colors ${
-                  filters.sortBy === 'created'
-                    ? 'bg-hover text-foreground'
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                {t('sort.created')}
-              </button>
-              <div className="w-px h-5 bg-glass-border" />
-              <button
-                onClick={() => update('sortBy', 'solved')}
-                className={`px-3 py-2 text-xs font-medium transition-colors ${
-                  filters.sortBy === 'solved'
-                    ? 'bg-hover text-foreground'
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                {t('sort.solved')}
-              </button>
-              <div className="w-px h-5 bg-glass-border" />
-              <button
-                onClick={() => update('sortDir', filters.sortDir === 'asc' ? 'desc' : 'asc')}
-                className="px-2.5 py-2 text-muted-foreground hover:text-primary transition-colors"
-                title={filters.sortDir === 'asc' ? t('sort.ascending') : t('sort.descending')}
-              >
-                {filters.sortDir === 'asc'
-                  ? <ArrowUp size={14} />
-                  : <ArrowDown size={14} />
-                }
-              </button>
-            </div>
-
-            {/* Create task */}
-            <button className="bg-primary text-primary-foreground rounded-lg px-4 py-2 text-sm font-semibold flex items-center gap-2 shadow-sm hover:shadow-[0_4px_20px_-2px_hsl(var(--glow)/0.4)] hover:brightness-105 transition-all duration-200 active:scale-[0.98]">
-              <Plus size={15} />
-              {t('page.create')}
+          {/* Sort toggle */}
+          <div className="flex items-center bg-glass border border-glass-border rounded-lg overflow-hidden shrink-0">
+            <button
+              onClick={() => update('sortBy', 'created')}
+              className={`px-2.5 py-1.5 text-2xs font-medium transition-colors ${
+                filters.sortBy === 'created' ? 'bg-hover text-foreground' : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              {t('sort.created')}
+            </button>
+            <div className="w-px h-4 bg-glass-border" />
+            <button
+              onClick={() => update('sortBy', 'solved')}
+              className={`px-2.5 py-1.5 text-2xs font-medium transition-colors ${
+                filters.sortBy === 'solved' ? 'bg-hover text-foreground' : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              {t('sort.solved')}
+            </button>
+            <div className="w-px h-4 bg-glass-border" />
+            <button
+              onClick={() => update('sortDir', filters.sortDir === 'asc' ? 'desc' : 'asc')}
+              className="px-2 py-1.5 text-muted-foreground hover:text-primary transition-colors"
+            >
+              {filters.sortDir === 'asc' ? <ArrowUp size={13} /> : <ArrowDown size={13} />}
             </button>
           </div>
+
+          {/* Create */}
+          <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-semibold shrink-0 hover:brightness-105 hover:shadow-[0_4px_16px_-4px_hsl(var(--glow)/0.5)] transition-all active:scale-[0.98]">
+            <Plus size={13} />
+            {t('page.create')}
+          </button>
         </div>
 
-        {/* Task list */}
-        <div className="flex-1 overflow-y-auto custom-scrollbar px-8 py-5">
+        {/* List */}
+        <div className="flex-1 overflow-y-auto custom-scrollbar px-6 py-4">
           {isLoading ? (
             <div className="h-full flex items-center justify-center">
-              <div className="text-muted-foreground text-sm animate-pulse">{t('page.loading')}</div>
+              <span className="text-sm text-muted-foreground animate-pulse">{t('page.loading')}</span>
             </div>
           ) : error ? (
             <div className="h-full flex items-center justify-center">
-              <div className="text-destructive text-sm">{error}</div>
+              <span className="text-sm text-destructive">{error}</span>
             </div>
           ) : tasks.length === 0 ? (
-            <div className="h-full flex flex-col items-center justify-center text-center py-20">
-              <div className="w-12 h-12 rounded-full bg-muted/50 flex items-center justify-center mb-4">
-                <Search size={20} className="text-muted-foreground" />
+            <div className="h-full flex flex-col items-center justify-center text-center gap-2">
+              <div className="w-10 h-10 rounded-full bg-muted/40 flex items-center justify-center">
+                <Search size={18} className="text-muted-foreground/50" />
               </div>
-              <p className="text-sm font-medium mb-1">{t('empty.title')}</p>
-              <p className="text-2xs text-muted-foreground mb-4">{t('empty.subtitle')}</p>
-              <button
-                onClick={clearAll}
-                className="text-xs font-medium text-primary hover:underline"
-              >
+              <p className="text-sm font-medium">{t('empty.title')}</p>
+              <p className="text-2xs text-muted-foreground">{t('empty.subtitle')}</p>
+              <button onClick={clearAll} className="text-xs text-primary hover:underline mt-1">
                 {t('empty.reset')}
               </button>
             </div>
           ) : (
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-1.5">
               {tasks.map(task => (
                 <TaskRow key={task.id} task={task} onToggleFlag={handleToggleFlag} />
               ))}

@@ -17,21 +17,21 @@ export const FilterSection: React.FC<FilterSectionProps> = ({
   const [open, setOpen] = useState(defaultOpen);
 
   return (
-    <div className="border-b border-glass-border/60 pb-4 last:border-b-0 last:pb-0">
+    <div>
       <button
-        onClick={() => setOpen((v) => !v)}
-        className="w-full flex items-center justify-between mb-3 group outline-none"
+        onClick={() => setOpen(v => !v)}
+        className="w-full flex items-center gap-1.5 mb-2 outline-none group"
       >
-        <div className="flex items-center gap-2 text-xs font-semibold text-foreground">
-          {Icon && <Icon size={13} className="text-muted-foreground" />}
+        {Icon && <Icon size={11} className="text-muted-foreground/60" />}
+        <span className="flex-1 text-left text-2xs font-bold uppercase tracking-widest text-muted-foreground/60 group-hover:text-muted-foreground transition-colors">
           {title}
-        </div>
+        </span>
         <ChevronDown
-          size={14}
-          className={`text-muted-foreground transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
+          size={11}
+          className={`text-muted-foreground/40 transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
         />
       </button>
-      {open && <div>{children}</div>}
+      {open && children}
     </div>
   );
 };

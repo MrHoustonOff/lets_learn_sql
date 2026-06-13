@@ -1,6 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { DIFFICULTY_TIERS, getTier, getStep } from './difficulty';
+import { DIFFICULTY_TIERS } from './difficulty';
 
 interface DifficultyMatrixProps {
   selected: number[];
@@ -11,35 +11,37 @@ export const DifficultyMatrix: React.FC<DifficultyMatrixProps> = ({ selected, on
   const { t } = useTranslation('tasks_list');
 
   return (
-    <div className="space-y-3">
-      {DIFFICULTY_TIERS.map((tier) => (
-        <div key={tier.key} className="space-y-1.5">
-          <div className="flex items-center gap-2 text-2xs font-semibold uppercase tracking-wider text-muted-foreground">
-            <span className={`w-1.5 h-1.5 rounded-full ${tier.color}`} />
-            {t(tier.labelKey)}
+    <div className="space-y-2">
+      {DIFFICULTY_TIERS.map((tier, tierIdx) => (
+        <div key={tier.key} className="flex items-center gap-1.5">
+          {/* Tier label */}
+          <div className="flex items-center gap-1 w-14 shrink-0">
+            <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${tier.color}`} />
+            <span className="text-2xs text-muted-foreground font-medium truncate">{t(tier.labelKey)}</span>
           </div>
-          <div className="flex gap-1.5">
+          {/* 3 level buttons */}
+          <div className="flex gap-1 flex-1">
             {[1, 2, 3].map((step) => {
-              const diffId = (DIFFICULTY_TIERS.indexOf(tier)) * 3 + step;
+              const diffId = tierIdx * 3 + step;
               const active = selected.includes(diffId);
               return (
                 <button
                   key={diffId}
                   onClick={() => onToggle(diffId)}
                   title={`${t(tier.labelKey)} ${step}/3`}
-                  className={`flex-1 h-9 rounded-lg border flex items-center justify-center gap-0.5 transition-all duration-150 outline-none ${
+                  className={`flex-1 h-6 rounded-md flex items-center justify-center gap-[3px] transition-all duration-150 outline-none border ${
                     active
-                      ? `border-transparent ${tier.color} shadow-sm`
-                      : 'border-glass-border bg-card hover:border-primary/30 hover:bg-hover'
+                      ? `${tier.color} border-transparent shadow-sm`
+                      : 'bg-glass border-glass-border hover:border-primary/30 hover:bg-hover'
                   }`}
                 >
                   {[1, 2, 3].map((i) => (
                     <span
                       key={i}
-                      className={`w-1.5 h-1.5 rounded-full transition-colors ${
+                      className={`w-1 h-1 rounded-full transition-colors ${
                         i <= step
-                          ? active ? 'bg-white/80' : tier.color
-                          : active ? 'bg-white/25' : 'bg-muted-foreground/20'
+                          ? active ? 'bg-white/70' : tier.color
+                          : active ? 'bg-white/20' : 'bg-muted-foreground/20'
                       }`}
                     />
                   ))}
