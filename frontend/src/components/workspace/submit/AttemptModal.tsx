@@ -4,12 +4,16 @@ import { ShieldCheck, ShieldX, Copy, Check, Trash2 } from 'lucide-react';
 import { ModalBase } from '../../ui/ModalBase';
 import { ConfirmModal } from '../../ui/ConfirmModal';
 import { SqlCodeViewer } from '../../ui/SqlCodeViewer';
+import { Stage1Report } from './Stage1Report';
+import { Stage2Report } from './Stage2Report';
+import { SqlErrorBanner } from './SqlErrorBanner';
 import { formatDateTime } from '../../../lib/utils';
 
 export const AttemptModal: React.FC<{
   attempt: any | null;
   onClose: () => void;
-}> = ({ attempt, onClose }) => {
+  onDelete?: () => void;
+}> = ({ attempt, onClose, onDelete }) => {
   const { t } = useTranslation('submit_report');
   const [copiedCode, setCopiedCode] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState(false);
@@ -24,7 +28,7 @@ export const AttemptModal: React.FC<{
     <ModalBase 
       isOpen={!!attempt} 
       onClose={onClose}
-      title={`Попытка ${attempt?.id?.split('-').pop() || attempt?.attempt_id}`}
+      title={`${t('attempt_prefix', 'Попытка №')}${attempt?.attempt_id || String(attempt?.id || '').split('-').pop()}`}
     >
       <div className="flex h-full bg-background flex-1 overflow-hidden">
         {/* Left: Code */}
@@ -68,21 +72,40 @@ export const AttemptModal: React.FC<{
               {attempt?.verdict ? t('verdict_passed', 'Зачтено') : t('verdict_failed', 'Не зачтено')}
             </p>
           </div>
+
+          <div className="flex flex-col gap-4">
+            {attempt?.report?.error || attempt?.report?.stage1?.sql_error ? (
+              <SqlErrorBanner error={attempt?.report?.error || attempt?.report?.stage1?.sql_error} duration={attempt?.duration_ms || 0} />
+            ) : null}
+
+            {attempt?.report && !(attempt?.report?.error || attempt?.report?.stage1?.sql_error) && (
+              <>
+                {attempt.report.stage1 && (
+                  <Stage1Report report={attempt.report.stage1} />
+                )}
+                {attempt.report.stage2 && attempt.report.stage2.ran && (
+                  <Stage2Report report={attempt.report.stage2} />
+                )}
+              </>
+            )}
+          </div>
         </div>
       </div>
 
       <ConfirmModal
         isOpen={deleteConfirm}
-        onClose={() => setDeleteConfirm(false)}
-        onConfirm={() => {
-          console.log('Delete single mocked');
-          setDeleteConfirm(false);
-          onClose();
-        }}
         title={attempt?.verdict ? t('delete_single_correct_title', 'Удаление верной попытки') : t('delete_single_incorrect_title', 'Удаление неверной попытки')}
         confirmText={t('delete_single_confirm_btn', 'Да, удаляй её!')}
         cancelText={t('cancel_single', 'Нет, оставь её.')}
         variant="destructive"
+        onConfirm={() => {
+          if (onDelete) {
+            onDelete();
+          }
+          setDeleteConfirm(false);
+          onClose();
+        }}
+        onClose={() => setDeleteConfirm(false)}
       >
         {attempt?.verdict ? (
           <Trans 

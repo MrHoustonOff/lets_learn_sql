@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, CheckCircle2, Circle, Star, ArrowRight, Database } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, Circle, Star, ArrowRight, Database, Bookmark } from 'lucide-react';
 import { DBViewerModal } from '../components/workspace/DBViewerModal';
 
 interface TaskDetails {
@@ -155,33 +155,41 @@ export const CourseDetailsPage: React.FC = () => {
             )}
 
             <ul className="space-y-2 pl-2">
-              {section.tasks.map((task, idx) => (
-                <li 
-                  key={task.id} 
-                  onClick={() => navigate(`/tasks/${task.id}`)}
-                  className="flex items-center justify-between py-2 px-3 rounded-xl hover:bg-hover transition-colors group cursor-pointer"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="relative shrink-0 flex items-center justify-center w-5 h-5">
-                      {task.status === 'done' ? (
-                        <CheckCircle2 size={18} className="text-success" />
-                      ) : (
-                        <Circle size={16} className="text-muted-foreground opacity-50" />
-                      )}
-                      {task.bookmarked && (
-                        <Star size={10} className="absolute -top-1 -right-1 text-warning fill-warning" />
-                      )}
+              {section.tasks.map((task, idx) => {
+                const isBookmarked = task.bookmarked;
+                const isDone = task.status === 'done';
+                return (
+                  <li 
+                    key={task.id} 
+                    onClick={() => navigate(`/tasks/${task.id}`)}
+                    className={`flex items-center justify-between py-2 px-3 rounded-xl hover:bg-hover transition-colors group cursor-pointer border border-transparent ${
+                      isBookmarked ? 'bg-warning/5 border-warning/20' : ''
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="relative shrink-0 flex items-center justify-center w-5 h-5">
+                        {isDone ? (
+                          <CheckCircle2 size={18} className="text-success" />
+                        ) : isBookmarked ? (
+                          <Bookmark size={16} className="text-warning fill-warning" />
+                        ) : (
+                          <Circle size={16} className="text-muted-foreground opacity-50" />
+                        )}
+                        {isDone && isBookmarked && (
+                          <Bookmark size={10} className="absolute -top-1 -right-1 text-warning fill-warning drop-shadow-sm" />
+                        )}
+                      </div>
+                      <span className={`text-sm ${isDone ? 'text-muted-foreground line-through opacity-70' : isBookmarked ? 'text-warning-text font-bold' : 'text-foreground font-medium'}`}>
+                        {idx + 1}. {task.title}
+                      </span>
                     </div>
-                    <span className={`text-sm ${task.status === 'done' ? 'text-muted-foreground line-through opacity-70' : 'text-foreground font-medium'}`}>
-                      {idx + 1}. {task.title}
-                    </span>
-                  </div>
 
-                  <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 text-xs font-medium bg-primary/10 text-primary hover:bg-primary/20 px-3 py-1.5 rounded-lg pointer-events-none">
-                    {t('courses_page:solve')} <ArrowRight size={14} />
-                  </div>
-                </li>
-              ))}
+                    <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 text-xs font-medium bg-primary/10 text-primary hover:bg-primary/20 px-3 py-1.5 rounded-lg pointer-events-none">
+                      {t('courses_page:solve')} <ArrowRight size={14} />
+                    </div>
+                  </li>
+                );
+              })}
             </ul>
           </div>
         ))}

@@ -58,15 +58,40 @@ export const useTaskStore = create<TaskState>((set, get) => ({
   },
   
   toggleBookmark: async () => {
-    // Local placeholder for bookmark state toggling
     const { activeTask } = get();
     if (!activeTask) return;
+    
+    // Optimistic update
+    const previousState = activeTask.isBookmarked;
     set({
       activeTask: {
         ...activeTask,
-        isBookmarked: !activeTask.isBookmarked
+        isBookmarked: !previousState
       }
     });
+
+    try {
+      const response = await fetch(`/api/tasks/${activeTask.id}/bookmark`, { method: 'POST' });
+      if (!response.ok) throw new Error('Failed to toggle bookmark');
+      const data = await response.json();
+      
+      // Sync with server state
+      set({
+        activeTask: {
+          ...activeTask,
+          isBookmarked: data.is_bookmarked
+        }
+      });
+    } catch (err) {
+      // Revert on error
+      set({
+        activeTask: {
+          ...activeTask,
+          isBookmarked: previousState
+        }
+      });
+      console.error('Bookmark toggle error:', err);
+    }
   },
   
   toggleSolved: () => {

@@ -83,6 +83,14 @@ interface QueryState {
   // Display settings
   maxRowsToDisplay: number;
   setMaxRowsToDisplay: (max: number) => void;
+
+  // History
+  history: any[];
+  isHistoryLoading: boolean;
+  fetchHistory: (taskId: number) => Promise<void>;
+  deleteAttempt: (taskId: number, attemptId: number) => Promise<void>;
+  deleteAllAttempts: (taskId: number, type: 'all' | 'correct' | 'incorrect') => Promise<void>;
+  resetQueryState: () => void;
 }
 
 import { useExplainStore } from './explainStore';
@@ -99,6 +107,55 @@ export const useQueryStore = create<QueryState>((set, get) => ({
 
   maxRowsToDisplay: 100,
   setMaxRowsToDisplay: (max) => set({ maxRowsToDisplay: max }),
+
+  history: [],
+  isHistoryLoading: false,
+
+  fetchHistory: async (taskId) => {
+    set({ isHistoryLoading: true });
+    try {
+      const res = await fetch(`/api/tasks/${taskId}/attempts`);
+      if (res.ok) {
+        const data = await res.json();
+        set({ history: data });
+      }
+    } catch (e) {
+      console.error('Failed to fetch history', e);
+    } finally {
+      set({ isHistoryLoading: false });
+    }
+  },
+
+  deleteAttempt: async (taskId, attemptId) => {
+    try {
+      const res = await fetch(`/api/tasks/${taskId}/attempts/${attemptId}`, { method: 'DELETE' });
+      if (res.ok) {
+        get().fetchHistory(taskId);
+      }
+    } catch (e) {
+      console.error('Failed to delete attempt', e);
+    }
+  },
+
+  deleteAllAttempts: async (taskId, type) => {
+    try {
+      const res = await fetch(`/api/tasks/${taskId}/attempts?type=${type}`, { method: 'DELETE' });
+      if (res.ok) {
+        get().fetchHistory(taskId);
+      }
+    } catch (e) {
+      console.error('Failed to mass delete attempts', e);
+    }
+  },
+
+  resetQueryState: () => set({
+    sql: '',
+    result: null,
+    error: null,
+    submitResult: null,
+    submitError: null,
+    history: [],
+  }),
 
   setSql: (sql) => set({ sql }),
 
@@ -151,8 +208,11 @@ export const useQueryStore = create<QueryState>((set, get) => ({
         throw new Error(errData.detail || 'Submit failed');
       }
 
-      const report: GradeReport = await response.json();
-      set({ submitResult: report, isSubmitting: false });
+      const result = await response.json();
+      set({ submitResult: result, isSubmitting: false });
+      
+      // Refresh history after submit
+      get().fetchHistory(taskId);
     } catch (error: any) {
       set({ submitError: error.message || 'An unknown error occurred', isSubmitting: false });
     }

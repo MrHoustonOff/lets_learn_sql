@@ -166,9 +166,6 @@ export const SqlErrorBanner: React.FC<{ error: string; duration?: number }> = ({
                 }
               })}
             </div>
-            <p className="text-tiny text-foreground/80 m-0">
-              {t('err_coltype_desc', 'Типы некоторых колонок не совпадают с эталонным решением. Попробуйте привести их (CAST).')}
-            </p>
           </ErrorCard>
         );
       } catch (e) {

@@ -28,24 +28,31 @@ export const MOCK_STAGE2_REPORT: any = {
   rules: [
     {
       rule_id: 'rule1',
+      category: 'function',
+      condition: 'required',
+      params: { function_name: 'ROUND' },
       message: 'Запрос должен использовать функцию ROUND',
       detail_msg: 'функция ROUND используется',
       passed: true,
-      severity: 'error'
+      severity: 'blocking'
     },
     {
       rule_id: 'rule2',
+      category: 'select_star',
+      condition: 'forbidden',
+      params: {},
       message: 'Использование SELECT * запрещено',
       detail_msg: 'SELECT * на верхнем уровне запроса',
-      hint: 'Перечисли явно нужные колонки вместо SELECT *',
       passed: false,
-      severity: 'error'
+      severity: 'blocking'
     },
     {
       rule_id: 'rule3',
+      category: 'alias',
+      condition: 'required',
+      params: { scope: 'both' },
       message: 'Необходимо использовать алиасы (AS) для: колонки и таблицы',
       detail_msg: '2 из 3 колонок без алиаса',
-      hint: 'Используй алиасы — это улучшит читаемость запроса',
       passed: false,
       severity: 'warning'
     }

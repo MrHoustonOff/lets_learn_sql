@@ -12,7 +12,8 @@ type SortOrder = 'asc' | 'desc';
 export const HistoryPanel: React.FC<{
   history: any[];
   onOpenAttempt: (attempt: any) => void;
-}> = ({ history, onOpenAttempt }) => {
+  onDeleteAll?: (type: 'all' | 'correct' | 'incorrect') => void;
+}> = ({ history, onOpenAttempt, onDeleteAll }) => {
   const { t } = useTranslation('submit_report');
   
   const [currentPage, setCurrentPage] = useState(1);
@@ -73,87 +74,109 @@ export const HistoryPanel: React.FC<{
       infoText={t('previous_solutions_hint', 'Кликните по попытке, чтобы посмотреть её код и детали, или удалить. Вы также можете массово удалить все решения ниже.')}
     >
       <div className="flex flex-col gap-3">
-        <div className="flex flex-col gap-1">
-          {/* Table Header for Sorting */}
-          <div className="flex items-center justify-between px-3 py-1.5 text-2xs text-muted-foreground uppercase tracking-wider font-semibold border-b border-glass-border mb-1">
-            <button onClick={() => handleSort('verdict')} className={getSortBtnClass('verdict')}>
-              {t('sort_status', 'Статус')} <SortIcon field="verdict" />
-            </button>
-            <div className="flex items-center gap-6">
-              <button onClick={() => handleSort('date')} className={getSortBtnClass('date')}>
-                {t('sort_date', 'Дата')} <SortIcon field="date" />
-              </button>
-              <button onClick={() => handleSort('duration')} className={getSortBtnClass('duration')}>
-                {t('sort_time', 'Время')} <SortIcon field="duration" />
-              </button>
-            </div>
+        {history.length === 0 ? (
+          <div className="text-center py-6 px-4 bg-muted/10 rounded-xl border border-dashed border-glass-border">
+            <p className="text-sm text-muted-foreground">{t('no_history_yet', 'Решений пока не было. Отправьте свой первый запрос!')}</p>
           </div>
+        ) : (
+          <>
+            <div className="flex flex-col gap-1">
+              {/* Table Header for Sorting */}
+              <div className="flex items-center justify-between px-3 py-1.5 text-2xs text-muted-foreground uppercase tracking-wider font-semibold border-b border-glass-border mb-1">
+                <button onClick={() => handleSort('verdict')} className={getSortBtnClass('verdict')}>
+                  {t('sort_status', 'Статус')} <SortIcon field="verdict" />
+                </button>
+                <div className="flex items-center gap-6">
+                  <button onClick={() => handleSort('date')} className={getSortBtnClass('date')}>
+                    {t('sort_date', 'Дата')} <SortIcon field="date" />
+                  </button>
+                  <button onClick={() => handleSort('duration')} className={getSortBtnClass('duration')}>
+                    {t('sort_time', 'Время')} <SortIcon field="duration" />
+                  </button>
+                </div>
+              </div>
 
-          {currentHistory.map((attempt) => (
-            <button
-              key={attempt.attempt_id || attempt.id}
-              onClick={() => onOpenAttempt(attempt)}
-              className={`flex items-center justify-between px-3 py-1.5 rounded-md border border-transparent transition-all w-full text-left focus:outline-none ${attempt.verdict ? 'bg-success/10 hover:bg-success/20' : 'bg-destructive/10 hover:bg-destructive/20'}`}
-            >
+              {currentHistory.map((attempt) => (
+                <button
+                  key={attempt.attempt_id || attempt.id}
+                  onClick={() => onOpenAttempt(attempt)}
+                  className={`flex items-center justify-between px-3 py-1.5 rounded-md border border-transparent transition-all w-full text-left focus:outline-none ${attempt.verdict ? 'bg-success/10 hover:bg-success/20' : 'bg-destructive/10 hover:bg-destructive/20'}`}
+                >
+                  <div className="flex items-center gap-2">
+                    <StatusIcon passed={attempt.verdict} size={14} />
+                    <span className="text-xs font-medium text-foreground">
+                      {t('attempt_prefix', 'Попытка №')}{String(attempt.attempt_id || attempt.id).split('-').pop()}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                    <span className="tabular-nums font-mono">
+                      {formatDateTime(getAttemptDate(attempt))}
+                    </span>
+                    <span className="w-12 text-right tabular-nums font-mono opacity-60">
+                      {getAttemptDuration(attempt)}ms
+                    </span>
+                  </div>
+                </button>
+              ))}
+            </div>
+
+            {/* Pagination & Mass Delete */}
+            <div className="flex items-center justify-between mt-2 pt-2 border-t border-glass-border">
               <div className="flex items-center gap-2">
-                <StatusIcon passed={attempt.verdict} size={14} />
-                <span className="text-xs font-medium text-foreground">
-                  {t('attempt_prefix', 'Попытка №')}{(attempt.attempt_id || attempt.id)?.split('-').pop()}
-                </span>
+                <button 
+                  onClick={() => setDeleteConfirm('incorrect')}
+                  disabled={!history.some(a => !a.verdict)}
+                  className="px-2 py-1 text-xs text-muted-foreground/60 hover:text-destructive hover:bg-destructive/10 rounded-md transition-colors disabled:opacity-30 disabled:pointer-events-none"
+                  title={t('delete_incorrect_attempts', 'Удалить все неудачные попытки')}
+                >
+                  {t('delete_incorrect_btn', 'Очистить ошибки')}
+                </button>
+                <div className="w-px h-3 bg-glass-border" />
+                <button 
+                  onClick={() => setDeleteConfirm('correct')}
+                  disabled={!history.some(a => a.verdict)}
+                  className="px-2 py-1 text-xs text-muted-foreground/60 hover:text-destructive hover:bg-destructive/10 rounded-md transition-colors disabled:opacity-30 disabled:pointer-events-none"
+                  title={t('delete_correct_attempts', 'Удалить все правильные попытки')}
+                >
+                  {t('delete_correct_btn', 'Очистить верные')}
+                </button>
               </div>
-              <div className="flex items-center gap-4 text-2xs text-muted-foreground font-mono w-32 justify-end">
-                <span>{formatDateTime(getAttemptDate(attempt))}</span>
-                <span className="w-12 text-right">{getAttemptDuration(attempt)} ms</span>
-              </div>
-            </button>
-          ))}
-        </div>
 
-        {/* Footer: Danger Zone & Paginator */}
-        <div className="flex items-center justify-between mt-2">
-          <div className="flex gap-2">
-            <button 
-              onClick={() => setDeleteConfirm('incorrect')}
-              className="text-2xs text-muted-foreground/60 hover:bg-destructive/10 hover:text-destructive transition-colors uppercase tracking-wider font-semibold px-2 py-1 rounded"
-            >
-              {t('delete_incorrect', 'Удалить неверные')}
-            </button>
-            <button 
-              onClick={() => setDeleteConfirm('correct')}
-              className="text-2xs text-muted-foreground/60 hover:bg-destructive/10 hover:text-destructive transition-colors uppercase tracking-wider font-semibold px-2 py-1 rounded"
-            >
-              {t('delete_correct', 'Удалить верные')}
-            </button>
-          </div>
-
-          {totalPages > 1 && (
-            <div className="flex items-center gap-1 px-1.5 py-1 bg-card border border-glass-border rounded-full shadow-sm">
-              <button 
-                disabled={currentPage === 1}
-                onClick={() => setCurrentPage(p => p - 1)}
-                className="p-1 rounded-full hover:bg-hover disabled:opacity-30 transition-colors text-muted-foreground hover:text-foreground focus:outline-none"
-              >
-                <ChevronLeft size={14} />
-              </button>
-              <span className="text-2xs font-semibold text-foreground px-2 font-mono">
-                {currentPage} <span className="text-muted-foreground/40 mx-0.5">/</span> {totalPages}
-              </span>
-              <button 
-                disabled={currentPage === totalPages}
-                onClick={() => setCurrentPage(p => p + 1)}
-                className="p-1 rounded-full hover:bg-hover disabled:opacity-30 transition-colors text-muted-foreground hover:text-foreground focus:outline-none"
-              >
-                <ChevronRight size={14} />
-              </button>
+              {totalPages > 1 && (
+                <div className="flex items-center gap-1 px-1.5 py-1 bg-card border border-glass-border rounded-full shadow-sm">
+                  <button 
+                    disabled={currentPage === 1}
+                    onClick={() => setCurrentPage(p => p - 1)}
+                    className="p-1 rounded-full hover:bg-hover disabled:opacity-30 transition-colors text-muted-foreground hover:text-foreground focus:outline-none"
+                  >
+                    <ChevronLeft size={14} />
+                  </button>
+                  <span className="text-2xs font-semibold text-foreground px-2 font-mono">
+                    {currentPage} <span className="text-muted-foreground/40 mx-0.5">/</span> {totalPages}
+                  </span>
+                  <button 
+                    disabled={currentPage === totalPages}
+                    onClick={() => setCurrentPage(p => p + 1)}
+                    className="p-1 rounded-full hover:bg-hover disabled:opacity-30 transition-colors text-muted-foreground hover:text-foreground focus:outline-none"
+                  >
+                    <ChevronRight size={14} />
+                  </button>
+                </div>
+              )}
             </div>
-          )}
-        </div>
+          </>
+        )}
       </div>
 
       <ConfirmModal
         isOpen={deleteConfirm === 'incorrect'}
         onClose={() => setDeleteConfirm(null)}
-        onConfirm={() => console.log('Delete incorrect mocked')}
+        onConfirm={() => {
+          if (onDeleteAll) {
+            onDeleteAll('incorrect');
+          }
+          setDeleteConfirm(null);
+        }}
         title={t('delete_incorrect_title', 'Удаление неверных попыток')}
         confirmText={t('delete_confirm_btn', 'Да, удаляй их все!')}
         cancelText={t('cancel', 'Нет, оставь их.')}
@@ -162,10 +185,10 @@ export const HistoryPanel: React.FC<{
         <Trans 
           i18nKey="delete_incorrect_confirm"
           ns="submit_report"
-          defaults="Вы уверены, что хотите удалить <span1>неверные</span1> решения для этой задачи? Будут удалены <span2>ВСЕ</span2> попытки, не прошедшие проверку! Это действие необратимо."
+          defaults="Вы уверены, что хотите удалить ВСЕ <span1>неверные</span1> попытки? Это действие нельзя отменить."
           components={{
-            span1: <span className="text-destructive font-bold" />,
-            span2: <span className="font-bold underline decoration-2 underline-offset-4" />
+            span1: <span className="text-destructive font-bold uppercase" />,
+            span2: <span className="text-foreground font-black underline" />
           }}
         />
       </ConfirmModal>
@@ -173,7 +196,12 @@ export const HistoryPanel: React.FC<{
       <ConfirmModal
         isOpen={deleteConfirm === 'correct'}
         onClose={() => setDeleteConfirm(null)}
-        onConfirm={() => console.log('Delete correct mocked')}
+        onConfirm={() => {
+          if (onDeleteAll) {
+            onDeleteAll('correct');
+          }
+          setDeleteConfirm(null);
+        }}
         title={t('delete_correct_title', 'Удаление верных попыток')}
         confirmText={t('delete_confirm_btn', 'Да, удаляй их все!')}
         cancelText={t('cancel', 'Нет, оставь их.')}
@@ -182,10 +210,10 @@ export const HistoryPanel: React.FC<{
         <Trans 
           i18nKey="delete_correct_confirm"
           ns="submit_report"
-          defaults="Вы уверены, что хотите удалить <span1>верные</span1> решения для этой задачи? Будут удалены <span2>ВСЕ</span2> успешные попытки! Это действие необратимо."
+          defaults="Вы уверены, что хотите удалить ВСЕ <span1>верные</span1> попытки? Это действие нельзя отменить."
           components={{
-            span1: <span className="text-success font-bold" />,
-            span2: <span className="font-bold underline decoration-2 underline-offset-4" />
+            span1: <span className="text-success font-bold uppercase" />,
+            span2: <span className="text-foreground font-black underline" />
           }}
         />
       </ConfirmModal>

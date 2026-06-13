@@ -7,6 +7,8 @@ import { SqlEditorPane } from './SqlEditorPane';
 import { ResultsPane } from './ResultsPane';
 import type { DatabaseMock } from '../../pages/DatabasesListPage';
 
+import { useQueryStore } from '../../store/queryStore';
+
 interface DatabaseDetailsModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -15,10 +17,18 @@ interface DatabaseDetailsModalProps {
 
 export const DatabaseDetailsModal: React.FC<DatabaseDetailsModalProps> = ({ isOpen, onClose, database }) => {
   const { t } = useTranslation();
+  const { resetQueryState } = useQueryStore();
   const [activeTab, setActiveTab] = useState<'schema' | 'editor'>('schema');
   
   // Local state for maximizing panes within the modal
   const [maximizedPane, setMaximizedPane] = useState<'schema' | 'editor' | 'results' | null>(null);
+
+  // Reset query state when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      resetQueryState();
+    }
+  }, [isOpen, resetQueryState]);
 
   // Обработка Esc
   useEffect(() => {

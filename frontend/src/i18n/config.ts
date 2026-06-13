@@ -15,6 +15,7 @@ import taskPaneEn from './locales/en/task_pane.json';
 import sqlEditorEn from './locales/en/sql_editor.json';
 import profileEn from './locales/en/profile.json';
 import submitReportEn from './locales/en/submit_report.json';
+import rulesI18nEn from './locales/en/rules_i18n.json';
 
 // Import locales (ru)
 import commonRu from './locales/ru/common.json';
@@ -29,6 +30,7 @@ import taskPaneRu from './locales/ru/task_pane.json';
 import sqlEditorRu from './locales/ru/sql_editor.json';
 import profileRu from './locales/ru/profile.json';
 import submitReportRu from './locales/ru/submit_report.json';
+import rulesI18nRu from './locales/ru/rules_i18n.json';
 
 const resources = {
   en: {
@@ -44,6 +46,7 @@ const resources = {
     sql_editor: sqlEditorEn,
     profile: profileEn,
     submit_report: submitReportEn,
+    rules_i18n: rulesI18nEn,
   },
   ru: {
     common: commonRu,
@@ -58,6 +61,7 @@ const resources = {
     sql_editor: sqlEditorRu,
     profile: profileRu,
     submit_report: submitReportRu,
+    rules_i18n: rulesI18nRu,
   }
 } as const;
 

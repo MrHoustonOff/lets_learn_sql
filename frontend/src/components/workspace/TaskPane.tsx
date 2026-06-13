@@ -16,14 +16,17 @@ export const TaskPane: React.FC<TaskPaneProps> = ({ slotId }) => {
   const { t } = useTranslation();
   // Use shared tab state from store — SqlEditorPane can switch it on Submit
   const { activeTask, toggleBookmark, taskPaneTab, setTaskPaneTab } = useTaskStore();
-  const { submitResult, isSubmitting, submitError } = useQueryStore();
+  const { submitResult, isSubmitting, submitError, fetchHistory } = useQueryStore();
   const { maximizedPane, setMaximizedPane } = useUIStore();
   const isMaximized = maximizedPane === 'task';
 
-  // Reset tab when task changes
+  // Reset tab and fetch history when task changes
   useEffect(() => {
     setTaskPaneTab('task');
-  }, [activeTask?.id, setTaskPaneTab]);
+    if (activeTask?.id) {
+      fetchHistory(activeTask.id);
+    }
+  }, [activeTask?.id, setTaskPaneTab, fetchHistory]);
 
   if (!activeTask) return null;
 
@@ -124,6 +127,7 @@ export const TaskPane: React.FC<TaskPaneProps> = ({ slotId }) => {
           <div className="animate-in fade-in duration-300 flex flex-col gap-5">
             {/* ===== Submit Report (main content of solution tab) ===== */}
             <SubmitReport
+              taskId={activeTask.id}
               report={submitResult}
               isSubmitting={isSubmitting}
               submitError={submitError}

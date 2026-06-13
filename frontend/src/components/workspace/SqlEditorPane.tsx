@@ -78,6 +78,7 @@ export const SqlEditorPane: React.FC<SqlEditorPaneProps> = ({
           {activeTask && (
             <button
               onClick={() => {
+                executeQuery(activeTask.dbName || 'northwind');
                 submitQuery(activeTask.id, activeTask.dbName || 'northwind');
                 setTaskPaneTab('solution');
               }}

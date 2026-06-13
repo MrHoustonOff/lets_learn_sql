@@ -9,6 +9,7 @@ import { SqlEditorPane } from '../components/workspace/SqlEditorPane';
 import { ResultsPane } from '../components/workspace/ResultsPane';
 import { useUIStore, type SlotId } from '../store/uiStore';
 import { useTaskStore } from '../store/taskStore';
+import { useQueryStore } from '../store/queryStore';
 import { DroppableSlot } from '../components/workspace/DroppableSlot';
 import { ResizeHandle } from '../components/workspace/ResizeHandle';
 import { ViewMenu } from '../components/workspace/ViewMenu';
@@ -53,16 +54,21 @@ export const TaskScreen: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { t } = useTranslation();
   const { activeTask, fetchTask, isLoading, error, setActiveTask } = useTaskStore();
+  const { resetQueryState } = useQueryStore();
   const { maximizedPane, setMaximizedPane, slots } = useUIStore();
 
   useEffect(() => {
+    // Reset state before fetching the new task
+    resetQueryState();
+    
     if (id) {
       fetchTask(id);
     }
     return () => {
       setActiveTask(null);
+      resetQueryState();
     };
-  }, [id, fetchTask, setActiveTask]);
+  }, [id, fetchTask, setActiveTask, resetQueryState]);
 
 
   const mainGroupRef = useRef<GroupImperativeHandle>(null);

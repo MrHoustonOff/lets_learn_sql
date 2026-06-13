@@ -1,5 +1,5 @@
 import time
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel
 from typing import Optional, List
 from core.sqlite_db import get_sqlite_conn
@@ -144,3 +144,105 @@ async def get_task_solution(id: int):
         )
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Reference SQL error: {str(e)}")
+
+# -----------------------------------------------------------------------------
+# Attempts History
+# -----------------------------------------------------------------------------
+
+@router.get("/tasks/{id}/attempts")
+async def get_task_attempts(id: int, request: Request):
+    """Fetch history of attempts for a specific task."""
+    sqlite = await get_sqlite_conn()
+    if not sqlite:
+        raise HTTPException(status_code=500, detail="Database connection not available")
+
+    # Hardcoded user_id=1 for now (per initial structure)
+    user_id = getattr(request.state, "user_id", 1)
+
+    query = """
+        SELECT id, sql_text, is_correct, report_json, created_at
+        FROM attempts
+        WHERE task_id = ? AND user_id = ?
+        ORDER BY created_at DESC
+    """
+    async with sqlite.execute(query, (id, user_id)) as cursor:
+        rows = await cursor.fetchall()
+
+    import json
+    results = []
+    for row in rows:
+        try:
+            report = json.loads(row["report_json"])
+            duration = report.get("duration_ms", 0)
+        except Exception:
+            report = {}
+            duration = 0
+
+        # SQLite stores CURRENT_TIMESTAMP in UTC, but without 'Z' or 'T'
+        created_at_str = str(row["created_at"]).replace(" ", "T")
+        if not created_at_str.endswith("Z"):
+            created_at_str += "Z"
+
+        results.append({
+            "id": row["id"],
+            "attempt_id": str(row["id"]), # for frontend
+            "sql": row["sql_text"],
+            "verdict": bool(row["is_correct"]),
+            "created_at": created_at_str,
+            "date": created_at_str, # for frontend compat
+            "duration_ms": duration,
+            "report": report
+        })
+
+    return results
+
+@router.delete("/tasks/{id}/attempts/{attempt_id}")
+async def delete_task_attempt(id: int, attempt_id: int, request: Request):
+    """Delete a specific attempt."""
+    sqlite = await get_sqlite_conn()
+    user_id = getattr(request.state, "user_id", 1)
+    
+    await sqlite.execute(
+        "DELETE FROM attempts WHERE id = ? AND task_id = ? AND user_id = ?",
+        (attempt_id, id, user_id)
+    )
+    await sqlite.commit()
+    return {"status": "ok"}
+
+@router.delete("/tasks/{id}/attempts")
+async def delete_all_task_attempts(id: int, request: Request, type: str = "all"):
+    """Mass delete attempts: 'all', 'correct', 'incorrect'."""
+    sqlite = await get_sqlite_conn()
+    user_id = getattr(request.state, "user_id", 1)
+
+    if type == "all":
+        await sqlite.execute("DELETE FROM attempts WHERE task_id = ? AND user_id = ?", (id, user_id))
+    elif type == "correct":
+        await sqlite.execute("DELETE FROM attempts WHERE task_id = ? AND user_id = ? AND is_correct = 1", (id, user_id))
+    elif type == "incorrect":
+        await sqlite.execute("DELETE FROM attempts WHERE task_id = ? AND user_id = ? AND is_correct = 0", (id, user_id))
+    else:
+        raise HTTPException(status_code=400, detail="Invalid type")
+
+    await sqlite.commit()
+    return {"status": "ok"}
+
+@router.post("/tasks/{id}/bookmark")
+async def toggle_bookmark(id: int, request: Request):
+    """Toggle bookmark state for a task."""
+    sqlite = await get_sqlite_conn()
+    user_id = getattr(request.state, "user_id", 1)
+    
+    # Check if already bookmarked
+    async with sqlite.execute("SELECT 1 FROM task_flags WHERE task_id = ? AND user_id = ?", (id, user_id)) as cursor:
+        existing = await cursor.fetchone()
+        
+    if existing:
+        await sqlite.execute("DELETE FROM task_flags WHERE task_id = ? AND user_id = ?", (id, user_id))
+        is_bookmarked = False
+    else:
+        await sqlite.execute("INSERT INTO task_flags (task_id, user_id) VALUES (?, ?)", (id, user_id))
+        is_bookmarked = True
+        
+    await sqlite.commit()
+    return {"is_bookmarked": is_bookmarked}
