@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { AppWindow, RefreshCw, LayoutTemplate, Type, Minus, Plus, WrapText, Check, RotateCcw } from 'lucide-react';
+import { AppWindow, RefreshCw, LayoutTemplate, Type, Minus, Plus, WrapText, Check, RotateCcw, Layers } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useUIStore } from '../../store/uiStore';
 import { InfoTooltip } from '../ui/InfoTooltip';
@@ -12,7 +12,7 @@ export const ViewMenu: React.FC<ViewMenuProps> = ({ onResetProportions }) => {
   const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
-  const { resetSlots, editorFontSize, setEditorFontSize, editorWordWrap, setEditorWordWrap } = useUIStore();
+  const { resetSlots, editorFontSize, setEditorFontSize, editorWordWrap, setEditorWordWrap, hiddenPanels, toggleHiddenPanel } = useUIStore();
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -71,6 +71,47 @@ export const ViewMenu: React.FC<ViewMenuProps> = ({ onResetProportions }) => {
               <InfoTooltip text={t('view_menu.reset_slots_tooltip')} />
             </div>
           </button>
+
+          {/* ---- Panels section ---- */}
+          <div className="w-full h-px bg-glass-border my-1" />
+          <div className="px-2 py-1.5 flex items-center gap-2">
+            <span className="text-2xs font-extrabold uppercase tracking-widest text-muted-foreground/70 flex-1">
+              {t('view_menu.panels', 'Окна')}
+            </span>
+            <div onClick={(e) => e.stopPropagation()}>
+              <InfoTooltip text={t('view_menu.panels_tooltip', 'Отключите тумблер — и панель полностью исчезнет из раскладки, освободив место остальным.')} />
+            </div>
+          </div>
+
+          {(['task', 'editor', 'db', 'results'] as const).map((panel) => {
+            const labels: Record<string, string> = {
+              task: t('view_menu.panel_task', 'Задание'),
+              editor: t('view_menu.panel_editor', 'SQL Editor'),
+              db: t('view_menu.panel_db', 'DB Viewer'),
+              results: t('view_menu.panel_results', 'Output / Explain'),
+            };
+            const isHidden = hiddenPanels.includes(panel);
+            return (
+              <button
+                key={panel}
+                onClick={(e) => { e.stopPropagation(); toggleHiddenPanel(panel); }}
+                className="w-full flex items-center justify-between px-2.5 py-2 rounded-lg text-xs font-semibold text-foreground hover:bg-hover transition-colors outline-none group"
+              >
+                <div className="flex items-center gap-2.5">
+                  <Layers size={14} className={`transition-colors ${isHidden ? 'text-muted-foreground/40' : 'text-muted-foreground group-hover:text-primary'}`} />
+                  <span className={isHidden ? 'text-muted-foreground/50' : ''}>{labels[panel]}</span>
+                </div>
+                {/* Toggle pill */}
+                <div className={`relative w-7 h-4 rounded-full transition-colors flex-shrink-0 ${
+                  isHidden ? 'bg-muted-foreground/20' : 'bg-primary'
+                }`}>
+                  <div className={`absolute top-0.5 w-3 h-3 rounded-full bg-white shadow-sm transition-all ${
+                    isHidden ? 'left-0.5' : 'left-3.5'
+                  }`} />
+                </div>
+              </button>
+            );
+          })}
 
           <div className="w-full h-px bg-glass-border my-1" />
           <div className="px-2 py-1.5">

@@ -23,6 +23,12 @@
     "reset_proportions": "Reset window proportions",
     "reset_proportions_tooltip": "Resets the sizes of all panels to a strict default ratio of 50/50. Window placement is preserved.",
     "reset_slots": "Default panels layout",
-    "reset_slots_tooltip": "You can freely move windows around, and we save it instantly. This button returns each window to its original default location!"
+    "reset_slots_tooltip": "You can freely move windows around, and we save it instantly. This button returns each window to its original default location!",
+    "panels": "Panels",
+    "panels_tooltip": "Toggle a switch off and the panel will completely disappear from the layout, freeing up space for the rest.",
+    "panel_task": "Task",
+    "panel_editor": "SQL Editor",
+    "panel_db": "DB Viewer",
+    "panel_results": "Output / Explain"
   }
 }
