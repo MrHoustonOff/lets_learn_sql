@@ -14,8 +14,6 @@ export const Stage2Report: React.FC<{ report: any }> = ({ report }) => {
       defaultOpen={false}
     >
       <div className="flex flex-col gap-2 mt-2">
-      
-      <div className="flex flex-col gap-2">
         {report.rules.map((r: any) => {
           const isWarning = !r.passed && r.severity === 'warning';
           
