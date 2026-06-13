@@ -82,7 +82,12 @@ export const TaskPreviewModal: React.FC<TaskPreviewModalProps> = ({ taskId, isOp
 
   return (
     <>
-      <ModalBase isOpen={isOpen} onClose={onClose} isMonolith={true}>
+      <ModalBase 
+        isOpen={isOpen} 
+        onClose={onClose} 
+        isMonolith={true}
+        disableEsc={showReference || !!selectedAttempt || deleteConfirm}
+      >
         {loading ? (
           <div className="p-12 flex justify-center text-muted-foreground animate-pulse">
             {t('page.loading')}
