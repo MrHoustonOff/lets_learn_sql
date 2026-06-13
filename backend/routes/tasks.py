@@ -204,6 +204,10 @@ class TaskResponse(BaseModel):
     db_name: str
     is_bookmarked: bool
     is_solved: bool
+    author_name: Optional[str] = None
+    author_url: Optional[str] = None
+    reference_sql: Optional[str] = None
+    tags: List[TagOut] = []
 
 class SolutionResponse(BaseModel):
     solution_sql: str
@@ -213,21 +217,24 @@ class SolutionResponse(BaseModel):
     duration_ms: float
 
 @router.get("/tasks/{id}", response_model=TaskResponse)
-async def get_task_details(id: int):
+async def get_task_details(id: int, request: Request):
     sqlite = await get_sqlite_conn()
     if not sqlite:
         raise HTTPException(status_code=500, detail="Database connection not available")
         
+    user_id = getattr(request.state, "user_id", 1)
+
     query = """
         SELECT t.id, t.title, t.description, t.metadata_json, d.technical_name as db_name,
-               EXISTS(SELECT 1 FROM task_flags tf WHERE tf.task_id = t.id) as is_bookmarked,
-               EXISTS(SELECT 1 FROM attempts a WHERE a.task_id = t.id AND a.is_correct = 1) as is_solved
+               t.author_name, t.author_url, t.reference_sql,
+               EXISTS(SELECT 1 FROM task_flags tf WHERE tf.task_id = t.id AND tf.user_id = ?) as is_bookmarked,
+               EXISTS(SELECT 1 FROM attempts a WHERE a.task_id = t.id AND a.user_id = ? AND a.is_correct = 1) as is_solved
         FROM tasks t
         JOIN databases d ON t.database_id = d.id
         WHERE t.id = ?
     """
     
-    async with sqlite.execute(query, (id,)) as cursor:
+    async with sqlite.execute(query, (user_id, user_id, id)) as cursor:
         row = await cursor.fetchone()
         if not row:
             raise HTTPException(status_code=404, detail="Task not found")
@@ -241,6 +248,14 @@ async def get_task_details(id: int):
         except Exception:
             pass
             
+    async with sqlite.execute(
+        "SELECT tg.id, tg.name FROM tags tg JOIN task_tags tt ON tg.id = tt.tag_id WHERE tt.task_id = ?",
+        (id,)
+    ) as tcur:
+        tags_list = [{"id": r["id"], "name": r["name"]} for r in await tcur.fetchall()]
+
+    is_solved = bool(row["is_solved"])
+
     return TaskResponse(
         id=row["id"],
         title=row["title"],
@@ -248,8 +263,23 @@ async def get_task_details(id: int):
         hint=hint,
         db_name=row["db_name"],
         is_bookmarked=bool(row["is_bookmarked"]),
-        is_solved=bool(row["is_solved"])
+        is_solved=is_solved,
+        author_name=row["author_name"],
+        author_url=row["author_url"],
+        reference_sql=row["reference_sql"] if is_solved else None,
+        tags=tags_list
     )
+
+@router.delete("/tasks/{id}")
+async def delete_task(id: int):
+    sqlite = await get_sqlite_conn()
+    if not sqlite:
+        raise HTTPException(status_code=500, detail="Database connection not available")
+    
+    await sqlite.execute("DELETE FROM tasks WHERE id = ?", (id,))
+    await sqlite.commit()
+    return {"status": "ok"}
+
 
 @router.post("/tasks/{id}/solution", response_model=SolutionResponse)
 async def get_task_solution(id: int):

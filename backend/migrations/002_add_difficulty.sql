@@ -28,5 +28,3 @@ INSERT OR IGNORE INTO tags (name) VALUES
     ('Google'),
     ('Yandex'),
     ('Sber');
-
-INSERT INTO schema_migrations (version) VALUES ('002_add_difficulty.sql');

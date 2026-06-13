@@ -5,6 +5,7 @@ import { FilterSection } from './tasks-list/FilterSection';
 import { FilterChip } from './tasks-list/FilterChip';
 import { DifficultyMatrix } from './tasks-list/DifficultyMatrix';
 import { TaskRow } from './tasks-list/TaskRow';
+import { TaskPreviewModal } from './tasks-list/TaskPreviewModal';
 import { useTasksListData, type FilterState } from './tasks-list/useTasksListData';
 
 const DEFAULT_FILTERS: FilterState = {
@@ -22,6 +23,7 @@ const STATUS_IDS = ['all', 'solved', 'unsolved', 'flagged'] as const;
 export const TasksListPage: React.FC = () => {
   const { t } = useTranslation('tasks_list');
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS);
+  const [selectedTaskId, setSelectedTaskId] = useState<number | null>(null);
 
   const update = useCallback(<K extends keyof FilterState>(key: K, value: FilterState[K]) => {
     setFilters(prev => ({ ...prev, [key]: value }));
@@ -44,10 +46,7 @@ export const TasksListPage: React.FC = () => {
     (filters.selectedDatabaseId ? 1 : 0) +
     (filters.status !== 'all' ? 1 : 0);
 
-  const handleToggleFlag = useCallback(async (taskId: number) => {
-    await fetch(`/api/tasks/${taskId}/bookmark`, { method: 'POST' });
-    refetch();
-  }, [refetch]);
+
 
   return (
     <div className="h-full w-full flex overflow-hidden bg-background">
@@ -121,8 +120,8 @@ export const TasksListPage: React.FC = () => {
           )}
 
           {/* Tags */}
-          {tags.length > 0 && (
-            <FilterSection title={t('filter.tags')} icon={Tag} defaultOpen={false}>
+          <FilterSection title={t('filter.tags')} icon={Tag} defaultOpen={false}>
+            {tags.length > 0 ? (
               <div className="flex flex-wrap gap-1">
                 {tags.map(tag => (
                   <FilterChip
@@ -133,8 +132,12 @@ export const TasksListPage: React.FC = () => {
                   />
                 ))}
               </div>
-            </FilterSection>
-          )}
+            ) : (
+              <div className="text-2xs text-muted-foreground/50 border border-dashed border-glass-border rounded-lg p-3 text-center">
+                Тегов пока нет
+              </div>
+            )}
+          </FilterSection>
         </div>
 
         {/* Footer stats */}
@@ -225,12 +228,22 @@ export const TasksListPage: React.FC = () => {
           ) : (
             <div className="flex flex-col gap-1.5">
               {tasks.map(task => (
-                <TaskRow key={task.id} task={task} onToggleFlag={handleToggleFlag} />
+                <TaskRow key={task.id} task={task} onClick={setSelectedTaskId} />
               ))}
             </div>
           )}
         </div>
       </main>
+
+      {/* Preview Modal */}
+      {selectedTaskId && (
+        <TaskPreviewModal
+          taskId={selectedTaskId}
+          isOpen={true}
+          onClose={() => setSelectedTaskId(null)}
+          onDeleted={refetch}
+        />
+      )}
     </div>
   );
 };

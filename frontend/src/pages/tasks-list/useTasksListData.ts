@@ -1,5 +1,17 @@
 import { useState, useEffect, useCallback } from 'react';
-import type { TaskItem } from './TaskRow';
+export interface TaskItem {
+  id: number;
+  title: string;
+  difficulty: number | null;
+  database_id: number;
+  db_name: string;
+  db_display_name: string;
+  is_solved: boolean;
+  is_flagged: boolean;
+  tags: TagOption[];
+  created_at: string;
+  solved_at: string | null;
+}
 
 export interface FilterState {
   search: string;
