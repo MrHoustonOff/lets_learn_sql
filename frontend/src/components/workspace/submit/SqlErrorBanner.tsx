@@ -16,7 +16,7 @@ const ErrorCard: React.FC<{
         <div className={`w-7 h-7 rounded-md flex items-center justify-center shrink-0 ${iconBgClass}`}>
           {icon}
         </div>
-        <p className="text-[15px] font-medium m-0 text-foreground">{title}</p>
+        <p className="text-sm font-medium m-0 text-foreground">{title}</p>
       </div>
       {duration > 0 && <span className="text-xs text-muted-foreground">{duration} мс</span>}
       {duration === 0 && <span className="text-xs text-muted-foreground">&gt; 5000 мс</span>}
@@ -32,7 +32,7 @@ export const SqlErrorBanner: React.FC<{ error: string; duration?: number }> = ({
     // Fallback for non-preflight generic errors
     return (
       <div className="bg-card rounded-xl border border-glass-border p-4 sm:p-5">
-        <p className="m-0 text-[13px] text-destructive">{error}</p>
+        <p className="m-0 text-tiny text-destructive">{error}</p>
       </div>
     );
   }
@@ -50,11 +50,11 @@ export const SqlErrorBanner: React.FC<{ error: string; duration?: number }> = ({
           duration={0}
         >
           <div className="bg-black/5 dark:bg-white/5 rounded-md px-3 py-2.5 mb-2.5">
-            <p className="font-mono text-[13px] leading-relaxed m-0 text-warning-text">
+            <p className="font-mono text-tiny leading-relaxed m-0 text-warning-text">
               canceling statement due to statement timeout
             </p>
           </div>
-          <p className="text-[13px] text-foreground/80 m-0">
+          <p className="text-tiny text-foreground/80 m-0">
             {t('err_timeout_desc', 'Выполнение прервано по таймауту (5 сек).')}
           </p>
         </ErrorCard>
@@ -75,12 +75,12 @@ export const SqlErrorBanner: React.FC<{ error: string; duration?: number }> = ({
           duration={duration}
         >
           <div className="bg-black/5 dark:bg-white/5 rounded-md px-3 py-2.5 mb-2.5">
-            <p className="font-mono text-[13px] leading-relaxed m-0 text-destructive">{firstLine || errTrace}</p>
+            <p className="font-mono text-tiny leading-relaxed m-0 text-destructive">{firstLine || errTrace}</p>
             {rest.length > 0 && (
               <p className="font-mono text-xs leading-relaxed mt-1 mb-0 text-muted-foreground whitespace-pre-wrap">{rest.join('\n')}</p>
             )}
           </div>
-          <p className="text-[13px] text-foreground/80 m-0">
+          <p className="text-tiny text-foreground/80 m-0">
             {isPlatform 
               ? t('err_platform_desc', 'К сожалению, эталонный запрос упал с ошибкой. Пожалуйста, сообщите администратору.') 
               : t('err_syntax_desc', 'Postgres не смог выполнить запрос.')}
@@ -102,15 +102,15 @@ export const SqlErrorBanner: React.FC<{ error: string; duration?: number }> = ({
         >
           <div className="grid grid-cols-2 gap-3 mb-2.5">
             <div className="bg-black/5 dark:bg-white/5 rounded-md p-4">
-              <p className="text-[13px] text-foreground/80 m-0 mb-1">{t('err_colcount_expected', 'Ожидалось колонок')}</p>
-              <p className="text-2xl font-medium m-0 text-foreground">{expectedCount}</p>
+              <p className="text-tiny text-foreground/80 m-0 mb-1">{t('err_colcount_expected', 'Ожидалось колонок')}</p>
+              <p className="text-2xl font-medium m-0 text-success">{expectedCount}</p>
             </div>
-            <div className="bg-destructive/10 rounded-md p-4">
-              <p className="text-[13px] text-destructive m-0 mb-1">{t('err_colcount_actual', 'Получено')}</p>
+            <div className="bg-destructive/10 rounded-md p-4 border border-destructive/20">
+              <p className="text-tiny text-destructive m-0 mb-1">{t('err_colcount_actual', 'Получено')}</p>
               <p className="text-2xl font-medium m-0 text-destructive">{actualCount}</p>
             </div>
           </div>
-          <p className="text-[13px] text-foreground/80 m-0">
+          <p className="text-tiny text-foreground/80 m-0">
             {isMore ? t('err_colcount_desc_more', 'Ваш запрос возвращает больше колонок, чем требуется по условию.') : t('err_colcount_desc_less', 'Ваш запрос возвращает меньше колонок, чем требуется по условию.')}
           </p>
         </ErrorCard>
@@ -134,7 +134,7 @@ export const SqlErrorBanner: React.FC<{ error: string; duration?: number }> = ({
                     <div key={col.pos} className="grid grid-cols-[28px_minmax(0,1fr)_minmax(0,1fr)_20px] items-center gap-2.5 px-2.5 py-2 bg-black/5 dark:bg-white/5 rounded-md">
                       <span className="text-xs text-muted-foreground">#{col.pos}</span>
                       <div className="min-w-0">
-                        <p className="text-[13px] font-medium text-foreground m-0 truncate">{col.name}</p>
+                        <p className="text-tiny font-medium text-foreground m-0 truncate">{col.name}</p>
                         <p className="text-xs font-mono text-muted-foreground m-0 truncate">{col.u_type}</p>
                       </div>
                       <div className="min-w-0">
@@ -149,7 +149,7 @@ export const SqlErrorBanner: React.FC<{ error: string; duration?: number }> = ({
                     <div key={col.pos} className="grid grid-cols-[28px_minmax(0,1fr)_minmax(0,1fr)_20px] items-center gap-2.5 px-2.5 py-2 bg-destructive/10 border border-destructive/20 rounded-md">
                       <span className="text-xs font-medium text-destructive/70">#{col.pos}</span>
                       <div className="min-w-0">
-                        <p className="text-[13px] font-medium text-destructive m-0 truncate">{col.name}</p>
+                        <p className="text-tiny font-medium text-destructive m-0 truncate">{col.name}</p>
                         <p className="text-xs font-mono text-destructive m-0 truncate">{col.u_type}</p>
                       </div>
                       <div className="min-w-0">
@@ -162,7 +162,7 @@ export const SqlErrorBanner: React.FC<{ error: string; duration?: number }> = ({
                 }
               })}
             </div>
-            <p className="text-[13px] text-foreground/80 m-0">
+            <p className="text-tiny text-foreground/80 m-0">
               {t('err_coltype_desc', 'Типы некоторых колонок не совпадают с эталонным решением. Попробуйте привести их (CAST).')}
             </p>
           </ErrorCard>
@@ -176,7 +176,7 @@ export const SqlErrorBanner: React.FC<{ error: string; duration?: number }> = ({
             duration={duration}
           >
             <div className="bg-black/5 dark:bg-white/5 rounded-md px-3 py-2.5">
-              <p className="font-mono text-[13px] leading-relaxed m-0 text-destructive">{parts.slice(1).join('|')}</p>
+              <p className="font-mono text-tiny leading-relaxed m-0 text-destructive">{parts.slice(1).join('|')}</p>
             </div>
           </ErrorCard>
         );
@@ -186,7 +186,7 @@ export const SqlErrorBanner: React.FC<{ error: string; duration?: number }> = ({
     default:
       return (
         <div className="bg-card rounded-xl border border-glass-border p-4 sm:p-5">
-          <p className="m-0 text-[13px] text-destructive">{error}</p>
+          <p className="m-0 text-tiny text-destructive">{error}</p>
         </div>
       );
   }

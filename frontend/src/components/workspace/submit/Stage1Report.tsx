@@ -39,13 +39,13 @@ export const Stage1Report: React.FC<{ report: any }> = ({ report }) => {
         statusIcon={isRowsMatch ? <Check size={18} className="text-success" /> : <X size={18} className="text-destructive" />}
       >
         <div className="grid grid-cols-2 gap-3">
-          <div className="bg-black/5 dark:bg-white/5 rounded-md p-4">
-            <p className="text-[13px] text-muted-foreground m-0 mb-1">{t('err_colcount_actual', 'Получено')}</p>
-            <p className="text-2xl font-medium m-0 text-foreground">{report.user_row_count}</p>
+          <div className={`${isRowsMatch ? 'bg-success/10 border border-success/20' : 'bg-destructive/10 border border-destructive/20'} rounded-md p-4`}>
+            <p className={`text-tiny m-0 mb-1 ${isRowsMatch ? 'text-success' : 'text-destructive'}`}>{t('err_colcount_actual', 'Получено')}</p>
+            <p className={`text-2xl font-medium m-0 ${isRowsMatch ? 'text-success' : 'text-destructive'}`}>{report.user_row_count}</p>
           </div>
-          <div className="bg-black/5 dark:bg-white/5 rounded-md p-4">
-            <p className="text-[13px] text-muted-foreground m-0 mb-1">{t('err_colcount_expected', 'Ожидалось')}</p>
-            <p className="text-2xl font-medium m-0 text-foreground">{report.ref_row_count}</p>
+          <div className="bg-success/10 border border-success/20 rounded-md p-4">
+            <p className="text-tiny text-success m-0 mb-1">{t('err_colcount_expected', 'Ожидалось')}</p>
+            <p className="text-2xl font-medium m-0 text-success">{report.ref_row_count}</p>
           </div>
         </div>
       </ReportBlockCard>

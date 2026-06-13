@@ -28,7 +28,7 @@ export const ReportBlockCard: React.FC<ReportBlockCardProps> = ({
             <div className={iconColorClass}>{icon}</div>
           </div>
           <div className="flex items-center gap-1.5">
-            <h4 className="text-[15px] font-medium m-0 text-foreground">{title}</h4>
+            <h4 className="text-sm font-medium m-0 text-foreground">{title}</h4>
             {tooltipText && <InfoTooltip text={tooltipText} />}
           </div>
         </div>
