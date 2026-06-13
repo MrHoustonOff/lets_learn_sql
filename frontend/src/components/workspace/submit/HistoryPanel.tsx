@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
+import { ArrowUpDown, ArrowUp, ArrowDown, ChevronLeft, ChevronRight } from 'lucide-react';
 import { CollapsibleSection } from '../../ui/CollapsibleSection';
 import { StatusIcon } from '../../ui/StatusIcon';
 
@@ -72,20 +72,28 @@ export const HistoryPanel: React.FC<{
       infoText={t('previous_solutions_hint', 'Кликните по попытке, чтобы посмотреть её код и детали, или удалить. Вы также можете массово удалить все решения ниже.')}
     >
       <div className="flex flex-col gap-3">
-        <div className="flex items-center justify-between">
-          <span className="text-2xs text-muted-foreground font-mono">{t('page_info', { current: currentPage, total: totalPages })}</span>
-          <div className="flex items-center gap-2">
-            <button 
-              disabled={currentPage === 1}
-              onClick={() => setCurrentPage(p => p - 1)}
-              className="px-2 py-1 text-2xs rounded bg-card hover:bg-hover disabled:opacity-30 border border-glass-border transition-colors"
-            >{t('page_back', 'Назад')}</button>
-            <button 
-              disabled={currentPage === totalPages}
-              onClick={() => setCurrentPage(p => p + 1)}
-              className="px-2 py-1 text-2xs rounded bg-card hover:bg-hover disabled:opacity-30 border border-glass-border transition-colors"
-            >{t('page_forward', 'Вперед')}</button>
-          </div>
+        <div className="flex items-center justify-end">
+          {totalPages > 1 && (
+            <div className="flex items-center gap-1 px-1.5 py-1 bg-card border border-glass-border/60 rounded-full shadow-sm">
+              <button 
+                disabled={currentPage === 1}
+                onClick={() => setCurrentPage(p => p - 1)}
+                className="p-1 rounded-full hover:bg-hover disabled:opacity-30 transition-colors text-muted-foreground hover:text-foreground focus:outline-none"
+              >
+                <ChevronLeft size={14} />
+              </button>
+              <span className="text-[10px] font-semibold text-foreground px-2 font-mono">
+                {currentPage} <span className="text-muted-foreground/40 mx-0.5">/</span> {totalPages}
+              </span>
+              <button 
+                disabled={currentPage === totalPages}
+                onClick={() => setCurrentPage(p => p + 1)}
+                className="p-1 rounded-full hover:bg-hover disabled:opacity-30 transition-colors text-muted-foreground hover:text-foreground focus:outline-none"
+              >
+                <ChevronRight size={14} />
+              </button>
+            </div>
+          )}
         </div>
 
         <div className="flex flex-col gap-1">
