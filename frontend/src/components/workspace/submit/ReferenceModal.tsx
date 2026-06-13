@@ -8,7 +8,8 @@ import { MOCK_REFERENCE_SQL } from './submitReportMocks';
 export const ReferenceModal: React.FC<{
   isOpen: boolean;
   onClose: () => void;
-}> = ({ isOpen, onClose }) => {
+  sql?: string;
+}> = ({ isOpen, onClose, sql = MOCK_REFERENCE_SQL }) => {
   const { t } = useTranslation('submit_report');
   const [copiedCode, setCopiedCode] = useState(false);
 
@@ -32,7 +33,7 @@ export const ReferenceModal: React.FC<{
             <div className="flex items-center gap-3">
               <button
                 title={copiedCode ? t('copied', 'Скопировано') : t('copy', 'Копировать')}
-                onClick={() => handleCopy(MOCK_REFERENCE_SQL)}
+                onClick={() => handleCopy(sql)}
                 className="p-2 rounded-xl hover:bg-hover text-muted-foreground hover:text-foreground transition-colors flex items-center justify-center relative"
               >
                 {copiedCode ? <Check size={20} className="text-success" /> : <Copy size={20} />}
@@ -44,7 +45,7 @@ export const ReferenceModal: React.FC<{
           </div>
           
           <div className="flex-1 min-h-0">
-             <SqlCodeViewer sqlCode={MOCK_REFERENCE_SQL} />
+             <SqlCodeViewer sqlCode={sql} />
           </div>
       </div>
     </ModalBase>

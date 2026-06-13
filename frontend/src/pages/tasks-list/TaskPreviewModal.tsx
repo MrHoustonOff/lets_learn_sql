@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { PlayCircle, Trash2, Tag, User, Database, CheckCircle2 } from 'lucide-react';
+import { PlayCircle, Trash2, Tag, User, Database, KeyRound } from 'lucide-react';
 import { ModalBase } from '../../components/ui/ModalBase';
 import { ConfirmModal } from '../../components/ui/ConfirmModal';
 import { HistoryPanel } from '../../components/workspace/submit/HistoryPanel';
 import { AttemptModal } from '../../components/workspace/submit/AttemptModal';
+import { ReferenceModal } from '../../components/workspace/submit/ReferenceModal';
 import { DifficultyDots } from './DifficultyDots';
 
 interface TaskPreviewModalProps {
@@ -28,6 +29,7 @@ export const TaskPreviewModal: React.FC<TaskPreviewModalProps> = ({ taskId, isOp
   const [isDeleting, setIsDeleting] = useState(false);
 
   const [selectedAttempt, setSelectedAttempt] = useState<any>(null);
+  const [showReference, setShowReference] = useState(false);
 
   const fetchDetails = async () => {
     try {
@@ -171,18 +173,6 @@ export const TaskPreviewModal: React.FC<TaskPreviewModalProps> = ({ taskId, isOp
                 )}
               </div>
 
-              {/* Reference SQL (only if solved) */}
-              {task.is_solved && task.reference_sql && (
-                <div className="space-y-2">
-                  <h3 className="text-xs font-bold text-success uppercase tracking-wider flex items-center gap-1.5">
-                    <CheckCircle2 size={12} /> Эталонное решение
-                  </h3>
-                  <div className="bg-glass/50 border border-success/20 rounded-xl p-3 overflow-x-auto text-sm font-mono text-foreground/80">
-                    <pre>{task.reference_sql}</pre>
-                  </div>
-                </div>
-              )}
-
               {/* Previous Attempts History */}
               {history.length > 0 && (
                 <div className="pt-4 border-t border-glass-border">
@@ -191,6 +181,18 @@ export const TaskPreviewModal: React.FC<TaskPreviewModalProps> = ({ taskId, isOp
                     onOpenAttempt={setSelectedAttempt}
                     onDeleteAll={handleClearHistory}
                   />
+                </div>
+              )}
+
+              {/* Reference SQL (only if solved) - Bottom */}
+              {task.is_solved && task.reference_sql && (
+                <div className="pt-4">
+                  <button 
+                    onClick={() => setShowReference(true)}
+                    className="px-4 py-2 bg-background border border-glass-border hover:bg-hover text-foreground font-medium rounded-md text-xs transition-colors flex items-center gap-2 shadow-sm"
+                  >
+                    <KeyRound className="text-muted-foreground" size={14} /> Правильное решение
+                  </button>
                 </div>
               )}
 
@@ -219,6 +221,13 @@ export const TaskPreviewModal: React.FC<TaskPreviewModalProps> = ({ taskId, isOp
           onDelete={() => handleDeleteAttempt(selectedAttempt.id)}
         />
       )}
+
+      {/* Reference SQL Modal */}
+      <ReferenceModal 
+        isOpen={showReference} 
+        onClose={() => setShowReference(false)} 
+        sql={task?.reference_sql}
+      />
     </>
   );
 };
