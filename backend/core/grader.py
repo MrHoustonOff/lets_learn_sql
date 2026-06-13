@@ -350,15 +350,7 @@ async def run_stage1(
                     order_matters=order_matters, order_passed=order_passed,
                 )
 
-            # Counts differ → definitely wrong, skip EXCEPT ALL
-            if user_row_count != ref_row_count:
-                return Stage1Report(
-                    passed=False,
-                    user_row_count=user_row_count, ref_row_count=ref_row_count,
-                    user_hash=user_hash, ref_hash=ref_hash, hash_match=False,
-                    except_ran=False, extra_rows=None, missing_rows=None,
-                    order_matters=order_matters, order_passed=None,
-                )
+            # If they don't match, we fall through to EXCEPT ALL to generate the diff report
 
         except Exception:
             # Hash step failed — fall through to EXCEPT ALL
