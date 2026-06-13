@@ -16,6 +16,26 @@ module.exports = {
       },
     },
     extend: {
+      zIndex: {
+        base: "0",
+        layout: "10",
+        resize: "20",
+        overlay: "30",
+        drawer: "40",
+        dropdown: "50",
+        menu: "60",
+        popover: "80",
+        "modal-backdrop": "90",
+        modal: "100",
+        "modal-top": "110",
+        tooltip: "120"
+      },
+      fontSize: {
+        micro: ['9px', { lineHeight: '12px' }],
+        '2xs': ['10px', { lineHeight: '14px' }],
+        mini: ['11px', { lineHeight: '16px' }],
+        tiny: ['13px', { lineHeight: '18px' }],
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",

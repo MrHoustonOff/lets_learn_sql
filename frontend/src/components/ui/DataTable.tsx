@@ -91,9 +91,9 @@ const ColumnFilterPopover = ({
 
   return (
     <>
-      <div className="fixed inset-0 z-40" onClick={(e) => { e.stopPropagation(); onClose(); }} />
+      <div className="fixed inset-0 z-overlay" onClick={(e) => { e.stopPropagation(); onClose(); }} />
       <div 
-        className="absolute top-full mt-1 z-50 bg-popover border border-glass-border shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] rounded-xl p-2 min-w-[220px] max-w-[300px] flex flex-col gap-2 font-sans text-foreground normal-case"
+        className="absolute top-full mt-1 z-dropdown bg-popover border border-glass-border shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] rounded-xl p-2 min-w-[220px] max-w-[300px] flex flex-col gap-2 font-sans text-foreground normal-case"
         style={{
           right: isLastCol ? 0 : 'auto',
           left: isLastCol ? 'auto' : 0,
@@ -114,7 +114,7 @@ const ColumnFilterPopover = ({
         
         <div className="flex flex-col max-h-48 overflow-y-auto custom-scrollbar pr-1 gap-1">
           {!search && (
-            <label className="flex items-center gap-2 px-1 py-1 hover:bg-black/5 dark:hover:bg-white/5 rounded cursor-pointer transition-colors text-xs font-semibold border-b border-glass-border pb-1.5 mb-1">
+            <label className="flex items-center gap-2 px-1 py-1 hover:bg-hover rounded cursor-pointer transition-colors text-xs font-semibold border-b border-glass-border pb-1.5 mb-1">
               <input 
                 type="checkbox" 
                 checked={isAllSelected}
@@ -125,7 +125,7 @@ const ColumnFilterPopover = ({
             </label>
           )}
           {search && displayValues.length > 0 && (
-            <label className="flex items-center gap-2 px-1 py-1 hover:bg-black/5 dark:hover:bg-white/5 rounded cursor-pointer transition-colors text-xs font-semibold border-b border-glass-border pb-1.5 mb-1 text-primary">
+            <label className="flex items-center gap-2 px-1 py-1 hover:bg-hover rounded cursor-pointer transition-colors text-xs font-semibold border-b border-glass-border pb-1.5 mb-1 text-primary">
               <input 
                 type="checkbox" 
                 checked={isAllSelected}
@@ -137,7 +137,7 @@ const ColumnFilterPopover = ({
           )}
           
           {renderedValues.map(val => (
-            <label key={val} className="flex items-center gap-2 px-1 py-1 hover:bg-black/5 dark:hover:bg-white/5 rounded cursor-pointer transition-colors text-xs">
+            <label key={val} className="flex items-center gap-2 px-1 py-1 hover:bg-hover rounded cursor-pointer transition-colors text-xs">
               <input 
                 type="checkbox" 
                 checked={currentSet.has(val)}
@@ -150,7 +150,7 @@ const ColumnFilterPopover = ({
             </label>
           ))}
           {isTruncated && (
-            <div className="text-center text-[10px] text-muted-foreground py-1.5 mt-1 border-t border-glass-border bg-muted/30 rounded">
+            <div className="text-center text-2xs text-muted-foreground py-1.5 mt-1 border-t border-glass-border bg-muted/30 rounded">
               {t('data_table:shown_limit', { max: MAX_RENDER, total: displayValues.length })}
             </div>
           )}
@@ -282,7 +282,7 @@ export const DataTable: React.FC<DataTableProps> = ({ columns, rows, className =
         <div className="flex items-center gap-2 bg-hover border border-glass-border rounded-lg px-2 py-1 shadow-sm">
           <button 
             onClick={handleZoomOut}
-            className="text-muted-foreground hover:text-foreground p-1 transition-colors rounded-md hover:bg-black/5 dark:hover:bg-white/5"
+            className="text-muted-foreground hover:text-foreground p-1 transition-colors rounded-md hover:bg-hover"
             title={t('data_table:zoom_out')}
           >
             <ZoomOut size={14} />
@@ -299,7 +299,7 @@ export const DataTable: React.FC<DataTableProps> = ({ columns, rows, className =
           />
           <button 
             onClick={handleZoomIn}
-            className="text-muted-foreground hover:text-foreground p-1 transition-colors rounded-md hover:bg-black/5 dark:hover:bg-white/5"
+            className="text-muted-foreground hover:text-foreground p-1 transition-colors rounded-md hover:bg-hover"
             title={t('data_table:zoom_in')}
           >
             <ZoomIn size={14} />
@@ -309,12 +309,12 @@ export const DataTable: React.FC<DataTableProps> = ({ columns, rows, className =
             <button 
               onClick={() => setScale(1)}
               disabled={scale === 1}
-              className={`p-1 transition-colors rounded-md ${scale === 1 ? 'opacity-30 cursor-default' : 'hover:bg-black/5 dark:hover:bg-white/5 hover:text-foreground'} text-muted-foreground`}
+              className={`p-1 transition-colors rounded-md ${scale === 1 ? 'opacity-30 cursor-default' : 'hover:bg-hover hover:text-foreground'} text-muted-foreground`}
               title={t('data_table:zoom_reset')}
             >
               <RotateCcw size={12} />
             </button>
-            <span className="text-[10px] w-8 text-right font-mono text-muted-foreground">
+            <span className="text-2xs w-8 text-right font-mono text-muted-foreground">
               {Math.round(scale * 100)}%
             </span>
           </div>
@@ -329,7 +329,7 @@ export const DataTable: React.FC<DataTableProps> = ({ columns, rows, className =
         </div>
       ) : (
         <div 
-          className="flex-1 border border-glass-border rounded-xl bg-card overflow-auto relative custom-scrollbar shadow-inner"
+          className="flex-1 border border-glass-border rounded-xl bg-hover overflow-auto relative custom-scrollbar shadow-inner"
           style={{ fontSize: `${14 * scale}px` }}
         >
           <table 
@@ -337,8 +337,7 @@ export const DataTable: React.FC<DataTableProps> = ({ columns, rows, className =
             className={`text-left whitespace-nowrap ${isResized ? 'table-fixed' : 'w-full'}`} 
             style={isResized ? { width: `${totalTableWidth}px` } : {}}
           >
-            {/* SOLID HEADER (No backdrop-blur, solid bg) */}
-            <thead className="bg-[#fdf4eb] dark:bg-[#281a13] border-b-2 border-primary/20 text-foreground font-semibold uppercase tracking-wider sticky top-0 z-10 shadow-sm">
+            <thead className="bg-black/10 dark:bg-white/10 border-b-2 border-primary/20 text-foreground font-semibold uppercase tracking-wider sticky top-0 z-layout shadow-sm">
               <tr className="divide-x divide-glass-border">
                 {columns.map((col, i) => (
                   <th 
@@ -397,7 +396,7 @@ export const DataTable: React.FC<DataTableProps> = ({ columns, rows, className =
 
                     {/* Resizer */}
                     <div 
-                      className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-primary transition-colors z-20"
+                      className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-primary transition-colors z-resize"
                       onMouseDown={(e) => handleMouseDown(e, i)}
                     />
                   </th>
@@ -424,11 +423,11 @@ export const DataTable: React.FC<DataTableProps> = ({ columns, rows, className =
                         }}
                       >
                         {cType === 'null' ? (
-                          <span className="inline-flex items-center px-1.5 py-0.5 rounded-md bg-muted text-muted-foreground/50 text-[0.85em] font-semibold tracking-widest uppercase shadow-sm border border-glass-border">
+                          <span className="inline-flex items-center px-1.5 py-0.5 rounded-md bg-muted text-muted-foreground/50 text-mini font-semibold tracking-widest uppercase shadow-sm border border-glass-border">
                             NULL
                           </span>
                         ) : cType === 'boolean' ? (
-                          <span className={`inline-flex items-center px-1.5 py-0.5 rounded-md text-[0.85em] font-bold uppercase shadow-sm border ${
+                          <span className={`inline-flex items-center px-1.5 py-0.5 rounded-md text-mini font-bold uppercase shadow-sm border ${
                             cell ? 'bg-success/10 text-success border-success/20' : 'bg-destructive/10 text-destructive border-destructive/20'
                           }`}>
                             {cell ? 'true' : 'false'}
@@ -439,7 +438,7 @@ export const DataTable: React.FC<DataTableProps> = ({ columns, rows, className =
                           </div>
                         ) : (
                           // String
-                          <div className="truncate text-foreground" title={String(cell)}>
+                          <div className="truncate" title={String(cell)}>
                             {String(cell)}
                           </div>
                         )}

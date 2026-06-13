@@ -5,7 +5,8 @@ import { TaskScreen } from './pages/TaskScreen';
 import { CoursesListPage } from './pages/CoursesListPage';
 import { CourseDetailsPage } from './pages/CourseDetailsPage';
 import { DatabasesListPage } from './pages/DatabasesListPage';
-import { TasksPage, SettingsPage, ProfilePage } from './pages/PlaceholderPages';
+import { ProfilePage } from './pages/ProfilePage';
+import { TasksPage, SettingsPage } from './pages/PlaceholderPages';
 
 const router = createBrowserRouter([
   {

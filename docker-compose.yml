@@ -10,7 +10,7 @@ services:
       - "5432:5432"
     volumes:
       - ./backend/init:/docker-entrypoint-initdb.d
-      - pgym_db_data:/var/lib/postgresql/data
+      - pg_data:/var/lib/postgresql/data
     restart: unless-stopped
 
   backend:
@@ -22,7 +22,7 @@ services:
       - "8000:8000"
     volumes:
       - ./backend:/app
-      - pgym_user_data:/app/data
+      - app_data:/data
     environment:
       - DATABASE_URL=postgresql://postgres:password@db:5432/pgym
     depends_on:
@@ -41,5 +41,5 @@ services:
     restart: unless-stopped
 
 volumes:
-  pgym_db_data:
-  pgym_user_data:
+  pg_data:
+  app_data:

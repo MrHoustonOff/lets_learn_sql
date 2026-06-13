@@ -36,9 +36,9 @@ export const ResultsPane: React.FC<ResultsPaneProps> = ({
   };
 
   const content = (
-    <div className={`h-full flex flex-col transition-all duration-300 min-h-0 min-w-0 ${isMaximized ? 'fixed inset-4 z-[100] bg-background rounded-2xl shadow-2xl border border-glass-border overflow-hidden' : 'bg-transparent relative overflow-hidden'}`}>
+    <div className={`h-full flex flex-col transition-all duration-300 min-h-0 min-w-0 ${isMaximized ? 'fixed inset-4 z-modal bg-background rounded-2xl shadow-2xl border border-glass-border overflow-hidden' : 'bg-transparent relative overflow-hidden'}`}>
       {/* Header Tabs */}
-      <div className="h-10 border-b border-glass-border flex items-center justify-between px-2 shrink-0 bg-hover relative z-50 min-w-0">
+      <div className="h-10 border-b border-glass-border flex items-center justify-between px-2 shrink-0 bg-hover relative z-layout min-w-0">
         <div className="flex items-center gap-1 min-w-0">
           <button 
             onClick={() => setActiveTab('result')}
@@ -50,7 +50,7 @@ export const ResultsPane: React.FC<ResultsPaneProps> = ({
           >
             <Table2 size={14} className="shrink-0" />
             <span className="truncate">{t('result')}</span>
-            {result && !isLoading && !error && <span className="ml-1 text-[10px] opacity-50 bg-foreground/10 px-1.5 rounded-full shrink-0">{result.row_count}</span>}
+            {result && !isLoading && !error && <span className="ml-1 text-2xs opacity-50 bg-foreground/10 px-1.5 rounded-full shrink-0">{result.row_count}</span>}
           </button>
           <button 
             onClick={() => setActiveTab('explain')}
@@ -68,7 +68,7 @@ export const ResultsPane: React.FC<ResultsPaneProps> = ({
         <div className="flex items-center gap-1 shrink min-w-0 ml-1">
           {/* Removed full_analysis button */}
           {result?.duration_ms && !isLoading && !error && (
-            <span className="text-[10px] text-muted-foreground mr-2 font-mono">
+            <span className="text-2xs text-muted-foreground mr-2 font-mono">
               {result.duration_ms.toFixed(1)} ms
             </span>
           )}
@@ -89,7 +89,7 @@ export const ResultsPane: React.FC<ResultsPaneProps> = ({
         {activeTab === 'result' ? (
           <>
             {isLoading ? (
-              <div className="absolute inset-0 flex flex-col items-center justify-center text-muted-foreground bg-background/50 backdrop-blur-sm z-50">
+              <div className="absolute inset-0 flex flex-col items-center justify-center text-muted-foreground bg-background/50 backdrop-blur-sm z-overlay">
                 <Loader2 size={32} className="animate-spin text-primary mb-4" />
                 <p>{t('sql_results:running')}</p>
               </div>
@@ -134,7 +134,7 @@ export const ResultsPane: React.FC<ResultsPaneProps> = ({
 
   if (isMaximized) {
     return createPortal(
-      <div className="fixed inset-0 z-[90] bg-background/80 backdrop-blur-sm">
+      <div className="fixed inset-0 z-modal-backdrop bg-background/80 backdrop-blur-sm">
         {content}
       </div>,
       document.body

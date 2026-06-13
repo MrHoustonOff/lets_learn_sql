@@ -46,7 +46,7 @@ export const NodeDetailsOverlay: React.FC<NodeDetailsProps> = ({ nodeId, onClose
 
   return createPortal(
     <div 
-      className="fixed inset-0 bg-background/60 backdrop-blur-sm z-[99999] p-4 flex items-center justify-center animate-in fade-in zoom-in-95 duration-200"
+      className="fixed inset-0 bg-background/60 backdrop-blur-sm z-tooltip p-4 flex items-center justify-center animate-in fade-in zoom-in-95 duration-200"
       onClick={onClose}
     >
       <div 
@@ -57,7 +57,7 @@ export const NodeDetailsOverlay: React.FC<NodeDetailsProps> = ({ nodeId, onClose
         <div className="flex items-center justify-between px-6 py-4 border-b border-glass-border bg-hover shrink-0 rounded-t-lg">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-primary/20 text-primary rounded-lg relative overflow-hidden">
-              <Activity size={24} className="relative z-10" />
+              <Activity size={24} className="relative z-layout" />
             </div>
             <div>
               <div className="flex items-center gap-2">

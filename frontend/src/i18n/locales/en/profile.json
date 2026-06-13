@@ -1,0 +1,18 @@
+{
+  "title": "Profile & Settings",
+  "exportTitle": "Data Export",
+  "exportDesc": "Download a full backup of your progress and learning databases. It is recommended to do this regularly.",
+  "exportButton": "Download Backup",
+  "importTitle": "Data Import",
+  "importDesc": "Restore data from a previously downloaded backup archive (.zip).",
+  "importButton": "Restore from Backup",
+  "importing": "Restoring...",
+  "importWarning": "WARNING! This action will completely overwrite current application data with the data from the backup. Continue?",
+  "importSuccess": "Data restored successfully! Reloading...",
+  "importFailed": "Import Error",
+  "githubTitle": "GitHub Synchronization",
+  "githubDesc": "Automatic backup of your solutions and progress to your private GitHub repository.",
+  "githubButton": "Connect",
+  "comingSoon": "Coming Soon",
+  "featureDev": "Feature in development"
+}

@@ -12,6 +12,7 @@ interface UIState {
   draggingSlot: SlotId | null;
   editorFontSize: number;
   editorWordWrap: boolean;
+  hiddenPanels: PaneType[];
   toggleCourseToc: () => void;
   setCourseTocOpen: (isOpen: boolean) => void;
   setMaximizedPane: (pane: MaximizedPane) => void;
@@ -20,6 +21,8 @@ interface UIState {
   setEditorWordWrap: (wrap: boolean) => void;
   swapSlots: (slotA: SlotId, slotB: SlotId) => void;
   resetSlots: () => void;
+  toggleHiddenPanel: (panel: PaneType) => void;
+  isPanelHidden: (panel: PaneType) => boolean;
 }
 
 const defaultSlots: Record<SlotId, PaneType> = {
@@ -31,13 +34,14 @@ const defaultSlots: Record<SlotId, PaneType> = {
 
 export const useUIStore = create<UIState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       isCourseTocOpen: false,
       maximizedPane: null,
       slots: defaultSlots,
       draggingSlot: null,
       editorFontSize: 14,
       editorWordWrap: true,
+      hiddenPanels: [],
       toggleCourseToc: () => set((state) => ({ isCourseTocOpen: !state.isCourseTocOpen })),
       setCourseTocOpen: (isOpen) => set({ isCourseTocOpen: isOpen }),
       setMaximizedPane: (pane) => set({ maximizedPane: pane }),
@@ -54,6 +58,12 @@ export const useUIStore = create<UIState>()(
         return { slots: newSlots, draggingSlot: null };
       }),
       resetSlots: () => set({ slots: defaultSlots }),
+      toggleHiddenPanel: (panel) => set((state) => {
+        const hidden = state.hiddenPanels;
+        const isHidden = hidden.includes(panel);
+        return { hiddenPanels: isHidden ? hidden.filter(p => p !== panel) : [...hidden, panel] };
+      }),
+      isPanelHidden: (panel) => get().hiddenPanels.includes(panel),
     }),
     {
       name: 'll_ui_storage',
@@ -62,6 +72,7 @@ export const useUIStore = create<UIState>()(
         maximizedPane: state.maximizedPane,
         editorFontSize: state.editorFontSize,
         editorWordWrap: state.editorWordWrap,
+        hiddenPanels: state.hiddenPanels,
       }),
     }
   )

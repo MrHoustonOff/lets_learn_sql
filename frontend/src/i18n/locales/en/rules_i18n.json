@@ -1,0 +1,73 @@
+{
+  "construct.required": "The query must contain: {{target}}",
+  "construct.forbidden": "The query must not contain: {{target}}",
+  "construct.count_min": "The query must contain {{target}} at least {{value}} time(s)",
+  "construct.count_max": "The query must not contain {{target}} more than {{value}} time(s)",
+  "construct.count_exact": "The query must contain {{target}} exactly {{value}} time(s)",
+
+  "object.required": "The query must use {{object_type}}: {{object_name}}",
+  "object.forbidden": "The query must not use {{object_type}}: {{object_name}}",
+
+  "function.required": "The query must use the function {{function_name}}",
+  "function.forbidden": "The query must not use the function {{function_name}}",
+
+  "select_star.forbidden": "The use of SELECT * is forbidden — explicitly list the columns",
+
+  "alias.required": "Aliases (AS) must be used for: {{scope}}",
+
+  "performance.count_max": "Estimated query cost should not exceed {{max_cost}}",
+  "performance.no_seqscan": "Query must not perform a full table scan (Seq Scan) on table {{table_name}}",
+
+  "result.construct.count_min.passed": "Found: {{actual}}",
+  "result.construct.count_min.failed": "Found: {{actual}} (required at least {{value}})",
+  "result.construct.count_max.passed": "Found: {{actual}}",
+  "result.construct.count_max.failed": "Found: {{actual}} (allowed at most {{value}})",
+  "result.construct.count_exact.passed": "Found: {{actual}}",
+  "result.construct.count_exact.failed": "Found: {{actual}} (required exactly {{value}})",
+  "result.construct.required.passed": "Found: {{target}} ({{actual}} times)",
+  "result.construct.required.failed": "Not found: {{target}}",
+  "result.construct.forbidden.passed": "Not found (correct)",
+  "result.construct.forbidden.failed": "Found: {{target}} used {{actual}} times",
+
+  "result.object.required.passed": "Found: {{object_type}} '{{object_name}}'",
+  "result.object.required.failed": "Not found: {{object_type}} '{{object_name}}'",
+  "result.object.forbidden.passed": "Not used (correct)",
+  "result.object.forbidden.failed": "Found: {{object_type}} '{{object_name}}'",
+
+  "result.function.required.passed": "Function {{function_name}} found",
+  "result.function.required.failed": "Function {{function_name}} not found",
+  "result.function.forbidden.passed": "Not used (correct)",
+  "result.function.forbidden.failed": "Function {{function_name}} found",
+
+  "result.select_star.forbidden.passed": "No SELECT * (correct)",
+  "result.select_star.forbidden.failed": "SELECT * found",
+
+  "result.alias.required.passed": "Aliases used",
+
+  "result.performance.no_seqscan.passed": "No Seq Scan on '{{table_name}}' (correct)",
+  "result.performance.no_seqscan.failed": "Seq Scan on '{{table_name}}' found",
+  "result.performance.count_max.passed": "Cost: {{actual}}",
+  "result.performance.count_max.failed": "Cost: {{actual}} (allowed <= {{max_cost}})",
+
+  "enums": {
+    "JOIN": "JOIN",
+    "INNER_JOIN": "INNER JOIN",
+    "LEFT_JOIN": "LEFT JOIN",
+    "RIGHT_JOIN": "RIGHT JOIN",
+    "FULL_JOIN": "FULL JOIN",
+    "GROUP_BY": "GROUP BY",
+    "HAVING": "HAVING",
+    "SUBQUERY": "subquery",
+    "WINDOW_FUNCTION": "window function",
+    "CTE": "CTE (WITH)",
+    "DISTINCT": "DISTINCT",
+    "UNION": "UNION",
+    "CASE": "CASE condition",
+    "AGGREGATE_FUNCTION": "aggregate function (COUNT, SUM, AVG, etc.)",
+    "table": "table",
+    "column": "column",
+    "columns": "columns",
+    "tables": "tables",
+    "both": "columns and tables"
+  }
+}

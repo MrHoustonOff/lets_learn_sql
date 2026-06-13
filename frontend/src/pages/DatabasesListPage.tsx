@@ -26,7 +26,7 @@ export const DatabasesListPage: React.FC = () => {
   const [selectedDb, setSelectedDb] = useState<DatabaseMock | null>(null);
 
   return (
-    <div className="h-full overflow-y-auto p-8 max-w-5xl mx-auto animate-in fade-in duration-300 primary-scrollbar">
+    <div className="flex-1 h-full w-full overflow-y-auto p-8 max-w-5xl mx-auto animate-in fade-in duration-300 custom-scrollbar">
       <div className="flex items-center justify-between mb-8">
         <h1 className="text-3xl font-bold">{t('databases')}</h1>
         <button className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl transition-colors font-medium shadow-sm">
@@ -45,7 +45,7 @@ export const DatabasesListPage: React.FC = () => {
             {/* Hover Background Glow */}
             <div className="absolute inset-0 bg-primary/0 group-hover:bg-primary/5 transition-colors pointer-events-none" />
             
-            <div className="flex items-start gap-4 mb-4 relative z-10">
+            <div className="flex items-start gap-4 mb-4 relative z-layout">
               <div className="p-3 rounded-xl bg-primary/10 text-primary">
                 <Database size={24} />
               </div>
@@ -56,7 +56,7 @@ export const DatabasesListPage: React.FC = () => {
                 <div className="text-xs text-muted-foreground font-mono truncate mt-1 flex items-center gap-2">
                   <span>{db.technicalName}</span>
                   {db.isDefault && (
-                    <span className="px-1.5 py-0.5 rounded-md bg-primary/20 text-primary text-[10px] uppercase font-bold tracking-wider">
+                    <span className="px-1.5 py-0.5 rounded-md bg-primary/20 text-primary text-2xs uppercase font-bold tracking-wider">
                       Default
                     </span>
                   )}
@@ -65,11 +65,11 @@ export const DatabasesListPage: React.FC = () => {
             </div>
             
             {db.description ? (
-              <p className="text-sm text-muted-foreground line-clamp-3 relative z-10 mt-auto">
+              <p className="text-sm text-muted-foreground line-clamp-3 relative z-layout mt-auto">
                 {db.description}
               </p>
             ) : (
-              <p className="text-sm text-muted-foreground/50 italic relative z-10 mt-auto">
+              <p className="text-sm text-muted-foreground/50 italic relative z-layout mt-auto">
                 {t('db_list:no_description')}
               </p>
             )}

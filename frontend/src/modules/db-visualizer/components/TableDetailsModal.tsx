@@ -113,7 +113,7 @@ export const TableDetailsModal: React.FC<TableDetailsModalProps> = ({ table, onC
           onClose();
         }
       }}
-      className="fixed inset-0 z-[9999] flex items-center justify-center p-4 animate-in fade-in duration-200 select-text"
+      className="fixed inset-0 z-modal-top flex items-center justify-center p-4 animate-in fade-in duration-200 select-text"
     >
       {/* Backdrop */}
       <div 
@@ -133,7 +133,7 @@ export const TableDetailsModal: React.FC<TableDetailsModalProps> = ({ table, onC
             <div>
               <div className="flex items-center gap-2">
                 <h2 className="text-xl font-bold text-foreground">{table.name}</h2>
-                <span className="text-[10px] uppercase tracking-wider bg-badge text-badge-foreground px-2 py-0.5 rounded-full">
+                <span className="text-2xs uppercase tracking-wider bg-badge text-badge-foreground px-2 py-0.5 rounded-full">
                   {table.schema}
                 </span>
               </div>
@@ -146,13 +146,13 @@ export const TableDetailsModal: React.FC<TableDetailsModalProps> = ({ table, onC
             <button 
               onClick={handleCopyDDL}
               title={t('db_visualizer:table_details.copy_ddl') || 'Copy DDL'}
-              className="p-2 rounded-xl hover:bg-black/5 dark:hover:bg-white/5 text-muted-foreground hover:text-foreground transition-colors flex items-center justify-center relative"
+              className="p-2 rounded-xl hover:bg-hover text-muted-foreground hover:text-foreground transition-colors flex items-center justify-center relative"
             >
               {copied ? <Check size={20} className="text-success" /> : <Copy size={20} />}
             </button>
             <button 
               onClick={() => onClose()}
-              className="p-2 rounded-xl hover:bg-black/5 dark:hover:bg-white/5 text-muted-foreground hover:text-foreground transition-colors"
+              className="p-2 rounded-xl hover:bg-hover text-muted-foreground hover:text-foreground transition-colors"
             >
               <X size={20} />
             </button>
@@ -200,14 +200,14 @@ export const TableDetailsModal: React.FC<TableDetailsModalProps> = ({ table, onC
                 <section>
                   <div className="flex items-center gap-2 mb-3">
                     <TableProperties size={16} className="text-muted-foreground" />
-                    <h3 className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
+                    <h3 className="text-mini font-bold text-muted-foreground uppercase tracking-wider">
                       {t('db_visualizer:table_details.columns')}
                     </h3>
                   </div>
-                  <div className="border border-glass-border rounded-xl overflow-hidden bg-black/5 dark:bg-white/5 max-h-[45vh] flex flex-col shadow-sm">
+                  <div className="border border-glass-border rounded-xl overflow-hidden bg-hover max-h-[45vh] flex flex-col shadow-sm">
                     <div className="overflow-y-auto overflow-x-auto">
                       <table className="w-full text-left text-sm relative">
-                        <thead className="bg-primary/10 text-primary text-[10px] uppercase tracking-wider sticky top-0 z-10">
+                        <thead className="bg-primary/10 text-primary text-2xs uppercase tracking-wider sticky top-0 z-layout">
                           <tr className="divide-x divide-primary/10">
                             <th className="px-4 py-2.5 font-bold">{t('db_visualizer:table_details.keys')}</th>
                             <th className="px-4 py-2.5 font-bold">{t('db_visualizer:table_details.name')}</th>
@@ -218,7 +218,7 @@ export const TableDetailsModal: React.FC<TableDetailsModalProps> = ({ table, onC
                         </thead>
                         <tbody className="divide-y divide-glass-border">
                         {table.columns?.map(col => (
-                          <tr key={col.name} className="hover:bg-black/5 dark:hover:bg-white/5 transition-colors divide-x divide-glass-border">
+                          <tr key={col.name} className="hover:bg-hover transition-colors divide-x divide-glass-border">
                             <td className="px-4 py-2.5">
                               <div className="flex items-center gap-1">
                                 {col.isPrimaryKey && <span title="Primary Key"><Key size={14} className="text-warning opacity-80" /></span>}
@@ -251,18 +251,18 @@ export const TableDetailsModal: React.FC<TableDetailsModalProps> = ({ table, onC
                     <section>
                       <div className="flex items-center gap-2 mb-3">
                         <Hash size={16} className="text-muted-foreground" />
-                        <h3 className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
+                        <h3 className="text-mini font-bold text-muted-foreground uppercase tracking-wider">
                           {t('db_visualizer:table_details.indexes')}
                         </h3>
                       </div>
                       <div className="space-y-2">
                         {table.indexes?.map(idx => (
-                          <div key={idx.name} className="p-3 bg-black/5 dark:bg-white/5 border border-glass-border rounded-xl shadow-sm">
+                          <div key={idx.name} className="p-3 bg-hover border border-glass-border rounded-xl shadow-sm">
                             <div className="flex items-center justify-between mb-1">
                               <span className="font-medium text-sm text-foreground/90">{idx.name}</span>
                               <div className="flex gap-1">
-                                {idx.isPrimary && <span className="text-[10px] uppercase bg-warning/10 text-warning px-1.5 py-0.5 rounded font-bold">Primary</span>}
-                                {idx.isUnique && <span className="text-[10px] uppercase bg-accent-alt/10 text-accent-alt px-1.5 py-0.5 rounded font-bold">Unique</span>}
+                                {idx.isPrimary && <span className="text-2xs uppercase bg-warning/10 text-warning px-1.5 py-0.5 rounded font-bold">Primary</span>}
+                                {idx.isUnique && <span className="text-2xs uppercase bg-accent-alt/10 text-accent-alt px-1.5 py-0.5 rounded font-bold">Unique</span>}
                               </div>
                             </div>
                             <code className="text-xs text-muted-foreground/80 font-mono block break-all">{idx.definition}</code>
@@ -277,22 +277,22 @@ export const TableDetailsModal: React.FC<TableDetailsModalProps> = ({ table, onC
                     <section>
                       <div className="flex items-center gap-2 mb-3">
                         <Link size={16} className="text-muted-foreground" />
-                        <h3 className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
+                        <h3 className="text-mini font-bold text-muted-foreground uppercase tracking-wider">
                           {t('db_visualizer:table_details.foreign_keys')}
                         </h3>
                       </div>
                       <div className="space-y-2">
                         {table.foreignKeys?.map(fk => (
-                          <div key={fk.name} className="p-3 bg-black/5 dark:bg-white/5 border border-glass-border rounded-xl shadow-sm">
+                          <div key={fk.name} className="p-3 bg-hover border border-glass-border rounded-xl shadow-sm">
                             <div className="font-medium text-sm mb-1 break-all text-foreground/90">{fk.name}</div>
                             <div className="text-xs text-muted-foreground flex items-center flex-wrap gap-x-2 gap-y-1">
                               <span className="font-mono text-foreground/80">{fk.column}</span>
                               <span className="opacity-50">→</span>
                               <span className="font-mono text-foreground/80">{fk.targetTable}.{fk.targetColumn}</span>
                             </div>
-                            <div className="mt-2 flex gap-2 text-[10px] uppercase font-bold">
-                              <span className="bg-black/5 dark:bg-white/5 px-1.5 py-0.5 rounded text-muted-foreground/80 border border-glass-border">ON DEL: {fk.onDelete}</span>
-                              <span className="bg-black/5 dark:bg-white/5 px-1.5 py-0.5 rounded text-muted-foreground/80 border border-glass-border">ON UPD: {fk.onUpdate}</span>
+                            <div className="mt-2 flex gap-2 text-2xs uppercase font-bold">
+                              <span className="bg-hover px-1.5 py-0.5 rounded text-muted-foreground/80 border border-glass-border">ON DEL: {fk.onDelete}</span>
+                              <span className="bg-hover px-1.5 py-0.5 rounded text-muted-foreground/80 border border-glass-border">ON UPD: {fk.onUpdate}</span>
                             </div>
                           </div>
                         ))}
@@ -305,13 +305,13 @@ export const TableDetailsModal: React.FC<TableDetailsModalProps> = ({ table, onC
                     <section>
                       <div className="flex items-center gap-2 mb-3">
                         <Fingerprint size={16} className="text-muted-foreground" />
-                        <h3 className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
+                        <h3 className="text-mini font-bold text-muted-foreground uppercase tracking-wider">
                           {t('db_visualizer:table_details.referenced_by')}
                         </h3>
                       </div>
                       <div className="space-y-2">
                         {table.referencedBy?.map(ref => (
-                          <div key={ref.constraint} className="p-3 bg-black/5 dark:bg-white/5 border border-glass-border rounded-xl shadow-sm">
+                          <div key={ref.constraint} className="p-3 bg-hover border border-glass-border rounded-xl shadow-sm">
                             <div className="text-xs text-muted-foreground flex items-center gap-2">
                               <span className="font-mono text-foreground/80">{ref.table}.{ref.column}</span>
                               <span className="opacity-50">→</span>
@@ -357,7 +357,7 @@ export const TableDetailsModal: React.FC<TableDetailsModalProps> = ({ table, onC
                       <div className="h-6 w-px bg-glass-border shrink-0"></div>
                       
                       {/* Слева-выровненный SQL с выделенным полем LIMIT */}
-                      <div className="flex-1 flex justify-start font-mono text-[11px] sm:text-xs overflow-hidden bg-black/5 dark:bg-white/5 px-3 py-1.5 rounded-lg ml-2 border border-glass-border">
+                      <div className="flex-1 flex justify-start font-mono text-mini sm:text-xs overflow-hidden bg-hover px-3 py-1.5 rounded-lg ml-2 border border-glass-border">
                         <div className="inline-flex items-center gap-2 w-full justify-start whitespace-nowrap overflow-x-auto">
                           <span className="text-blue-500 dark:text-blue-400">SELECT</span> 
                           <span>*</span> 

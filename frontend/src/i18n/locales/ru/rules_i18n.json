@@ -1,0 +1,73 @@
+{
+  "construct.required": "Запрос обязательно должен содержать: {{target}}",
+  "construct.forbidden": "Запрос не должен содержать: {{target}}",
+  "construct.count_min": "Запрос должен содержать {{target}} не менее {{value}} раз(а)",
+  "construct.count_max": "Запрос не должен содержать {{target}} более {{value}} раз(а)",
+  "construct.count_exact": "Запрос должен содержать {{target}} ровно {{value}} раз(а)",
+
+  "object.required": "Запрос должен использовать {{object_type}}: {{object_name}}",
+  "object.forbidden": "Запрос не должен использовать {{object_type}}: {{object_name}}",
+
+  "function.required": "Запрос должен использовать функцию {{function_name}}",
+  "function.forbidden": "Запрос не должен использовать функцию {{function_name}}",
+
+  "select_star.forbidden": "Использование SELECT * запрещено — перечислите колонки явно",
+
+  "alias.required": "Необходимо использовать алиасы (AS) для: {{scope}}",
+
+  "performance.count_max": "Оценочная стоимость запроса (cost) не должна превышать {{max_cost}}",
+  "performance.no_seqscan": "Запрос не должен выполнять полное сканирование (Seq Scan) таблицы {{table_name}}",
+
+  "result.construct.count_min.passed": "Найдено: {{actual}}",
+  "result.construct.count_min.failed": "Найдено: {{actual}} (требуется минимум {{value}})",
+  "result.construct.count_max.passed": "Найдено: {{actual}}",
+  "result.construct.count_max.failed": "Найдено: {{actual}} (допускается максимум {{value}})",
+  "result.construct.count_exact.passed": "Найдено: {{actual}}",
+  "result.construct.count_exact.failed": "Найдено: {{actual}} (требуется ровно {{value}})",
+  "result.construct.required.passed": "Найдено: {{target}} ({{actual}} раз)",
+  "result.construct.required.failed": "Не найдено: {{target}}",
+  "result.construct.forbidden.passed": "Не найдено (верно)",
+  "result.construct.forbidden.failed": "Найдено: {{target}} использован {{actual}} раз",
+
+  "result.object.required.passed": "Найдено: {{object_type}} '{{object_name}}'",
+  "result.object.required.failed": "Не найдено: {{object_type}} '{{object_name}}'",
+  "result.object.forbidden.passed": "Не используется (верно)",
+  "result.object.forbidden.failed": "Найдено: {{object_type}} '{{object_name}}'",
+
+  "result.function.required.passed": "Функция {{function_name}} найдена",
+  "result.function.required.failed": "Функция {{function_name}} не найдена",
+  "result.function.forbidden.passed": "Не используется (верно)",
+  "result.function.forbidden.failed": "Функция {{function_name}} найдена",
+
+  "result.select_star.forbidden.passed": "SELECT * не найден (верно)",
+  "result.select_star.forbidden.failed": "Найден SELECT *",
+
+  "result.alias.required.passed": "Алиасы использованы",
+  
+  "result.performance.no_seqscan.passed": "Нет Seq Scan по '{{table_name}}' (верно)",
+  "result.performance.no_seqscan.failed": "Найден Seq Scan по '{{table_name}}'",
+  "result.performance.count_max.passed": "Cost: {{actual}}",
+  "result.performance.count_max.failed": "Cost: {{actual}} (допускается <= {{max_cost}})",
+
+  "enums": {
+    "JOIN": "JOIN",
+    "INNER_JOIN": "INNER JOIN",
+    "LEFT_JOIN": "LEFT JOIN",
+    "RIGHT_JOIN": "RIGHT JOIN",
+    "FULL_JOIN": "FULL JOIN",
+    "GROUP_BY": "GROUP BY",
+    "HAVING": "HAVING",
+    "SUBQUERY": "подзапрос",
+    "WINDOW_FUNCTION": "оконную функцию",
+    "CTE": "CTE (WITH)",
+    "DISTINCT": "DISTINCT",
+    "UNION": "UNION",
+    "CASE": "условие CASE",
+    "AGGREGATE_FUNCTION": "агрегатную функцию (COUNT, SUM, AVG и т.д.)",
+    "table": "таблицу",
+    "column": "колонку",
+    "columns": "колонок",
+    "tables": "таблиц",
+    "both": "колонок и таблиц"
+  }
+}

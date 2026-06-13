@@ -47,7 +47,7 @@ export const TableNode: React.FC<TableNodeProps> = ({ data, dragging }) => {
         <Database size={16} className="text-emerald-500 dark:text-emerald-400 shrink-0" />
         <h3 className="font-semibold text-foreground tracking-wide truncate flex-1" title={table.name}>{table.name}</h3>
         {table.schema !== 'public' && (
-          <span className="shrink-0 ml-auto max-w-[100px] truncate text-[10px] uppercase tracking-wider bg-badge text-badge-foreground px-2 py-0.5 rounded-full" title={table.schema}>
+          <span className="shrink-0 ml-auto max-w-[100px] truncate text-2xs uppercase tracking-wider bg-badge text-badge-foreground px-2 py-0.5 rounded-full" title={table.schema}>
             {table.schema}
           </span>
         )}
@@ -92,7 +92,7 @@ export const TableNode: React.FC<TableNodeProps> = ({ data, dragging }) => {
         {table.columns.length > 10 && (
           <button 
             onClick={(e) => { e.stopPropagation(); setIsExpanded(!isExpanded); }}
-            className="flex items-center justify-center gap-2 py-2 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/5 border-t border-glass-border transition-colors w-full"
+            className="flex items-center justify-center gap-2 py-2 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-hover border-t border-glass-border transition-colors w-full"
           >
             {isExpanded ? (
               <>
@@ -112,7 +112,7 @@ export const TableNode: React.FC<TableNodeProps> = ({ data, dragging }) => {
         <div className="px-4 py-3 border-t border-glass-border bg-black/5 dark:bg-black/20 rounded-b-xl text-xs text-muted-foreground">
           {table.indexes.length > 0 && (
             <div className="mb-2 last:mb-0">
-              <span className="uppercase tracking-wider text-[10px] opacity-70 mb-1 block">Indexes</span>
+              <span className="uppercase tracking-wider text-2xs opacity-70 mb-1 block">Indexes</span>
               <ul className="space-y-1">
                 {table.indexes.map(idx => (
                   <li key={idx.name} className="flex gap-2 font-mono">

@@ -62,16 +62,16 @@ export const CourseTOC: React.FC = () => {
 
   return (
     <>
-      {/* Backdrop for closing */}
+      {/* Overlay for mobile/tablet */}
       <div 
-        className={`fixed inset-0 z-30 transition-all duration-300 ${
+        className={`fixed inset-0 z-overlay transition-all duration-300 ${
           isCourseTocOpen ? 'opacity-100 pointer-events-auto bg-background/20 backdrop-blur-[1px]' : 'opacity-0 pointer-events-none'
         }`}
         onClick={() => setCourseTocOpen(false)}
       />
 
       <div 
-        className={`fixed top-4 left-4 h-[calc(100vh-2rem)] bg-glass backdrop-blur-xl border border-glass-border rounded-2xl w-80 shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] z-40 transition-transform duration-300 ease-in-out flex flex-col overflow-hidden ${
+        className={`fixed top-4 left-4 h-[calc(100vh-2rem)] bg-glass backdrop-blur-xl border border-glass-border rounded-2xl w-80 shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] z-drawer transition-transform duration-300 ease-in-out flex flex-col overflow-y-auto custom-scrollbar ${
           isCourseTocOpen ? 'translate-x-0' : '-translate-x-[120%]'
         }`}
       >
@@ -84,7 +84,7 @@ export const CourseTOC: React.FC = () => {
       </div>
 
       {/* Body */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-6 primary-scrollbar">
+      <div className="flex-1 overflow-y-auto p-4 space-y-6 custom-scrollbar">
         {/* Global Progress */}
         <div className="space-y-2">
           <div className="flex items-center justify-between text-sm">
@@ -155,7 +155,7 @@ export const CourseTOC: React.FC = () => {
           {/* Chevron Trigger */}
       <button 
         onClick={() => setCourseTocOpen(!isCourseTocOpen)}
-        className={`fixed top-1/2 -translate-y-1/2 z-50 py-4 px-1 bg-glass backdrop-blur-md border border-l-0 border-glass-border rounded-r-xl shadow-md transition-all duration-300 hover:bg-hover ${
+        className={`fixed top-1/2 -translate-y-1/2 z-dropdown py-4 px-1 bg-glass backdrop-blur-md border border-l-0 border-glass-border rounded-r-xl shadow-md transition-all duration-300 hover:bg-hover ${
           isCourseTocOpen ? 'left-[21rem]' : 'left-0'
         }`}
       >

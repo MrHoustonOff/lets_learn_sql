@@ -13,6 +13,9 @@ import dataTableEn from './locales/en/data_table.json';
 import coursesPageEn from './locales/en/courses_page.json';
 import taskPaneEn from './locales/en/task_pane.json';
 import sqlEditorEn from './locales/en/sql_editor.json';
+import profileEn from './locales/en/profile.json';
+import submitReportEn from './locales/en/submit_report.json';
+import rulesI18nEn from './locales/en/rules_i18n.json';
 
 // Import locales (ru)
 import commonRu from './locales/ru/common.json';
@@ -25,6 +28,9 @@ import dataTableRu from './locales/ru/data_table.json';
 import coursesPageRu from './locales/ru/courses_page.json';
 import taskPaneRu from './locales/ru/task_pane.json';
 import sqlEditorRu from './locales/ru/sql_editor.json';
+import profileRu from './locales/ru/profile.json';
+import submitReportRu from './locales/ru/submit_report.json';
+import rulesI18nRu from './locales/ru/rules_i18n.json';
 
 const resources = {
   en: {
@@ -38,6 +44,9 @@ const resources = {
     courses_page: coursesPageEn,
     task_pane: taskPaneEn,
     sql_editor: sqlEditorEn,
+    profile: profileEn,
+    submit_report: submitReportEn,
+    rules_i18n: rulesI18nEn,
   },
   ru: {
     common: commonRu,
@@ -50,6 +59,9 @@ const resources = {
     courses_page: coursesPageRu,
     task_pane: taskPaneRu,
     sql_editor: sqlEditorRu,
+    profile: profileRu,
+    submit_report: submitReportRu,
+    rules_i18n: rulesI18nRu,
   }
 } as const;
 
@@ -59,7 +71,7 @@ i18n
   .init({
     resources,
     fallbackLng: 'ru',
-    ns: ['common', 'explain_ui', 'db_list', 'db_details', 'db_visualizer', 'sql_results', 'data_table', 'courses_page', 'task_pane', 'sql_editor'],
+    ns: ['common', 'explain_ui', 'db_list', 'db_details', 'db_visualizer', 'sql_results', 'data_table', 'courses_page', 'task_pane', 'sql_editor', 'profile', 'submit_report'],
     defaultNS: 'common',
     // Options for language detector
     detection: {

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Info } from 'lucide-react';
 
-export const InfoTooltip = ({ text }: { text: string }) => {
+export const InfoTooltip = ({ text, className = "ml-1" }: { text: string, className?: string }) => {
   const [isOpen, setIsOpen] = useState(false);
   
   // Храним стили для точного позиционирования
@@ -43,7 +43,7 @@ export const InfoTooltip = ({ text }: { text: string }) => {
   return (
     <>
       <div 
-        className="inline-flex items-center ml-1 align-middle"
+        className={`flex items-center justify-center ${className}`}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={() => setIsOpen(false)}
       >
@@ -52,7 +52,7 @@ export const InfoTooltip = ({ text }: { text: string }) => {
       
       {isOpen && createPortal(
         <div 
-          className="fixed z-[99999] w-72 p-3 bg-popover text-popover-foreground text-xs rounded-md shadow-2xl border border-glass-border pointer-events-none whitespace-pre-wrap font-sans font-normal normal-case leading-relaxed animate-in fade-in zoom-in-0 duration-200"
+          className="fixed z-tooltip w-72 p-3 bg-popover text-popover-foreground text-xs rounded-md shadow-2xl border border-glass-border pointer-events-none whitespace-pre-wrap font-sans font-normal normal-case leading-relaxed animate-in fade-in zoom-in-0 duration-200"
           style={style}
         >
           {text}

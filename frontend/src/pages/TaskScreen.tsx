@@ -1,4 +1,6 @@
 import React, { useEffect, useRef } from 'react';
+import { useParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Panel, Group as PanelGroup } from 'react-resizable-panels';
 import type { GroupImperativeHandle } from 'react-resizable-panels';
 import { DBVisualizerPane } from '../components/workspace/DBVisualizerPane';
@@ -6,6 +8,8 @@ import { TaskPane } from '../components/workspace/TaskPane';
 import { SqlEditorPane } from '../components/workspace/SqlEditorPane';
 import { ResultsPane } from '../components/workspace/ResultsPane';
 import { useUIStore, type SlotId } from '../store/uiStore';
+import { useTaskStore } from '../store/taskStore';
+import { useQueryStore } from '../store/queryStore';
 import { DroppableSlot } from '../components/workspace/DroppableSlot';
 import { ResizeHandle } from '../components/workspace/ResizeHandle';
 import { ViewMenu } from '../components/workspace/ViewMenu';
@@ -47,7 +51,25 @@ function useCustomLayout(id: string, defaultLayoutMap: LayoutMap) {
 }
 
 export const TaskScreen: React.FC = () => {
-  const { maximizedPane, setMaximizedPane, slots } = useUIStore();
+  const { id } = useParams<{ id: string }>();
+  const { t } = useTranslation();
+  const { activeTask, fetchTask, isLoading, error, setActiveTask } = useTaskStore();
+  const { resetQueryState } = useQueryStore();
+  const { maximizedPane, setMaximizedPane, slots, hiddenPanels } = useUIStore();
+
+  useEffect(() => {
+    // Reset state before fetching the new task
+    resetQueryState();
+    
+    if (id) {
+      fetchTask(id);
+    }
+    return () => {
+      setActiveTask(null);
+      resetQueryState();
+    };
+  }, [id, fetchTask, setActiveTask, resetQueryState]);
+
 
   const mainGroupRef = useRef<GroupImperativeHandle>(null);
   const leftGroupRef = useRef<GroupImperativeHandle>(null);
@@ -81,6 +103,9 @@ export const TaskScreen: React.FC = () => {
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [maximizedPane, setMaximizedPane]);
 
+  // Returns true if the pane assigned to a slot is currently hidden
+  const isSlotHidden = (slotId: SlotId) => hiddenPanels.includes(slots[slotId]);
+
   const renderPane = (slotId: SlotId) => {
     const paneType = slots[slotId];
     let content: React.ReactNode = null;
@@ -108,6 +133,22 @@ export const TaskScreen: React.FC = () => {
     );
   };
 
+  if (isLoading) {
+    return (
+      <div className="h-full flex items-center justify-center">
+        <div className="text-muted-foreground animate-pulse">{t('common:loading') || 'Loading...'}</div>
+      </div>
+    );
+  }
+
+  if (error || !activeTask) {
+    return (
+      <div className="h-full flex items-center justify-center">
+        <div className="text-destructive font-semibold">Error: {error || 'Task not found'}</div>
+      </div>
+    );
+  }
+
   return (
     <div className="h-full w-full flex flex-col px-2 pb-2 pt-0 gap-2">
       <div className="flex-1 w-full relative">
@@ -124,48 +165,70 @@ export const TaskScreen: React.FC = () => {
           onLayoutChanged={mainOnLayout}
           orientation="horizontal" 
           id="llpg_main_horizontal_v7" 
-          className="h-full w-full relative z-10"
+          className="h-full w-full relative z-layout"
         >
         
         {/* ================= LEFT HALF ================= */}
+        {/* Only render left column if at least one slot is visible */}
+        {(!isSlotHidden('topLeft') || !isSlotHidden('bottomLeft')) && (
         <Panel id="main_left" defaultSize="50%" minSize={MIN_HORIZONTAL_PX} collapsible={false}>
           <PanelGroup groupRef={leftGroupRef} defaultLayout={leftLayout} onLayoutChanged={leftOnLayout} orientation="vertical" id="llpg_left_vertical_v7" className="w-full h-full">
             
             {/* Top Left Slot */}
-            <Panel id="left_top" defaultSize="50%" minSize={MIN_VERTICAL_PX} collapsible={false}>
+            {!isSlotHidden('topLeft') && (
+            <Panel id="left_top" defaultSize={isSlotHidden('bottomLeft') ? '100%' : '50%'} minSize={MIN_VERTICAL_PX} collapsible={false}>
               {renderPane('topLeft')}
             </Panel>
+            )}
 
-            <ResizeHandle direction="horizontal" />
+            {!isSlotHidden('topLeft') && !isSlotHidden('bottomLeft') && (
+              <ResizeHandle direction="horizontal" />
+            )}
 
             {/* Bottom Left Slot */}
-            <Panel id="left_bottom" defaultSize="50%" minSize={MIN_VERTICAL_PX} collapsible={false}>
+            {!isSlotHidden('bottomLeft') && (
+            <Panel id="left_bottom" defaultSize={isSlotHidden('topLeft') ? '100%' : '50%'} minSize={MIN_VERTICAL_PX} collapsible={false}>
               {renderPane('bottomLeft')}
             </Panel>
+            )}
             
           </PanelGroup>
         </Panel>
+        )}
 
-        <ResizeHandle direction="vertical" />
+        {/* Only show resize handle if both columns are visible */}
+        {(!isSlotHidden('topLeft') || !isSlotHidden('bottomLeft')) &&
+         (!isSlotHidden('topRight') || !isSlotHidden('bottomRight')) && (
+          <ResizeHandle direction="vertical" />
+        )}
 
         {/* ================= RIGHT HALF ================= */}
+        {/* Only render right column if at least one slot is visible */}
+        {(!isSlotHidden('topRight') || !isSlotHidden('bottomRight')) && (
         <Panel id="main_right" defaultSize="50%" minSize={MIN_HORIZONTAL_PX} collapsible={false}>
           <PanelGroup groupRef={rightGroupRef} defaultLayout={rightLayout} onLayoutChanged={rightOnLayout} orientation="vertical" id="llpg_right_vertical_v7" className="w-full h-full">
             
             {/* Top Right Slot */}
-            <Panel id="right_top" defaultSize="50%" minSize={MIN_VERTICAL_PX} collapsible={false}>
+            {!isSlotHidden('topRight') && (
+            <Panel id="right_top" defaultSize={isSlotHidden('bottomRight') ? '100%' : '50%'} minSize={MIN_VERTICAL_PX} collapsible={false}>
               {renderPane('topRight')}
             </Panel>
+            )}
 
-            <ResizeHandle direction="horizontal" />
+            {!isSlotHidden('topRight') && !isSlotHidden('bottomRight') && (
+              <ResizeHandle direction="horizontal" />
+            )}
 
             {/* Bottom Right Slot */}
-            <Panel id="right_bottom" defaultSize="50%" minSize={MIN_VERTICAL_PX} collapsible={false}>
+            {!isSlotHidden('bottomRight') && (
+            <Panel id="right_bottom" defaultSize={isSlotHidden('topRight') ? '100%' : '50%'} minSize={MIN_VERTICAL_PX} collapsible={false}>
               {renderPane('bottomRight')}
             </Panel>
+            )}
 
             </PanelGroup>
         </Panel>
+        )}
 
         </PanelGroup>
       </div>

@@ -85,11 +85,11 @@ export const MiniExplainPanel: React.FC = () => {
           const HeaderIcon = hasWarnings ? AlertTriangle : Info;
           
           return (
-            <section className="bg-black/5 dark:bg-white/5 border border-glass-border p-3.5 rounded-xl space-y-2.5 animate-in fade-in slide-in-from-top-4 duration-200">
+            <section className="bg-hover border border-glass-border p-3.5 rounded-xl space-y-2.5 animate-in fade-in slide-in-from-top-4 duration-200">
               <div className="flex items-center justify-between mb-1 select-none">
                 <div className="flex items-center gap-2">
                   <HeaderIcon className={`${headerIconColor} shrink-0`} size={16} />
-                  <h3 className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
+                  <h3 className="text-mini font-bold text-muted-foreground uppercase tracking-wider">
                     {t('explain_ui:diagnostics_title')}
                   </h3>
                 </div>
@@ -162,7 +162,7 @@ export const MiniExplainPanel: React.FC = () => {
           
           {isPlanTreeOpen && (
             <div 
-              className="font-mono text-sm bg-black/5 dark:bg-white/5 shadow-inner border border-glass-border rounded-lg p-4 space-y-1 cursor-default"
+              className="font-mono text-sm bg-hover shadow-inner border border-glass-border rounded-lg p-4 space-y-1 cursor-default"
               onClick={() => {
                 setClickedBranchId(null);
                 setActivePipelineNodeIds([]);

@@ -247,7 +247,7 @@ export const PipelineView: React.FC<PipelineViewProps> = ({
 
   return (
     <div className="mb-3">
-      <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground/50 uppercase tracking-wider mb-2 select-none">
+      <div className="flex items-center gap-1.5 text-2xs text-muted-foreground/50 uppercase tracking-wider mb-2 select-none">
         <Info size={12} className="shrink-0" />
         <span>{t('explain_ui:pipeline_hint')}</span>
       </div>
@@ -280,7 +280,7 @@ export const PipelineView: React.FC<PipelineViewProps> = ({
           <div className="flex flex-wrap gap-2">
             {pipelineData.branches.map((branch, branchIdx) => (
               <div key={branchIdx} className="border border-glass-border rounded bg-muted/50 overflow-hidden">
-                <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground bg-muted/50 px-2 py-1 border-b border-glass-border">
+                <div className="text-2xs font-bold uppercase tracking-wider text-muted-foreground bg-muted/50 px-2 py-1 border-b border-glass-border">
                   ┌─ {branch.label}
                 </div>
                 <div className="flex flex-wrap items-center gap-1 p-2">

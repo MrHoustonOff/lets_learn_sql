@@ -1,17 +1,38 @@
 from fastapi import APIRouter, HTTPException
 from core import database as db_module
+from core.config import settings
+from core.security import validate_db_name
 
 router = APIRouter()
 
 @router.get("/schema")
 async def get_schema(database: str = "northwind"):
-    # TODO: MVP+ — database параметр для мультибд
-    # сейчас всегда northwind
+    if not validate_db_name(database):
+        raise HTTPException(status_code=400, detail="Invalid database name")
 
-    if db_module.user_pool is None:
-        raise HTTPException(status_code=500, detail="Database pool not initialized")
+    conn = None
+    is_pooled = False
 
-    async with db_module.user_pool.acquire() as conn:
+    if database == settings.POSTGRES_DB:
+        if db_module.user_pool is None:
+            raise HTTPException(status_code=500, detail="Database pool not initialized")
+        conn = await db_module.user_pool.acquire()
+        is_pooled = True
+    else:
+        import asyncpg
+        try:
+            conn = await asyncpg.connect(
+                host=settings.POSTGRES_HOST,
+                port=settings.POSTGRES_PORT,
+                user=settings.POSTGRES_USER,
+                password=settings.POSTGRES_PASSWORD,
+                database=database,
+                timeout=5.0
+            )
+        except Exception as e:
+            raise HTTPException(status_code=404, detail=f"Database '{database}' not found or unreachable: {str(e)}")
+
+    try:
         # Таблицы и колонки
         columns = await conn.fetch("""
             SELECT
@@ -223,3 +244,10 @@ async def get_schema(database: str = "northwind"):
                 })
 
         return {"tables": list(tables.values())}
+    finally:
+        if conn:
+            if is_pooled:
+                await db_module.user_pool.release(conn)
+            else:
+                await conn.close()
+

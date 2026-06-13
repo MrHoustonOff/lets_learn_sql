@@ -63,12 +63,12 @@ export const DroppableSlot: React.FC<DroppableSlotProps> = ({ slotId, children }
     >
       {/* If this pane is a valid drop target, show an overlay when dragging over */}
       {isDropTarget && isDragOver && (
-        <div className="absolute inset-0 z-50 border-2 border-primary bg-primary/10 pointer-events-none transition-all duration-200" />
+        <div className="absolute inset-0 z-layout border-2 border-primary bg-primary/10 pointer-events-none transition-all duration-200" />
       )}
       
       {/* If any pane is being dragged, add a slight overlay to others to indicate they are drop zones */}
       {isDropTarget && !isDragOver && (
-        <div className="absolute inset-0 z-50 bg-background/10 backdrop-blur-[1px] pointer-events-none transition-all duration-300" />
+        <div className="absolute inset-0 z-overlay bg-background/10 backdrop-blur-[1px] pointer-events-none transition-all duration-300" />
       )}
 
       {children}

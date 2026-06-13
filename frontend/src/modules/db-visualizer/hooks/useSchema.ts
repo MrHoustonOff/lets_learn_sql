@@ -23,8 +23,7 @@ export function useSchema(database: string = 'northwind') {
             setSchema(mockModule.default as unknown as DatabaseSchema);
           }
         } else {
-          // TODO: MVP+ — прокидывать database параметр
-          const response = await fetch('/api/schema');
+          const response = await fetch(`/api/schema?database=${encodeURIComponent(database)}`);
           if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
           }
