@@ -9,8 +9,10 @@ const ErrorCard: React.FC<{
   title: string;
   duration: number;
   children: React.ReactNode;
-}> = ({ icon, iconBgClass, title, duration, children }) => (
-  <div className="bg-card rounded-xl border border-glass-border p-4 sm:p-5">
+  cardBgClass?: string;
+  cardBorderClass?: string;
+}> = ({ icon, iconBgClass, title, duration, children, cardBgClass = "bg-destructive/5", cardBorderClass = "border-destructive/20" }) => (
+  <div className={`${cardBgClass} rounded-xl border ${cardBorderClass} p-4 sm:p-5`}>
     <div className="flex items-center justify-between mb-3">
       <div className="flex items-center gap-2.5">
         <div className={`w-7 h-7 rounded-md flex items-center justify-center shrink-0 ${iconBgClass}`}>
@@ -31,7 +33,7 @@ export const SqlErrorBanner: React.FC<{ error: string; duration?: number }> = ({
   if (!error.startsWith('PREFLIGHT:')) {
     // Fallback for non-preflight generic errors
     return (
-      <div className="bg-card rounded-xl border border-glass-border p-4 sm:p-5">
+      <div className="bg-destructive/5 rounded-xl border border-destructive/20 p-4 sm:p-5">
         <p className="m-0 text-tiny text-destructive">{error}</p>
       </div>
     );
@@ -48,6 +50,8 @@ export const SqlErrorBanner: React.FC<{ error: string; duration?: number }> = ({
           iconBgClass="bg-warning/10"
           title={t('err_timeout_title', 'Запрос выполняется слишком долго')}
           duration={0}
+          cardBgClass="bg-warning/5"
+          cardBorderClass="border-warning/20"
         >
           <div className="bg-black/5 dark:bg-white/5 rounded-md px-3 py-2.5 mb-2.5">
             <p className="font-mono text-tiny leading-relaxed m-0 text-warning-text">
@@ -101,11 +105,11 @@ export const SqlErrorBanner: React.FC<{ error: string; duration?: number }> = ({
           duration={duration}
         >
           <div className="grid grid-cols-2 gap-3 mb-2.5">
-            <div className="bg-black/5 dark:bg-white/5 rounded-md p-4">
+            <div className="bg-card border border-glass-border rounded-md p-4">
               <p className="text-tiny text-foreground/80 m-0 mb-1">{t('err_colcount_expected', 'Ожидалось колонок')}</p>
               <p className="text-2xl font-medium m-0 text-success">{expectedCount}</p>
             </div>
-            <div className="bg-destructive/10 rounded-md p-4 border border-destructive/20">
+            <div className="bg-card border border-glass-border rounded-md p-4">
               <p className="text-tiny text-destructive m-0 mb-1">{t('err_colcount_actual', 'Получено')}</p>
               <p className="text-2xl font-medium m-0 text-destructive">{actualCount}</p>
             </div>
@@ -185,7 +189,7 @@ export const SqlErrorBanner: React.FC<{ error: string; duration?: number }> = ({
 
     default:
       return (
-        <div className="bg-card rounded-xl border border-glass-border p-4 sm:p-5">
+        <div className="bg-destructive/5 rounded-xl border border-destructive/20 p-4 sm:p-5">
           <p className="m-0 text-tiny text-destructive">{error}</p>
         </div>
       );

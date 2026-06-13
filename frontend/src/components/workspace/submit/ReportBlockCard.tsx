@@ -9,6 +9,7 @@ interface ReportBlockCardProps {
   tooltipText?: string;
   statusIcon?: React.ReactNode;
   children: React.ReactNode;
+  cardClassName?: string;
 }
 
 export const ReportBlockCard: React.FC<ReportBlockCardProps> = ({
@@ -18,10 +19,11 @@ export const ReportBlockCard: React.FC<ReportBlockCardProps> = ({
   title,
   tooltipText,
   statusIcon,
-  children
+  children,
+  cardClassName = "bg-card border-glass-border"
 }) => {
   return (
-    <div className="bg-card rounded-xl border border-glass-border p-4 sm:p-5">
+    <div className={`rounded-xl border p-4 sm:p-5 ${cardClassName}`}>
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2.5">
           <div className={`w-7 h-7 rounded-md flex items-center justify-center shrink-0 ${iconBgClass}`}>

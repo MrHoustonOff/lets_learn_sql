@@ -39,14 +39,15 @@ export const Stage1Report: React.FC<{ report: any }> = ({ report }) => {
         title={t('rows_compare_title', 'Количество строк')}
         tooltipText={t('rows_compare_info', 'Сравнивается количество строк, которое вернул запрос, с количеством строк в эталонном ответе.')}
         statusIcon={isRowsMatch ? <Check size={18} className="text-success" /> : <X size={18} className="text-destructive" />}
+        cardClassName={isRowsMatch ? "bg-success/5 border-success/20" : "bg-destructive/5 border-destructive/20"}
       >
         <div className="grid grid-cols-2 gap-3">
-          <div className={`${isRowsMatch ? 'bg-success/10 border border-success/20' : 'bg-destructive/10 border border-destructive/20'} rounded-md p-4`}>
-            <p className={`text-tiny m-0 mb-1 ${isRowsMatch ? 'text-success' : 'text-destructive'}`}>{t('err_colcount_actual', 'Получено')}</p>
+          <div className="bg-card border border-glass-border rounded-md p-4">
+            <p className="text-tiny text-muted-foreground m-0 mb-1">{t('err_colcount_actual', 'Получено')}</p>
             <p className={`text-2xl font-medium m-0 ${isRowsMatch ? 'text-success' : 'text-destructive'}`}>{report.user_row_count}</p>
           </div>
-          <div className="bg-success/10 border border-success/20 rounded-md p-4">
-            <p className="text-tiny text-success m-0 mb-1">{t('err_colcount_expected', 'Ожидалось')}</p>
+          <div className="bg-card border border-glass-border rounded-md p-4">
+            <p className="text-tiny text-muted-foreground m-0 mb-1">{t('err_colcount_expected', 'Ожидалось')}</p>
             <p className="text-2xl font-medium m-0 text-success">{report.ref_row_count}</p>
           </div>
         </div>
