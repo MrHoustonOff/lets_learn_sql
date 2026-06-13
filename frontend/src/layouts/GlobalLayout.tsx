@@ -15,7 +15,7 @@ export const GlobalLayout: React.FC = () => {
       {/* Main Content (Task Screen or other pages) */}
       <div className="flex-1 flex flex-col relative z-layout w-full h-full">
         <Navbar />
-        <main className="flex-1 relative overflow-y-auto min-h-0 flex flex-col custom-scrollbar">
+        <main className={`flex-1 relative min-h-0 flex flex-col custom-scrollbar ${!isTaskPage ? 'overflow-y-auto' : ''}`}>
           <Outlet />
         </main>
       </div>

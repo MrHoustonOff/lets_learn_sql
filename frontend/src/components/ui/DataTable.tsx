@@ -329,7 +329,7 @@ export const DataTable: React.FC<DataTableProps> = ({ columns, rows, className =
         </div>
       ) : (
         <div 
-          className="flex-1 border border-glass-border rounded-xl bg-card overflow-auto relative custom-scrollbar shadow-inner"
+          className="flex-1 border border-glass-border rounded-xl bg-black/5 dark:bg-white/5 overflow-auto relative custom-scrollbar shadow-inner"
           style={{ fontSize: `${14 * scale}px` }}
         >
           <table 
@@ -337,8 +337,7 @@ export const DataTable: React.FC<DataTableProps> = ({ columns, rows, className =
             className={`text-left whitespace-nowrap ${isResized ? 'table-fixed' : 'w-full'}`} 
             style={isResized ? { width: `${totalTableWidth}px` } : {}}
           >
-            {/* SOLID HEADER (No backdrop-blur, solid bg) */}
-            <thead className="bg-[#fdf4eb] dark:bg-[#281a13] border-b-2 border-primary/20 text-foreground font-semibold uppercase tracking-wider sticky top-0 z-layout shadow-sm">
+            <thead className="bg-black/10 dark:bg-white/10 border-b-2 border-primary/20 text-foreground font-semibold uppercase tracking-wider sticky top-0 z-layout shadow-sm">
               <tr className="divide-x divide-glass-border">
                 {columns.map((col, i) => (
                   <th 
@@ -439,7 +438,7 @@ export const DataTable: React.FC<DataTableProps> = ({ columns, rows, className =
                           </div>
                         ) : (
                           // String
-                          <div className="truncate text-foreground" title={String(cell)}>
+                          <div className="truncate" title={String(cell)}>
                             {String(cell)}
                           </div>
                         )}

@@ -80,32 +80,28 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
             <X size={20} />
           </button>
 
-          <div className="flex items-start gap-4">
-            {/* Left side: Icon */}
+          <div className="flex items-center gap-4 pr-6 pt-1">
             <div className={`p-3 rounded-2xl shrink-0 ${getIconColor()}`}>
               {getIcon()}
             </div>
-            
-            {/* Right side: Title and Text */}
-            <div className="flex flex-col gap-2 pt-1 pr-6">
-              <h2 className="text-lg font-bold tracking-tight text-foreground leading-tight">{title}</h2>
-              <div className="text-sm text-muted-foreground leading-relaxed mt-1">
-                {children}
-              </div>
-            </div>
+            <h2 className="text-lg font-semibold tracking-tight text-foreground leading-tight">{title}</h2>
+          </div>
+
+          <div className="text-sm text-foreground/90 leading-relaxed mt-2">
+            {children}
           </div>
 
           {/* Action Buttons */}
           <div className="flex items-center justify-end gap-3 mt-2">
             <button 
               onClick={onClose}
-              className="px-4 py-2 rounded-xl text-sm font-semibold hover:bg-hover transition-colors text-muted-foreground hover:text-foreground focus:outline-none"
+              className="px-4 py-2 rounded-xl text-sm font-medium hover:bg-hover transition-colors text-muted-foreground hover:text-foreground focus:outline-none"
             >
               {cancelText || 'Отмена'}
             </button>
             <button 
               onClick={() => { onConfirm(); onClose(); }}
-              className={`px-4 py-2 rounded-xl text-sm font-bold transition-all focus:outline-none ${getBtnColor()}`}
+              className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all focus:outline-none ${getBtnColor()}`}
             >
               {confirmText || 'Подтвердить'}
             </button>
