@@ -72,33 +72,9 @@ export const HistoryPanel: React.FC<{
       infoText={t('previous_solutions_hint', 'Кликните по попытке, чтобы посмотреть её код и детали, или удалить. Вы также можете массово удалить все решения ниже.')}
     >
       <div className="flex flex-col gap-3">
-        <div className="flex items-center justify-end">
-          {totalPages > 1 && (
-            <div className="flex items-center gap-1 px-1.5 py-1 bg-card border border-glass-border/60 rounded-full shadow-sm">
-              <button 
-                disabled={currentPage === 1}
-                onClick={() => setCurrentPage(p => p - 1)}
-                className="p-1 rounded-full hover:bg-hover disabled:opacity-30 transition-colors text-muted-foreground hover:text-foreground focus:outline-none"
-              >
-                <ChevronLeft size={14} />
-              </button>
-              <span className="text-[10px] font-semibold text-foreground px-2 font-mono">
-                {currentPage} <span className="text-muted-foreground/40 mx-0.5">/</span> {totalPages}
-              </span>
-              <button 
-                disabled={currentPage === totalPages}
-                onClick={() => setCurrentPage(p => p + 1)}
-                className="p-1 rounded-full hover:bg-hover disabled:opacity-30 transition-colors text-muted-foreground hover:text-foreground focus:outline-none"
-              >
-                <ChevronRight size={14} />
-              </button>
-            </div>
-          )}
-        </div>
-
         <div className="flex flex-col gap-1">
           {/* Table Header for Sorting */}
-          <div className="flex items-center justify-between px-3 py-1.5 text-[10px] text-muted-foreground uppercase tracking-wider font-semibold border-b border-glass-border/50 mb-1">
+          <div className="flex items-center justify-between px-3 py-1.5 text-[10px] text-muted-foreground uppercase tracking-wider font-semibold border-b border-glass-border mb-1">
             <button onClick={() => handleSort('verdict')} className={getSortBtnClass('verdict')}>
               {t('sort_status', 'Статус')} <SortIcon field="verdict" />
             </button>
@@ -132,14 +108,38 @@ export const HistoryPanel: React.FC<{
           ))}
         </div>
 
-        {/* Danger Zone Management */}
-        <div className="flex justify-end gap-2 mt-1">
-          <button className="text-[10px] text-muted-foreground/60 hover:bg-destructive/10 hover:text-destructive transition-colors uppercase tracking-wider font-semibold px-2 py-1 rounded">
-            {t('delete_incorrect', 'Удалить неверные')}
-          </button>
-          <button className="text-[10px] text-muted-foreground/60 hover:bg-destructive/10 hover:text-destructive transition-colors uppercase tracking-wider font-semibold px-2 py-1 rounded">
-            {t('delete_correct', 'Удалить верные')}
-          </button>
+        {/* Footer: Danger Zone & Paginator */}
+        <div className="flex items-center justify-between mt-1 pt-3 border-t border-glass-border/30">
+          <div className="flex gap-2">
+            <button className="text-[10px] text-muted-foreground/60 hover:bg-destructive/10 hover:text-destructive transition-colors uppercase tracking-wider font-semibold px-2 py-1 rounded">
+              {t('delete_incorrect', 'Удалить неверные')}
+            </button>
+            <button className="text-[10px] text-muted-foreground/60 hover:bg-destructive/10 hover:text-destructive transition-colors uppercase tracking-wider font-semibold px-2 py-1 rounded">
+              {t('delete_correct', 'Удалить верные')}
+            </button>
+          </div>
+
+          {totalPages > 1 && (
+            <div className="flex items-center gap-1 px-1.5 py-1 bg-card border border-glass-border rounded-full shadow-sm">
+              <button 
+                disabled={currentPage === 1}
+                onClick={() => setCurrentPage(p => p - 1)}
+                className="p-1 rounded-full hover:bg-hover disabled:opacity-30 transition-colors text-muted-foreground hover:text-foreground focus:outline-none"
+              >
+                <ChevronLeft size={14} />
+              </button>
+              <span className="text-[10px] font-semibold text-foreground px-2 font-mono">
+                {currentPage} <span className="text-muted-foreground/40 mx-0.5">/</span> {totalPages}
+              </span>
+              <button 
+                disabled={currentPage === totalPages}
+                onClick={() => setCurrentPage(p => p + 1)}
+                className="p-1 rounded-full hover:bg-hover disabled:opacity-30 transition-colors text-muted-foreground hover:text-foreground focus:outline-none"
+              >
+                <ChevronRight size={14} />
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </CollapsibleSection>
