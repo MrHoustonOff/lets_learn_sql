@@ -1,7 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
+import { ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import { CollapsibleSection } from '../../ui/CollapsibleSection';
 import { StatusIcon } from '../../ui/StatusIcon';
+
+type SortField = 'date' | 'verdict' | 'duration';
+type SortOrder = 'asc' | 'desc';
 
 export const HistoryPanel: React.FC<{
   history: any[];
@@ -12,13 +16,55 @@ export const HistoryPanel: React.FC<{
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 6;
   const totalPages = Math.ceil(history.length / itemsPerPage);
-  const currentHistory = history.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
+  const [sortField, setSortField] = useState<SortField>('date');
+  const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
+
+  const handleSort = (field: SortField) => {
+    if (sortField === field) {
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortOrder(field === 'duration' ? 'asc' : 'desc'); // duration default is asc (fastest)
+    }
+  };
+
+  const sortedHistory = useMemo(() => {
+    return [...history].sort((a, b) => {
+      // User specific rule: when sorting by duration, ALWAYS put correct attempts first
+      if (sortField === 'duration') {
+        if (a.verdict !== b.verdict) {
+           return a.verdict ? -1 : 1; // Correct first
+        }
+        return sortOrder === 'asc' ? a.durationMs - b.durationMs : b.durationMs - a.durationMs;
+      }
+      
+      let comparison = 0;
+      if (sortField === 'date') {
+        comparison = a.date.getTime() - b.date.getTime();
+      } else if (sortField === 'verdict') {
+        comparison = (a.verdict === b.verdict) ? 0 : (a.verdict ? 1 : -1);
+      }
+      
+      return sortOrder === 'asc' ? comparison : -comparison;
+    });
+  }, [history, sortField, sortOrder]);
+
+  const currentHistory = sortedHistory.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   const formatDate = (d: Date) => {
     return new Intl.DateTimeFormat('ru-RU', {
       day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit'
     }).format(d);
   };
+
+  const SortIcon = ({ field }: { field: SortField }) => {
+    if (sortField !== field) return <ArrowUpDown size={12} className="opacity-40" />;
+    return sortOrder === 'asc' ? <ArrowUp size={12} /> : <ArrowDown size={12} />;
+  };
+
+  const getSortBtnClass = (field: SortField) => 
+    `flex items-center gap-1 transition-colors focus:outline-none ${sortField === field ? 'text-primary' : 'hover:text-foreground'}`;
 
   return (
     <CollapsibleSection 
@@ -43,6 +89,21 @@ export const HistoryPanel: React.FC<{
         </div>
 
         <div className="flex flex-col gap-1">
+          {/* Table Header for Sorting */}
+          <div className="flex items-center justify-between px-3 py-1.5 text-[10px] text-muted-foreground uppercase tracking-wider font-semibold border-b border-glass-border/50 mb-1">
+            <button onClick={() => handleSort('verdict')} className={getSortBtnClass('verdict')}>
+              {t('sort_status', 'Статус')} <SortIcon field="verdict" />
+            </button>
+            <div className="flex items-center gap-6">
+              <button onClick={() => handleSort('date')} className={getSortBtnClass('date')}>
+                {t('sort_date', 'Дата')} <SortIcon field="date" />
+              </button>
+              <button onClick={() => handleSort('duration')} className={getSortBtnClass('duration')}>
+                {t('sort_time', 'Время')} <SortIcon field="duration" />
+              </button>
+            </div>
+          </div>
+
           {currentHistory.map((attempt) => (
             <button
               key={attempt.id}
@@ -55,9 +116,9 @@ export const HistoryPanel: React.FC<{
                   {t('attempt_prefix', 'Попытка №')}{attempt.id.split('-').pop()}
                 </span>
               </div>
-              <div className="flex items-center gap-3 text-2xs text-muted-foreground font-mono">
+              <div className="flex items-center gap-4 text-2xs text-muted-foreground font-mono w-32 justify-end">
                 <span>{formatDate(attempt.date)}</span>
-                <span>{attempt.durationMs} ms</span>
+                <span className="w-12 text-right">{attempt.durationMs} ms</span>
               </div>
             </button>
           ))}
