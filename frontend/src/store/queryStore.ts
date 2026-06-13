@@ -130,7 +130,7 @@ export const useQueryStore = create<QueryState>((set, get) => ({
     }
   },
 
-  submitQuery: async (taskId: number, database = 'northwind') => {
+  submitQuery: async (taskId: number, _database = 'northwind') => {
     const { sql } = get();
     if (!sql.trim()) {
       set({ submitError: 'Empty SQL' });

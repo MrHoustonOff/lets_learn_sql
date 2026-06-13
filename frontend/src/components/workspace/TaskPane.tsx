@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { useUIStore, type SlotId } from '../../store/uiStore';
 import { useTaskStore } from '../../store/taskStore';
 import { useQueryStore } from '../../store/queryStore';
-import { Maximize2, Minimize2, Check, Bookmark, Loader2, ChevronDown } from 'lucide-react';
+import { Maximize2, Minimize2, Bookmark } from 'lucide-react';
 import { DragHandle } from './DragHandle';
 import { SubmitReport } from './SubmitReport';
 
@@ -15,47 +15,19 @@ interface TaskPaneProps {
 export const TaskPane: React.FC<TaskPaneProps> = ({ slotId }) => {
   const { t } = useTranslation();
   // Use shared tab state from store — SqlEditorPane can switch it on Submit
-  const { activeTask, toggleBookmark, toggleSolved, taskPaneTab, setTaskPaneTab } = useTaskStore();
+  const { activeTask, toggleBookmark, taskPaneTab, setTaskPaneTab } = useTaskStore();
   const { submitResult, isSubmitting, submitError } = useQueryStore();
   const { maximizedPane, setMaximizedPane } = useUIStore();
   const isMaximized = maximizedPane === 'task';
 
-  const [solutionData, setSolutionData] = useState<{ solution_sql: string } | null>(null);
-  const [loadingSolution, setLoadingSolution] = useState(false);
-  const [solutionError, setSolutionError] = useState<string | null>(null);
-  const [referenceSpoilerOpen, setReferenceSpoilerOpen] = useState(false);
-
+  // Reset tab when task changes
   useEffect(() => {
-    if (taskPaneTab === 'solution' && !solutionData && activeTask) {
-      setLoadingSolution(true);
-      setSolutionError(null);
-      fetch(`/api/tasks/${activeTask.id}/solution`, { method: 'POST' })
-        .then(res => {
-          if (!res.ok) throw new Error('Failed to fetch task solution');
-          return res.json();
-        })
-        .then(data => {
-          setSolutionData(data);
-          setLoadingSolution(false);
-        })
-        .catch(err => {
-          setSolutionError(err.message);
-          setLoadingSolution(false);
-        });
-    }
-  }, [taskPaneTab, activeTask, solutionData]);
-
-  // Reset solution data and tab when task changes
-  useEffect(() => {
-    setSolutionData(null);
-    setSolutionError(null);
     setTaskPaneTab('task');
-    setReferenceSpoilerOpen(false);
   }, [activeTask?.id, setTaskPaneTab]);
 
   if (!activeTask) return null;
 
-  const isSolved = activeTask.isSolved;
+
   const isBookmarked = activeTask.isBookmarked;
 
   const renderFormattedText = (text: string | null) => {
@@ -99,18 +71,7 @@ export const TaskPane: React.FC<TaskPaneProps> = ({ slotId }) => {
           </button>
         </div>
         <div className="flex items-center gap-1 shrink min-w-0 ml-1">
-          <button 
-            onClick={toggleSolved}
-            className={`flex items-center justify-center gap-1.5 px-2 py-1 rounded-md transition-all border min-w-0 ${
-              isSolved 
-                ? 'bg-success/10 border-success/30 text-success shadow-sm' 
-                : 'bg-transparent border-transparent text-muted-foreground hover:bg-hover hover:text-foreground'
-            }`}
-            title={t('task_pane:mark_solved_tooltip')}
-          >
-            <Check size={14} className={`shrink-0 ${isSolved ? 'opacity-100' : 'opacity-40'}`} strokeWidth={isSolved ? 3 : 2} />
-            <span className="text-xs font-medium truncate hidden sm:inline">{t('task_pane:solved')}</span>
-          </button>
+
 
           <button 
             onClick={toggleBookmark}
@@ -168,47 +129,7 @@ export const TaskPane: React.FC<TaskPaneProps> = ({ slotId }) => {
               submitError={submitError}
             />
 
-            {/* ===== Reference solution under spoiler ===== */}
-            {(solutionData || loadingSolution) && (
-              <div className="border border-glass-border rounded-xl overflow-hidden">
-                <button
-                  onClick={() => setReferenceSpoilerOpen(v => !v)}
-                  className="w-full flex items-center justify-between px-4 py-3 text-tiny font-semibold text-muted-foreground hover:bg-hover transition-colors uppercase tracking-wider"
-                >
-                  <span>{t('task_pane:mock_solution_title')}</span>
-                  <ChevronDown
-                    size={14}
-                    className={`transition-transform duration-200 ${referenceSpoilerOpen ? 'rotate-180' : ''}`}
-                  />
-                </button>
 
-                {referenceSpoilerOpen && (
-                  <div className="border-t border-glass-border p-4 animate-in fade-in duration-200">
-                    {loadingSolution ? (
-                      <div className="flex items-center gap-2 text-muted-foreground">
-                        <Loader2 size={16} className="animate-spin" />
-                        <span>{t('common:loading')}</span>
-                      </div>
-                    ) : solutionError ? (
-                      <div className="text-destructive font-semibold">Error: {solutionError}</div>
-                    ) : solutionData ? (
-                      <pre className="bg-hover p-4 rounded-xl border border-glass-border/50 shadow-inner overflow-x-auto m-0">
-                        <code className="text-success font-mono text-tiny">
-                          {solutionData.solution_sql}
-                        </code>
-                      </pre>
-                    ) : null}
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* If no submit yet and no solution loaded — show a prompt */}
-            {!submitResult && !isSubmitting && !submitError && !solutionData && !loadingSolution && (
-              <div className="text-center py-8 text-muted-foreground opacity-60">
-                <p className="text-tiny">{t('task_pane:mock_solution_description')}</p>
-              </div>
-            )}
           </div>
         )}
       </div>
