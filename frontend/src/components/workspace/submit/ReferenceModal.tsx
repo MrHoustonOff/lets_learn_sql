@@ -33,7 +33,7 @@ export const ReferenceModal: React.FC<{
               <button
                 title={copiedCode ? t('copied', 'Скопировано') : t('copy', 'Копировать')}
                 onClick={() => handleCopy(MOCK_REFERENCE_SQL)}
-                className="p-2 rounded-xl hover:bg-black/5 dark:hover:bg-white/5 text-muted-foreground hover:text-foreground transition-colors flex items-center justify-center relative"
+                className="p-2 rounded-xl hover:bg-hover text-muted-foreground hover:text-foreground transition-colors flex items-center justify-center relative"
               >
                 {copiedCode ? <Check size={20} className="text-success" /> : <Copy size={20} />}
               </button>

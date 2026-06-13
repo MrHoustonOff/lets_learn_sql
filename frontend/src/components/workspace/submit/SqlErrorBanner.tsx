@@ -53,7 +53,7 @@ export const SqlErrorBanner: React.FC<{ error: string; duration?: number }> = ({
           cardBgClass="bg-warning/5"
           cardBorderClass="border-warning/20"
         >
-          <div className="bg-black/5 dark:bg-white/5 rounded-md px-3 py-2.5 mb-2.5">
+          <div className="bg-hover rounded-md px-3 py-2.5 mb-2.5">
             <p className="font-mono text-tiny leading-relaxed m-0 text-warning-text">
               canceling statement due to statement timeout
             </p>
@@ -78,7 +78,7 @@ export const SqlErrorBanner: React.FC<{ error: string; duration?: number }> = ({
           title={title}
           duration={duration}
         >
-          <div className="bg-black/5 dark:bg-white/5 rounded-md px-3 py-2.5 mb-2.5">
+          <div className="bg-hover rounded-md px-3 py-2.5 mb-2.5">
             <p className="font-mono text-tiny leading-relaxed m-0 text-destructive">{firstLine || errTrace}</p>
             {rest.length > 0 && (
               <p className="font-mono text-xs leading-relaxed mt-1 mb-0 text-muted-foreground whitespace-pre-wrap">{rest.join('\n')}</p>
@@ -135,7 +135,7 @@ export const SqlErrorBanner: React.FC<{ error: string; duration?: number }> = ({
               {typesData.map((col: any) => {
                 if (col.match) {
                   return (
-                    <div key={col.pos} className="grid grid-cols-[28px_minmax(0,1fr)_minmax(0,1fr)_20px] items-center gap-2.5 px-2.5 py-2 bg-black/5 dark:bg-white/5 rounded-md">
+                    <div key={col.pos} className="grid grid-cols-[28px_minmax(0,1fr)_minmax(0,1fr)_20px] items-center gap-2.5 px-2.5 py-2 bg-hover rounded-md">
                       <span className="text-xs text-muted-foreground">#{col.pos}</span>
                       <div className="min-w-0">
                         <p className="text-tiny font-medium text-foreground m-0 truncate">{col.name}</p>
@@ -176,7 +176,7 @@ export const SqlErrorBanner: React.FC<{ error: string; duration?: number }> = ({
             title={t('err_coltype_title', 'Несовпадение типов данных')}
             duration={duration}
           >
-            <div className="bg-black/5 dark:bg-white/5 rounded-md px-3 py-2.5">
+            <div className="bg-hover rounded-md px-3 py-2.5">
               <p className="font-mono text-tiny leading-relaxed m-0 text-destructive">{parts.slice(1).join('|')}</p>
             </div>
           </ErrorCard>

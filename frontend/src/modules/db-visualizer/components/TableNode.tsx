@@ -92,7 +92,7 @@ export const TableNode: React.FC<TableNodeProps> = ({ data, dragging }) => {
         {table.columns.length > 10 && (
           <button 
             onClick={(e) => { e.stopPropagation(); setIsExpanded(!isExpanded); }}
-            className="flex items-center justify-center gap-2 py-2 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/5 border-t border-glass-border transition-colors w-full"
+            className="flex items-center justify-center gap-2 py-2 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-hover border-t border-glass-border transition-colors w-full"
           >
             {isExpanded ? (
               <>

@@ -39,7 +39,7 @@ export const AttemptModal: React.FC<{
             <button
               title={copiedCode ? t('copied', 'Скопировано') : t('copy', 'Копировать')}
               onClick={() => handleCopy(attempt?.sql || '')}
-              className="p-1.5 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 text-muted-foreground hover:text-foreground transition-colors flex items-center justify-center relative"
+              className="p-1.5 rounded-lg hover:bg-hover text-muted-foreground hover:text-foreground transition-colors flex items-center justify-center relative"
             >
               {copiedCode ? <Check size={16} className="text-success" /> : <Copy size={16} />}
             </button>

@@ -92,7 +92,7 @@ export const DatabaseDetailsModal: React.FC<DatabaseDetailsModalProps> = ({ isOp
                     </div>
                     <div>
                       <div className="text-xs text-muted-foreground uppercase tracking-wider mb-1">{t('db_details:tech_name')}</div>
-                      <div className="font-mono text-sm px-2 py-1 bg-black/5 dark:bg-white/5 border border-glass-border rounded-md inline-block text-primary">
+                      <div className="font-mono text-sm px-2 py-1 bg-hover border border-glass-border rounded-md inline-block text-primary">
                         {database.technicalName}
                       </div>
                     </div>

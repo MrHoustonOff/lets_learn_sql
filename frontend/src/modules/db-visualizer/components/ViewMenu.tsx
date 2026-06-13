@@ -58,7 +58,7 @@ export const ViewMenu: React.FC<ViewMenuProps> = ({
         className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium text-base transition-all shadow-sm border ${
           isOpen 
             ? 'bg-black/10 dark:bg-white/10 border-glass-border text-foreground'
-            : 'bg-glass backdrop-blur-md border-glass-border hover:bg-black/5 dark:hover:bg-white/5 text-foreground'
+            : 'bg-glass backdrop-blur-md border-glass-border hover:bg-hover text-foreground'
         }`}
         title={t('db_visualizer:view_menu.settings_title')}
       >
@@ -74,7 +74,7 @@ export const ViewMenu: React.FC<ViewMenuProps> = ({
           {/* Переключатель легенды */}
           <button
             onClick={() => onToggleLegend()}
-            className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 transition-colors text-sm text-left w-full mb-1"
+            className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-hover transition-colors text-sm text-left w-full mb-1"
           >
             {showLegend ? (
               <BookOpenText size={16} className="text-blue-500" />
@@ -90,7 +90,7 @@ export const ViewMenu: React.FC<ViewMenuProps> = ({
           {/* Переключатель тулбара */}
           <button
             onClick={() => onToggleToolbar()}
-            className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 transition-colors text-sm text-left w-full mb-1"
+            className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-hover transition-colors text-sm text-left w-full mb-1"
           >
             {showToolbar ? (
               <Move size={16} className="text-blue-500" />
@@ -111,7 +111,7 @@ export const ViewMenu: React.FC<ViewMenuProps> = ({
           {/* Переключатель связей */}
           <button
             onClick={() => onToggleRelations()}
-            className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 transition-colors text-sm text-left w-full"
+            className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-hover transition-colors text-sm text-left w-full"
           >
             {showRelations ? (
               <Eye size={16} className="text-blue-500" />
@@ -127,7 +127,7 @@ export const ViewMenu: React.FC<ViewMenuProps> = ({
           {/* Переключатель маркеров (1:1, 1:M) */}
           <button
             onClick={() => onToggleMarkers()}
-            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 transition-colors text-sm text-left w-full ${!showRelations ? 'opacity-50 pointer-events-none' : ''}`}
+            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-hover transition-colors text-sm text-left w-full ${!showRelations ? 'opacity-50 pointer-events-none' : ''}`}
           >
             {showMarkers ? (
               <CircleDot size={16} className="text-blue-500" />
@@ -143,7 +143,7 @@ export const ViewMenu: React.FC<ViewMenuProps> = ({
           {/* Переключатель формы линий */}
           <div className={`px-3 py-2 space-y-2 ${!showRelations ? 'opacity-50 pointer-events-none' : ''}`}>
             <span className="text-xs text-muted-foreground font-medium">{t('db_visualizer:view_menu.edge_form')}</span>
-            <div className="flex gap-1 p-1 bg-black/5 dark:bg-white/5 rounded-lg border border-glass-border">
+            <div className="flex gap-1 p-1 bg-hover rounded-lg border border-glass-border">
               <button
                 onClick={() => onChangeEdgeStyle('bezier')}
                 className={`flex-1 flex items-center justify-center gap-2 py-1.5 rounded-md text-xs transition-colors ${
@@ -172,7 +172,7 @@ export const ViewMenu: React.FC<ViewMenuProps> = ({
           {/* Переключатель анимации линий */}
           <div className={`px-3 py-2 space-y-2 ${!showRelations ? 'opacity-50 pointer-events-none' : ''}`}>
             <span className="text-xs text-muted-foreground font-medium">{t('db_visualizer:view_menu.edge_style')}</span>
-            <div className="flex gap-1 p-1 bg-black/5 dark:bg-white/5 rounded-lg border border-glass-border">
+            <div className="flex gap-1 p-1 bg-hover rounded-lg border border-glass-border">
               <button
                 onClick={() => onChangeAnimateEdges(true)}
                 className={`flex-1 flex items-center justify-center gap-2 py-1.5 rounded-md text-xs transition-colors ${
@@ -219,7 +219,7 @@ export const ViewMenu: React.FC<ViewMenuProps> = ({
               if (onResetLayout) onResetLayout();
               setIsOpen(false);
             }}
-            className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 transition-colors text-sm text-left w-full text-muted-foreground hover:text-foreground mb-1"
+            className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-hover transition-colors text-sm text-left w-full text-muted-foreground hover:text-foreground mb-1"
           >
             <RotateCcw size={16} />
             <span className="flex-1">{t('db_visualizer:view_menu.reset_layout')}</span>

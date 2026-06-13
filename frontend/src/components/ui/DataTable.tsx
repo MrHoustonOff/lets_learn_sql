@@ -114,7 +114,7 @@ const ColumnFilterPopover = ({
         
         <div className="flex flex-col max-h-48 overflow-y-auto custom-scrollbar pr-1 gap-1">
           {!search && (
-            <label className="flex items-center gap-2 px-1 py-1 hover:bg-black/5 dark:hover:bg-white/5 rounded cursor-pointer transition-colors text-xs font-semibold border-b border-glass-border pb-1.5 mb-1">
+            <label className="flex items-center gap-2 px-1 py-1 hover:bg-hover rounded cursor-pointer transition-colors text-xs font-semibold border-b border-glass-border pb-1.5 mb-1">
               <input 
                 type="checkbox" 
                 checked={isAllSelected}
@@ -125,7 +125,7 @@ const ColumnFilterPopover = ({
             </label>
           )}
           {search && displayValues.length > 0 && (
-            <label className="flex items-center gap-2 px-1 py-1 hover:bg-black/5 dark:hover:bg-white/5 rounded cursor-pointer transition-colors text-xs font-semibold border-b border-glass-border pb-1.5 mb-1 text-primary">
+            <label className="flex items-center gap-2 px-1 py-1 hover:bg-hover rounded cursor-pointer transition-colors text-xs font-semibold border-b border-glass-border pb-1.5 mb-1 text-primary">
               <input 
                 type="checkbox" 
                 checked={isAllSelected}
@@ -137,7 +137,7 @@ const ColumnFilterPopover = ({
           )}
           
           {renderedValues.map(val => (
-            <label key={val} className="flex items-center gap-2 px-1 py-1 hover:bg-black/5 dark:hover:bg-white/5 rounded cursor-pointer transition-colors text-xs">
+            <label key={val} className="flex items-center gap-2 px-1 py-1 hover:bg-hover rounded cursor-pointer transition-colors text-xs">
               <input 
                 type="checkbox" 
                 checked={currentSet.has(val)}
@@ -282,7 +282,7 @@ export const DataTable: React.FC<DataTableProps> = ({ columns, rows, className =
         <div className="flex items-center gap-2 bg-hover border border-glass-border rounded-lg px-2 py-1 shadow-sm">
           <button 
             onClick={handleZoomOut}
-            className="text-muted-foreground hover:text-foreground p-1 transition-colors rounded-md hover:bg-black/5 dark:hover:bg-white/5"
+            className="text-muted-foreground hover:text-foreground p-1 transition-colors rounded-md hover:bg-hover"
             title={t('data_table:zoom_out')}
           >
             <ZoomOut size={14} />
@@ -299,7 +299,7 @@ export const DataTable: React.FC<DataTableProps> = ({ columns, rows, className =
           />
           <button 
             onClick={handleZoomIn}
-            className="text-muted-foreground hover:text-foreground p-1 transition-colors rounded-md hover:bg-black/5 dark:hover:bg-white/5"
+            className="text-muted-foreground hover:text-foreground p-1 transition-colors rounded-md hover:bg-hover"
             title={t('data_table:zoom_in')}
           >
             <ZoomIn size={14} />
@@ -309,7 +309,7 @@ export const DataTable: React.FC<DataTableProps> = ({ columns, rows, className =
             <button 
               onClick={() => setScale(1)}
               disabled={scale === 1}
-              className={`p-1 transition-colors rounded-md ${scale === 1 ? 'opacity-30 cursor-default' : 'hover:bg-black/5 dark:hover:bg-white/5 hover:text-foreground'} text-muted-foreground`}
+              className={`p-1 transition-colors rounded-md ${scale === 1 ? 'opacity-30 cursor-default' : 'hover:bg-hover hover:text-foreground'} text-muted-foreground`}
               title={t('data_table:zoom_reset')}
             >
               <RotateCcw size={12} />
@@ -329,7 +329,7 @@ export const DataTable: React.FC<DataTableProps> = ({ columns, rows, className =
         </div>
       ) : (
         <div 
-          className="flex-1 border border-glass-border rounded-xl bg-black/5 dark:bg-white/5 overflow-auto relative custom-scrollbar shadow-inner"
+          className="flex-1 border border-glass-border rounded-xl bg-hover overflow-auto relative custom-scrollbar shadow-inner"
           style={{ fontSize: `${14 * scale}px` }}
         >
           <table 

@@ -91,7 +91,7 @@ export const PerformanceBreakdown: React.FC<PerformanceBreakdownProps> = ({ setS
       </div>
       
       {isCostBreakdownOpen && (
-        <div className="bg-black/5 dark:bg-white/5 shadow-inner border border-glass-border rounded-lg overflow-hidden">
+        <div className="bg-hover shadow-inner border border-glass-border rounded-lg overflow-hidden">
         <table className="w-full text-sm">
           <thead className="bg-black/10 dark:bg-white/10 border-b border-glass-border">
             <tr>
