@@ -1,6 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Check, X, AlertTriangle } from 'lucide-react';
+import { CollapsibleSection } from '../../ui/CollapsibleSection';
 
 export const Stage2Report: React.FC<{ report: any }> = ({ report }) => {
   const { t } = useTranslation('submit_report');
@@ -8,10 +9,11 @@ export const Stage2Report: React.FC<{ report: any }> = ({ report }) => {
   if (!report || !report.rules || report.rules.length === 0) return null;
 
   return (
-    <div className="flex flex-col gap-2 mt-4">
-      <p className="text-xs font-medium text-muted-foreground tracking-wider uppercase m-0 mb-1">
-        {t('stage2_rules_title', 'Вторичные тесты')}
-      </p>
+    <CollapsibleSection
+      title={t('stage2_rules_title', 'Вторичные тесты')}
+      defaultOpen={false}
+    >
+      <div className="flex flex-col gap-2 mt-2">
       
       <div className="flex flex-col gap-2">
         {report.rules.map((r: any) => {
@@ -54,6 +56,6 @@ export const Stage2Report: React.FC<{ report: any }> = ({ report }) => {
           );
         })}
       </div>
-    </div>
+    </CollapsibleSection>
   );
 };

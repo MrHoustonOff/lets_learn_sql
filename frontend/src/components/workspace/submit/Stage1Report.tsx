@@ -2,6 +2,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { ListOrdered, Fingerprint, ArrowRightLeft, Check, X } from 'lucide-react';
 import { ReportBlockCard } from './ReportBlockCard';
+import { CollapsibleSection } from '../../ui/CollapsibleSection';
 
 export const Stage1Report: React.FC<{ report: any }> = ({ report }) => {
   const { t } = useTranslation('submit_report');
@@ -24,10 +25,11 @@ export const Stage1Report: React.FC<{ report: any }> = ({ report }) => {
   const missingFormatted = formatRows(report.missing_rows?.rows || []);
 
   return (
-    <div className="flex flex-col gap-3 mt-4">
-      <p className="text-xs font-medium text-muted-foreground tracking-wider uppercase m-0 mb-1">
-        {t('stage1_title', 'Первичные тесты')}
-      </p>
+    <CollapsibleSection
+      title={t('stage1_title', 'Первичные тесты')}
+      defaultOpen={true}
+    >
+      <div className="flex flex-col gap-3 mt-2">
       
       {/* --- Количество строк --- */}
       <ReportBlockCard
@@ -119,7 +121,7 @@ export const Stage1Report: React.FC<{ report: any }> = ({ report }) => {
           </div>
         </ReportBlockCard>
       )}
-
-    </div>
+      </div>
+    </CollapsibleSection>
   );
 };
