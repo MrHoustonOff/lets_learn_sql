@@ -7,6 +7,7 @@ import { CourseDetailsPage } from './pages/CourseDetailsPage';
 import { DatabasesListPage } from './pages/DatabasesListPage';
 import { ProfilePage } from './pages/ProfilePage';
 import { TasksListPage } from './pages/TasksListPage';
+import { StudioPage } from './pages/StudioPage';
 import { SettingsPage } from './pages/PlaceholderPages';
 
 const router = createBrowserRouter([
@@ -37,6 +38,10 @@ const router = createBrowserRouter([
       {
         path: 'tasks/:id',
         element: <TaskScreen />,
+      },
+      {
+        path: 'studio',
+        element: <StudioPage />,
       },
       {
         path: 'settings',
