@@ -171,12 +171,7 @@ export const TaskPreviewModal: React.FC<TaskPreviewModalProps> = ({ taskId, isOp
                 >
                   <Trash2 size={16} />
                 </button>
-                <button
-                  onClick={() => navigate(`/tasks/${task.id}`)}
-                  className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground font-semibold hover:brightness-110 shadow-sm transition-all outline-none mx-2"
-                >
-                  <PlayCircle size={16} /> Решить
-                </button>
+
                 <button
                   onClick={onClose}
                   className="p-2 rounded-lg text-muted-foreground hover:bg-hover hover:text-foreground transition-colors outline-none"
@@ -197,7 +192,9 @@ export const TaskPreviewModal: React.FC<TaskPreviewModalProps> = ({ taskId, isOp
                 </div>
               )}
 
-              {/* Tags */}
+              <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6">
+                <div className="space-y-6 flex-1">
+                  {/* Tags */}
               <div className="space-y-2">
                 <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
                   <Tag size={12} /> Теги
@@ -249,6 +246,17 @@ export const TaskPreviewModal: React.FC<TaskPreviewModalProps> = ({ taskId, isOp
                     </span>
                   </div>
                 )}
+                  </div>
+                </div>
+
+                <div className="shrink-0 sm:pb-1">
+                  <button
+                    onClick={() => navigate(`/tasks/${task.id}`)}
+                    className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-primary text-primary-foreground font-bold hover:brightness-110 shadow-md transition-all outline-none w-full sm:w-auto justify-center"
+                  >
+                    <PlayCircle size={18} /> Решить
+                  </button>
+                </div>
               </div>
 
               {/* Previous Attempts History */}
