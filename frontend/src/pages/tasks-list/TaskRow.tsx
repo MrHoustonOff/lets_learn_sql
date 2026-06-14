@@ -6,6 +6,8 @@ import { MarkdownText } from '../../components/ui/MarkdownText';
 import { Badge } from '../../components/ui/Badge';
 import type { TaskItem } from './useTasksListData';
 
+import { useNavigate } from 'react-router-dom';
+
 interface TaskRowProps {
   task: TaskItem;
   onClick: (id: number) => void;
@@ -13,12 +15,9 @@ interface TaskRowProps {
 
 export const TaskRow: React.FC<TaskRowProps> = ({ task, onClick }) => {
   const { t } = useTranslation('tasks_list');
+  const navigate = useNavigate();
 
-  // Using the requested styling for solved/flagged
-  const isSpecial = task.is_solved && task.is_flagged;
-  const baseCls = isSpecial
-    ? 'bg-warning/5 border-warning/20'
-    : 'bg-glass border-transparent hover:border-glass-border/50 hover:bg-glass-hover shadow-[0_2px_16px_-4px_hsl(var(--glow)/0.05)]';
+  const baseCls = 'bg-glass border-transparent hover:border-glass-border/50 hover:bg-glass-hover shadow-[0_2px_16px_-4px_hsl(var(--glow)/0.05)]';
 
   return (
     <li
@@ -42,7 +41,7 @@ export const TaskRow: React.FC<TaskRowProps> = ({ task, onClick }) => {
           {task.is_flagged && (
             <Bookmark
               size={10}
-              className={`absolute -top-1 -right-1 drop-shadow-sm ${isSpecial ? 'text-warning fill-warning' : 'text-primary fill-primary'}`}
+              className="absolute -top-1 -right-1 drop-shadow-sm text-primary fill-primary"
             />
           )}
         </div>
@@ -63,7 +62,7 @@ export const TaskRow: React.FC<TaskRowProps> = ({ task, onClick }) => {
             {/* Courses */}
             {task.courses && task.courses.length > 0 && (
               <div className="flex items-center gap-1.5">
-                <span>{t('row.course', 'Курс:')}</span>
+                <span>{t('row.courses', 'Курсы:')}</span>
                 <div className="flex items-center gap-1">
                   {task.courses.map(c => (
                     <Badge key={c.id} variant="outline" className="opacity-80 group-hover:opacity-100 transition-opacity">
@@ -92,7 +91,13 @@ export const TaskRow: React.FC<TaskRowProps> = ({ task, onClick }) => {
       </div>
 
       {/* Hover action */}
-      <button className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 text-xs font-medium bg-primary/10 text-primary hover:bg-primary/20 px-3 py-1.5 rounded-lg shrink-0 outline-none">
+      <button 
+        onClick={(e) => {
+          e.stopPropagation();
+          navigate(`/tasks/${task.id}`);
+        }}
+        className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 text-xs font-medium bg-primary/10 text-primary hover:bg-primary/20 px-3 py-1.5 rounded-lg shrink-0 outline-none"
+      >
         {t('row.solve')} <ArrowRight size={14} />
       </button>
     </li>

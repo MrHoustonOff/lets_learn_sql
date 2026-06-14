@@ -17,9 +17,10 @@ interface TaskPreviewModalProps {
   isOpen: boolean;
   onClose: () => void;
   onDeleted: () => void;
+  onBookmarkToggle?: (taskId: number, isBookmarked: boolean) => void;
 }
 
-export const TaskPreviewModal: React.FC<TaskPreviewModalProps> = ({ taskId, isOpen, onClose, onDeleted }) => {
+export const TaskPreviewModal: React.FC<TaskPreviewModalProps> = ({ taskId, isOpen, onClose, onDeleted, onBookmarkToggle }) => {
   const navigate = useNavigate();
   const { t } = useTranslation('tasks_list');
 
@@ -90,6 +91,9 @@ export const TaskPreviewModal: React.FC<TaskPreviewModalProps> = ({ taskId, isOp
       if (res.ok) {
         const data = await res.json();
         setTask((prev: any) => ({ ...prev, is_bookmarked: data.is_bookmarked }));
+        if (onBookmarkToggle) {
+          onBookmarkToggle(taskId, data.is_bookmarked);
+        }
       }
     } catch (err) {
       console.error('Failed to toggle bookmark', err);

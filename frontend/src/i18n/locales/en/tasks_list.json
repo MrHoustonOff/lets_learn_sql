@@ -22,7 +22,8 @@
     },
     "difficulty": "Difficulty",
     "database": "Database",
-    "tags": "Tags"
+    "tags": "Tags",
+    "courses": "Courses"
   },
   "difficulty": {
     "easy": "Easy",
@@ -42,7 +43,9 @@
     "solve": "Solve",
     "edit": "Edit",
     "flag": "Bookmark",
-    "unflag": "Remove bookmark"
+    "unflag": "Remove bookmark",
+    "tags": "Tags:",
+    "courses": "Courses:"
   },
   "empty": {
     "title": "Nothing found",
