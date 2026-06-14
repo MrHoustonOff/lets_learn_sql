@@ -36,7 +36,7 @@ export const Navbar: React.FC = () => {
             <Database size={14} />
             {t('databases')}
           </NavLink>
-          <NavLink to="/tasks" className={navLinkClasses}>
+          <NavLink to="/tasks" end className={navLinkClasses}>
             <CheckSquare size={14} />
             {t('tasks')}
           </NavLink>
