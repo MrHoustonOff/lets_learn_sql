@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { PlayCircle, Trash2, Tag, User, Database, KeyRound } from 'lucide-react';
+import { PlayCircle, Trash2, Tag, User, Database, KeyRound, Pencil, X, BookOpen } from 'lucide-react';
 import { ModalBase } from '../../components/ui/ModalBase';
 import { ConfirmModal } from '../../components/ui/ConfirmModal';
 import { HistoryPanel } from '../../components/workspace/submit/HistoryPanel';
 import { AttemptModal } from '../../components/workspace/submit/AttemptModal';
 import { ReferenceModal } from '../../components/workspace/submit/ReferenceModal';
 import { DifficultyDots } from './DifficultyDots';
+import { DatabaseDetailsModal } from '../../components/workspace/DatabaseDetailsModal';
 
 interface TaskPreviewModalProps {
   taskId: number;
@@ -30,6 +31,7 @@ export const TaskPreviewModal: React.FC<TaskPreviewModalProps> = ({ taskId, isOp
 
   const [selectedAttempt, setSelectedAttempt] = useState<any>(null);
   const [showReference, setShowReference] = useState(false);
+  const [showDbViewer, setShowDbViewer] = useState(false);
 
   const fetchDetails = async () => {
     try {
@@ -86,7 +88,7 @@ export const TaskPreviewModal: React.FC<TaskPreviewModalProps> = ({ taskId, isOp
         isOpen={isOpen} 
         onClose={onClose} 
         isMonolith={true}
-        disableEsc={showReference || !!selectedAttempt || deleteConfirm}
+        disableEsc={showReference || !!selectedAttempt || deleteConfirm || showDbViewer}
       >
         {loading ? (
           <div className="p-12 flex justify-center text-muted-foreground animate-pulse">
@@ -103,13 +105,16 @@ export const TaskPreviewModal: React.FC<TaskPreviewModalProps> = ({ taskId, isOp
                   <div className="mt-1">
                     <DifficultyDots difficulty={task.difficulty} />
                   </div>
-                  <h2 className="text-xl font-bold tracking-tight text-foreground truncate">{task.title}</h2>
+                  <h2 className="text-sm font-bold tracking-tight text-foreground whitespace-normal leading-snug">{task.title}</h2>
                 </div>
                 
                 <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                  <span className="flex items-center gap-1.5 bg-background border border-glass-border px-2 py-0.5 rounded-md shadow-sm">
+                  <button 
+                    onClick={() => setShowDbViewer(true)}
+                    className="flex items-center gap-1.5 bg-background border border-glass-border px-2 py-0.5 rounded-md shadow-sm hover:bg-hover transition-colors outline-none"
+                  >
                     <Database size={11} className="text-primary" /> {task.db_name}
-                  </span>
+                  </button>
                   {task.author_name && (
                     <span className="flex items-center gap-1">
                       <User size={13} />
@@ -126,6 +131,13 @@ export const TaskPreviewModal: React.FC<TaskPreviewModalProps> = ({ taskId, isOp
               </div>
               <div className="flex items-center gap-2 shrink-0">
                 <button
+                  onClick={() => {}}
+                  className="p-2 rounded-lg text-muted-foreground hover:bg-hover hover:text-foreground transition-colors outline-none"
+                  title="Редактировать задачу"
+                >
+                  <Pencil size={16} />
+                </button>
+                <button
                   onClick={() => setDeleteConfirm(true)}
                   className="p-2 rounded-lg text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors outline-none"
                   title="Удалить задачу"
@@ -134,9 +146,16 @@ export const TaskPreviewModal: React.FC<TaskPreviewModalProps> = ({ taskId, isOp
                 </button>
                 <button
                   onClick={() => navigate(`/tasks/${task.id}`)}
-                  className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground font-semibold hover:brightness-110 shadow-sm transition-all outline-none"
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground font-semibold hover:brightness-110 shadow-sm transition-all outline-none mx-2"
                 >
                   <PlayCircle size={16} /> Решить
+                </button>
+                <button
+                  onClick={onClose}
+                  className="p-2 rounded-lg text-muted-foreground hover:bg-hover hover:text-foreground transition-colors outline-none"
+                  title="Закрыть"
+                >
+                  <X size={16} />
                 </button>
               </div>
             </div>
@@ -174,6 +193,29 @@ export const TaskPreviewModal: React.FC<TaskPreviewModalProps> = ({ taskId, isOp
                 ) : (
                   <div className="text-2xs text-muted-foreground/50 border border-dashed border-glass-border rounded-lg p-3 text-center">
                     Тегов пока нет
+                  </div>
+                )}
+              </div>
+
+              {/* Courses */}
+              <div className="space-y-2">
+                <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+                  <BookOpen size={12} /> Курсы
+                </h3>
+                {task.courses && task.courses.length > 0 ? (
+                  <div className="flex flex-wrap gap-1.5">
+                    {task.courses.map((course: any) => (
+                      <span
+                        key={course.id}
+                        className="text-xs px-2 py-0.5 rounded-md font-medium border border-glass-border bg-glass"
+                      >
+                        {course.title}
+                      </span>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-2xs text-muted-foreground/50 border border-dashed border-glass-border rounded-lg p-3 text-center">
+                    Курсов пока нет
                   </div>
                 )}
               </div>
@@ -233,6 +275,19 @@ export const TaskPreviewModal: React.FC<TaskPreviewModalProps> = ({ taskId, isOp
         onClose={() => setShowReference(false)} 
         sql={task?.reference_sql}
       />
+
+      {/* Database Details Modal */}
+      {task && showDbViewer && (
+        <DatabaseDetailsModal
+          database={{
+            id: String(task.database_id),
+            technicalName: task.db_name,
+            name: task.db_name
+          }}
+          isOpen={showDbViewer}
+          onClose={() => setShowDbViewer(false)}
+        />
+      )}
     </>
   );
 };

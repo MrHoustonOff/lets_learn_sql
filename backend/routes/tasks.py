@@ -256,8 +256,10 @@ async def list_tasks(
 class TaskResponse(BaseModel):
     id: int
     title: str
+    difficulty: Optional[int]
     description: Optional[str]
     hint: Optional[str]
+    database_id: int
     db_name: str
     is_bookmarked: bool
     is_solved: bool
@@ -265,6 +267,7 @@ class TaskResponse(BaseModel):
     author_url: Optional[str] = None
     reference_sql: Optional[str] = None
     tags: List[TagOut] = []
+    courses: List[CourseOut] = []
 
 class SolutionResponse(BaseModel):
     solution_sql: str
@@ -282,7 +285,7 @@ async def get_task_details(id: int, request: Request):
     user_id = getattr(request.state, "user_id", 1)
 
     query = """
-        SELECT t.id, t.title, t.description, t.metadata_json, d.technical_name as db_name,
+        SELECT t.id, t.title, t.difficulty, t.database_id, t.description, t.metadata_json, d.technical_name as db_name,
                t.author_name, t.author_url, t.reference_sql,
                EXISTS(SELECT 1 FROM task_flags tf WHERE tf.task_id = t.id AND tf.user_id = ?) as is_bookmarked,
                EXISTS(SELECT 1 FROM attempts a WHERE a.task_id = t.id AND a.user_id = ? AND a.is_correct = 1) as is_solved
@@ -311,11 +314,25 @@ async def get_task_details(id: int, request: Request):
     ) as tcur:
         tags_list = [{"id": r["id"], "name": r["name"]} for r in await tcur.fetchall()]
 
+    async with sqlite.execute(
+        """
+        SELECT c.id, c.title
+        FROM courses c
+        JOIN sections s ON c.id = s.course_id
+        JOIN section_tasks st ON s.id = st.section_id
+        WHERE st.task_id = ?
+        """,
+        (id,)
+    ) as ccur:
+        courses_list = [{"id": r["id"], "title": r["title"]} for r in await ccur.fetchall()]
+
     is_solved = bool(row["is_solved"])
 
     return TaskResponse(
         id=row["id"],
         title=row["title"],
+        difficulty=row["difficulty"],
+        database_id=row["database_id"],
         description=row["description"],
         hint=hint,
         db_name=row["db_name"],
@@ -323,8 +340,9 @@ async def get_task_details(id: int, request: Request):
         is_solved=is_solved,
         author_name=row["author_name"],
         author_url=row["author_url"],
-        reference_sql=row["reference_sql"] if is_solved else None,
-        tags=tags_list
+        reference_sql=row["reference_sql"],
+        tags=tags_list,
+        courses=courses_list,
     )
 
 @router.delete("/tasks/{id}")
