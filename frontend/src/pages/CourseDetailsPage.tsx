@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, CheckCircle2, Circle, Star, ArrowRight, Database, Bookmark } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, Circle, ArrowRight, Database, Bookmark } from 'lucide-react';
 import { DBViewerModal } from '../components/workspace/DBViewerModal';
 import { MarkdownText } from '../components/ui/MarkdownText';
 

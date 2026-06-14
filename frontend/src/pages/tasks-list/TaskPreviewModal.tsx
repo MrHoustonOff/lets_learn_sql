@@ -1,15 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { PlayCircle, Trash2, Tag, User, Database, KeyRound, Pencil, X, BookOpen, Bookmark } from 'lucide-react';
+import { PlayCircle, Tag, KeyRound, BookOpen } from 'lucide-react';
 import { ModalBase } from '../../components/ui/ModalBase';
 import { ConfirmModal } from '../../components/ui/ConfirmModal';
 import { HistoryPanel } from '../../components/workspace/submit/HistoryPanel';
 import { AttemptModal } from '../../components/workspace/submit/AttemptModal';
 import { ReferenceModal } from '../../components/workspace/submit/ReferenceModal';
-import { DifficultyDots } from './DifficultyDots';
 import { DBViewerModal } from '../../components/workspace/DBViewerModal';
 import { MarkdownText } from '../../components/ui/MarkdownText';
+import { TaskPreviewHeader } from './TaskPreviewHeader';
+import { Badge } from '../../components/ui/Badge';
 
 interface TaskPreviewModalProps {
   taskId: number;
@@ -112,78 +113,13 @@ export const TaskPreviewModal: React.FC<TaskPreviewModalProps> = ({ taskId, isOp
         ) : task ? (
           <>
             {/* Header */}
-            <div className="px-6 py-4 border-b border-glass-border flex items-start justify-between bg-glass/40">
-              <div className="flex-1 min-w-0 pr-4">
-                <div className="flex items-center gap-3 mb-1.5">
-                  <div className="mt-1">
-                    <DifficultyDots difficulty={task.difficulty} />
-                  </div>
-                  <h2 className="text-sm font-bold tracking-tight text-foreground whitespace-normal leading-snug">
-                    <MarkdownText inline text={task.title} />
-                  </h2>
-                </div>
-                
-                <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                  <span className="flex items-center gap-1.5">
-                    <Database size={11} className="text-primary" />
-                    <button 
-                      onClick={() => setShowDbViewer(true)}
-                      className="font-medium text-foreground hover:text-primary transition-colors hover:underline outline-none"
-                    >
-                      {task.db_name}
-                    </button>
-                  </span>
-                  {task.author_name && (
-                    <span className="flex items-center gap-1">
-                      <User size={13} />
-                      {task.author_url ? (
-                        <a href={task.author_url} target="_blank" rel="noreferrer" className="hover:text-primary transition-colors hover:underline">
-                          {task.author_name}
-                        </a>
-                      ) : (
-                        task.author_name
-                      )}
-                    </span>
-                  )}
-                </div>
-              </div>
-              <div className="flex items-center gap-2 shrink-0">
-                <button
-                  onClick={handleToggleBookmark}
-                  className={`flex items-center justify-center gap-1.5 px-2 py-1 rounded-md transition-all border min-w-0 shadow-sm ${
-                    task.is_bookmarked
-                      ? 'bg-warning/10 border-warning/30 text-warning-text'
-                      : 'bg-background border-glass-border text-muted-foreground hover:bg-hover hover:text-foreground'
-                  }`}
-                  title={task.is_bookmarked ? "Убрать из закладок" : "В закладки"}
-                >
-                  <Bookmark size={14} className={`shrink-0 transition-opacity ${task.is_bookmarked ? 'opacity-100 fill-current' : 'opacity-70'}`} />
-                  <span className="text-xs font-medium truncate hidden sm:inline">Пометить</span>
-                </button>
-                <button
-                  onClick={() => {}}
-                  className="p-2 rounded-lg text-muted-foreground hover:bg-hover hover:text-foreground transition-colors outline-none"
-                  title="Редактировать задачу"
-                >
-                  <Pencil size={16} />
-                </button>
-                <button
-                  onClick={() => setDeleteConfirm(true)}
-                  className="p-2 rounded-lg text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors outline-none"
-                  title="Удалить задачу"
-                >
-                  <Trash2 size={16} />
-                </button>
-
-                <button
-                  onClick={onClose}
-                  className="p-2 rounded-lg text-muted-foreground hover:bg-hover hover:text-foreground transition-colors outline-none"
-                  title="Закрыть"
-                >
-                  <X size={16} />
-                </button>
-              </div>
-            </div>
+            <TaskPreviewHeader
+              task={task}
+              onToggleBookmark={handleToggleBookmark}
+              onDeleteClick={() => setDeleteConfirm(true)}
+              onShowDbViewer={() => setShowDbViewer(true)}
+              onClose={onClose}
+            />
 
             {/* Scrollable Body */}
             <div className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-6">
@@ -203,23 +139,16 @@ export const TaskPreviewModal: React.FC<TaskPreviewModalProps> = ({ taskId, isOp
                 {task.tags && task.tags.length > 0 ? (
                   <div className="flex flex-wrap gap-1.5">
                     {task.tags.map((tag: any) => (
-                      <span
-                        key={tag.id}
-                        className="text-xs px-2 py-0.5 rounded-md font-medium"
-                        style={{
-                          background: `hsl(var(--badge-bg) / var(--badge-bg-opacity))`,
-                          color: `hsl(var(--badge-fg))`,
-                        }}
-                      >
+                      <Badge key={tag.id} variant="default">
                         {tag.name}
-                      </span>
+                      </Badge>
                     ))}
                   </div>
                 ) : (
                   <div className="flex">
-                    <span className="text-xs px-2 py-0.5 rounded-md font-medium border border-dashed border-glass-border text-muted-foreground/50 bg-glass/20">
+                    <Badge variant="dashed">
                       Тегов пока нет
-                    </span>
+                    </Badge>
                   </div>
                 )}
               </div>
@@ -232,19 +161,16 @@ export const TaskPreviewModal: React.FC<TaskPreviewModalProps> = ({ taskId, isOp
                 {task.courses && task.courses.length > 0 ? (
                   <div className="flex flex-wrap gap-1.5">
                     {task.courses.map((course: any) => (
-                      <span
-                        key={course.id}
-                        className="text-xs px-2 py-0.5 rounded-md font-medium border border-glass-border bg-glass"
-                      >
+                      <Badge key={course.id} variant="outline">
                         {course.title}
-                      </span>
+                      </Badge>
                     ))}
                   </div>
                 ) : (
                   <div className="flex">
-                    <span className="text-xs px-2 py-0.5 rounded-md font-medium border border-dashed border-glass-border text-muted-foreground/50 bg-glass/20">
+                    <Badge variant="dashed">
                       Курсов пока нет
-                    </span>
+                    </Badge>
                   </div>
                 )}
                   </div>

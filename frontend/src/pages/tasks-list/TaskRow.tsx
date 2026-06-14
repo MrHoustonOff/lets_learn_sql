@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { CheckCircle2, Bookmark, ArrowRight } from 'lucide-react';
 import { DifficultyDots } from './DifficultyDots';
 import { MarkdownText } from '../../components/ui/MarkdownText';
+import { Badge } from '../../components/ui/Badge';
 import type { TaskItem } from './useTasksListData';
 
 interface TaskRowProps {
@@ -65,9 +66,9 @@ export const TaskRow: React.FC<TaskRowProps> = ({ task, onClick }) => {
                 <span>{t('row.course', 'Курс:')}</span>
                 <div className="flex items-center gap-1">
                   {task.courses.map(c => (
-                    <span key={c.id} className="px-1 py-0.5 bg-glass border border-glass-border rounded font-medium text-foreground">
+                    <Badge key={c.id} variant="outline" className="opacity-80 group-hover:opacity-100 transition-opacity">
                       {c.title}
-                    </span>
+                    </Badge>
                   ))}
                 </div>
               </div>
@@ -79,16 +80,9 @@ export const TaskRow: React.FC<TaskRowProps> = ({ task, onClick }) => {
                 <span>{t('row.tags', 'Теги:')}</span>
                 <div className="flex items-center gap-1">
                   {task.tags.map(tag => (
-                    <span
-                      key={tag.id}
-                      className="px-1 py-0.5 rounded font-medium opacity-80 group-hover:opacity-100 transition-opacity"
-                      style={{
-                        background: `hsl(var(--badge-bg) / var(--badge-bg-opacity))`,
-                        color: `hsl(var(--badge-fg))`,
-                      }}
-                    >
+                    <Badge key={tag.id} variant="default" className="opacity-80 group-hover:opacity-100 transition-opacity">
                       {tag.name}
-                    </span>
+                    </Badge>
                   ))}
                 </div>
               </div>
