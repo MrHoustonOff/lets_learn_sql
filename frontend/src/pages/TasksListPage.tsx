@@ -1,9 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Search, SlidersHorizontal, X, ArrowUp, ArrowDown, Database, Tag, Plus, ChevronLeft, ChevronRight, ChevronDown, BookOpen } from 'lucide-react';
-import { FilterSection } from './tasks-list/FilterSection';
-import { FilterChip } from './tasks-list/FilterChip';
-import { DifficultyMatrix } from './tasks-list/DifficultyMatrix';
+import { Search, ArrowUp, ArrowDown, Plus, ChevronLeft, ChevronRight, ChevronDown } from 'lucide-react';
+import { TasksFilterSidebar } from './tasks-list/TasksFilterSidebar';
 import { TaskRow } from './tasks-list/TaskRow';
 import { TaskPreviewModal } from './tasks-list/TaskPreviewModal';
 import { useTasksListData, type FilterState } from './tasks-list/useTasksListData';
@@ -21,7 +19,6 @@ const DEFAULT_FILTERS: FilterState = {
   pageSize: 20,
 };
 
-const STATUS_IDS = ['all', 'solved', 'unsolved', 'flagged'] as const;
 
 export const TasksListPage: React.FC = () => {
   const { t } = useTranslation('tasks_list');
@@ -56,121 +53,17 @@ export const TasksListPage: React.FC = () => {
     <div className="flex-1 w-auto mx-2 mt-2 flex overflow-hidden bg-background border border-b-0 border-glass-border rounded-t-3xl shadow-[0_-12px_40px_-12px_rgba(0,0,0,0.3)]">
 
       {/* ── SIDEBAR ─────────────────────────────────────────────────────── */}
-      <aside className="w-56 shrink-0 border-r border-glass-border flex flex-col h-full bg-glass/60 backdrop-blur-sm">
-
-        {/* Header */}
-        <div className="px-4 pt-4 pb-3 border-b border-glass-border flex items-center justify-between">
-          <div className="flex items-center gap-1.5">
-            <SlidersHorizontal size={13} className="text-primary" />
-            <span className="text-xs font-semibold">{t('sidebar.title')}</span>
-          </div>
-          {activeFilterCount > 0 && (
-            <button
-              onClick={clearAll}
-              className="flex items-center gap-0.5 text-2xs text-muted-foreground hover:text-primary transition-colors"
-            >
-              <X size={10} />
-              {t('sidebar.reset', { count: activeFilterCount })}
-            </button>
-          )}
-        </div>
-
-        {/* Filters scroll area */}
-        <div className="flex-1 overflow-y-auto custom-scrollbar px-4 py-3 space-y-4">
-
-          {/* Status */}
-          <FilterSection title={t('filter.status.label')}>
-            <div className="grid grid-cols-2 gap-1">
-              {STATUS_IDS.map(id => (
-                <button
-                  key={id}
-                  onClick={() => update('status', id)}
-                  className={`px-2 py-1 rounded-md text-2xs font-medium border transition-all duration-150 outline-none ${
-                    filters.status === id
-                      ? 'bg-primary/15 border-primary/40 text-primary'
-                      : 'bg-glass border-glass-border text-muted-foreground hover:text-foreground hover:border-primary/25 hover:bg-hover'
-                  }`}
-                >
-                  {t(`filter.status.${id}`)}
-                </button>
-              ))}
-            </div>
-          </FilterSection>
-
-          {/* Difficulty */}
-          <FilterSection title={t('filter.difficulty')}>
-            <DifficultyMatrix
-              selected={filters.selectedDifficulties}
-              onToggle={id => toggleItem('selectedDifficulties', id)}
-            />
-          </FilterSection>
-
-          {/* Courses */}
-          <FilterSection title={t('filter.courses', 'Курсы')} icon={BookOpen} defaultOpen={false}>
-            {courses.length > 0 ? (
-              <div className="flex flex-wrap gap-1">
-                {courses.map(course => (
-                  <FilterChip
-                    key={course.id}
-                    label={course.title}
-                    active={filters.selectedCourseIds.includes(course.id)}
-                    onClick={() => toggleItem('selectedCourseIds', course.id)}
-                  />
-                ))}
-              </div>
-            ) : (
-              <div className="text-2xs text-muted-foreground/50 border border-dashed border-glass-border rounded-lg p-3 text-center">
-                Курсов пока нет
-              </div>
-            )}
-          </FilterSection>
-
-          {/* Database */}
-          {databases.length > 0 && (
-            <FilterSection title={t('filter.database')} icon={Database}>
-              <div className="flex flex-wrap gap-1">
-                {databases.map(db => (
-                  <FilterChip
-                    key={db.id}
-                    label={db.display_name}
-                    active={filters.selectedDatabaseId === db.id}
-                    onClick={() => update('selectedDatabaseId',
-                      filters.selectedDatabaseId === db.id ? null : db.id
-                    )}
-                  />
-                ))}
-              </div>
-            </FilterSection>
-          )}
-
-          {/* Tags */}
-          <FilterSection title={t('filter.tags')} icon={Tag} defaultOpen={false}>
-            {tags.length > 0 ? (
-              <div className="flex flex-wrap gap-1">
-                {tags.map(tag => (
-                  <FilterChip
-                    key={tag.id}
-                    label={tag.name}
-                    active={filters.selectedTagIds.includes(tag.id)}
-                    onClick={() => toggleItem('selectedTagIds', tag.id)}
-                  />
-                ))}
-              </div>
-            ) : (
-              <div className="text-2xs text-muted-foreground/50 border border-dashed border-glass-border rounded-lg p-3 text-center">
-                Тегов пока нет
-              </div>
-            )}
-          </FilterSection>
-        </div>
-
-        {/* Footer stats */}
-        <div className="px-4 py-2.5 border-t border-glass-border bg-glass/30">
-          <p className="text-2xs text-muted-foreground">
-            {t('sidebar.found')} <span className="text-foreground font-semibold tabular-nums">{total}</span>
-          </p>
-        </div>
-      </aside>
+      <TasksFilterSidebar
+        filters={filters}
+        tags={tags}
+        courses={courses}
+        databases={databases}
+        total={total}
+        activeFilterCount={activeFilterCount}
+        update={update}
+        toggleItem={toggleItem}
+        clearAll={clearAll}
+      />
 
       {/* ── MAIN ────────────────────────────────────────────────────────── */}
       <main className="flex-1 flex flex-col h-full overflow-hidden">
