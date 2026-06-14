@@ -138,7 +138,7 @@ export const TaskPreviewModal: React.FC<TaskPreviewModalProps> = ({ taskId, isOp
                   {/* Tags */}
               <div className="space-y-2">
                 <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
-                  <Tag size={12} /> Теги
+                  <Tag size={12} /> {t('preview.tags')}
                 </h3>
                 {task.tags && task.tags.length > 0 ? (
                   <div className="flex flex-wrap gap-1.5">
@@ -151,7 +151,7 @@ export const TaskPreviewModal: React.FC<TaskPreviewModalProps> = ({ taskId, isOp
                 ) : (
                   <div className="flex">
                     <Badge variant="dashed">
-                      Тегов пока нет
+                      {t('preview.no_tags')}
                     </Badge>
                   </div>
                 )}
@@ -160,7 +160,7 @@ export const TaskPreviewModal: React.FC<TaskPreviewModalProps> = ({ taskId, isOp
               {/* Courses */}
               <div className="space-y-2">
                 <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
-                  <BookOpen size={12} /> Курсы
+                  <BookOpen size={12} /> {t('preview.courses')}
                 </h3>
                 {task.courses && task.courses.length > 0 ? (
                   <div className="flex flex-wrap gap-1.5">
@@ -173,7 +173,7 @@ export const TaskPreviewModal: React.FC<TaskPreviewModalProps> = ({ taskId, isOp
                 ) : (
                   <div className="flex">
                     <Badge variant="dashed">
-                      Курсов пока нет
+                      {t('preview.no_courses')}
                     </Badge>
                   </div>
                 )}
@@ -185,7 +185,7 @@ export const TaskPreviewModal: React.FC<TaskPreviewModalProps> = ({ taskId, isOp
                     onClick={() => navigate(`/tasks/${task.id}`)}
                     className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-primary text-primary-foreground font-bold hover:brightness-110 shadow-md transition-all outline-none w-full sm:w-auto justify-center"
                   >
-                    <PlayCircle size={18} /> Решить
+                    <PlayCircle size={18} /> {t('preview.solve')}
                   </button>
                 </div>
               </div>

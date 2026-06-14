@@ -2,6 +2,7 @@ import React from 'react';
 import { Database, User, Bookmark, Pencil, Trash2, X } from 'lucide-react';
 import { DifficultyDots } from './DifficultyDots';
 import { MarkdownText } from '../../components/ui/MarkdownText';
+import { useTranslation } from 'react-i18next';
 
 interface TaskPreviewHeaderProps {
   task: any;
@@ -18,6 +19,7 @@ export const TaskPreviewHeader: React.FC<TaskPreviewHeaderProps> = ({
   onShowDbViewer,
   onClose
 }) => {
+  const { t } = useTranslation('tasks_list');
   return (
     <div className="px-6 py-4 border-b border-glass-border flex items-start justify-between bg-glass/40">
       <div className="flex-1 min-w-0 pr-4">
@@ -62,22 +64,22 @@ export const TaskPreviewHeader: React.FC<TaskPreviewHeaderProps> = ({
               ? 'bg-warning/10 border-warning/30 text-warning-text'
               : 'bg-background border-glass-border text-muted-foreground hover:bg-hover hover:text-foreground'
           }`}
-          title={task.is_bookmarked ? "Убрать из закладок" : "В закладки"}
+          title={task.is_bookmarked ? t('preview.unbookmark') : t('preview.bookmark')}
         >
           <Bookmark size={14} className={`shrink-0 transition-opacity ${task.is_bookmarked ? 'opacity-100 fill-current' : 'opacity-70'}`} />
-          <span className="text-xs font-medium truncate hidden sm:inline">Пометить</span>
+          <span className="text-xs font-medium truncate hidden sm:inline">{t('preview.flag')}</span>
         </button>
         <button
           onClick={() => {}}
           className="p-2 rounded-lg text-muted-foreground hover:bg-hover hover:text-foreground transition-colors outline-none"
-          title="Редактировать задачу"
+          title={t('preview.edit')}
         >
           <Pencil size={16} />
         </button>
         <button
           onClick={onDeleteClick}
           className="p-2 rounded-lg text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors outline-none"
-          title="Удалить задачу"
+          title={t('preview.delete')}
         >
           <Trash2 size={16} />
         </button>
@@ -85,7 +87,7 @@ export const TaskPreviewHeader: React.FC<TaskPreviewHeaderProps> = ({
         <button
           onClick={onClose}
           className="p-2 rounded-lg text-muted-foreground hover:bg-hover hover:text-foreground transition-colors outline-none"
-          title="Закрыть"
+          title={t('preview.close')}
         >
           <X size={16} />
         </button>

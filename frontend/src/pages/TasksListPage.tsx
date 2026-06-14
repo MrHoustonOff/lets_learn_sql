@@ -139,7 +139,7 @@ export const TasksListPage: React.FC = () => {
                   onBlur={() => setTimeout(() => setPageSizeOpen(false), 150)}
                   className="flex items-center gap-1.5 px-2.5 py-1.5 bg-background border border-glass-border rounded-lg text-2xs font-medium hover:bg-hover transition-colors focus:outline-none"
                 >
-                  <span>{filters.pageSize} на стр.</span>
+                  <span>{t('pagination.per_page', { size: filters.pageSize })}</span>
                   <ChevronDown size={12} className={`text-muted-foreground transition-transform duration-200 ${pageSizeOpen ? 'rotate-180' : ''}`} />
                 </button>
                 {pageSizeOpen && (
@@ -155,7 +155,7 @@ export const TasksListPage: React.FC = () => {
                           filters.pageSize === size ? 'text-primary font-medium bg-primary/5' : 'text-foreground hover:bg-hover'
                         }`}
                       >
-                        {size} на стр.
+                        {t('pagination.per_page', { size })}
                       </button>
                     ))}
                   </div>

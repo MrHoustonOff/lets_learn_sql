@@ -49,7 +49,23 @@
   },
   "empty": {
     "title": "Nothing found",
-    "subtitle": "Try changing the filters or search query",
+    "subtitle": "Try changing the filters or your search query",
     "reset": "Reset all filters"
+  },
+  "preview": {
+    "tags": "Tags",
+    "no_tags": "No tags yet",
+    "courses": "Courses",
+    "no_courses": "No courses yet",
+    "solve": "Solve",
+    "bookmark": "Bookmark",
+    "unbookmark": "Remove bookmark",
+    "flag": "Flag",
+    "edit": "Edit task",
+    "delete": "Delete task",
+    "close": "Close"
+  },
+  "pagination": {
+    "per_page": "{{size}} / page"
   }
 }

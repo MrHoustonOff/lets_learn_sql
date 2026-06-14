@@ -96,7 +96,7 @@ export const TasksFilterSidebar: React.FC<TasksFilterSidebarProps> = ({
             </div>
           ) : (
             <div className="text-2xs text-muted-foreground/50 border border-dashed border-glass-border rounded-lg p-3 text-center">
-              Курсов пока нет
+              {t('preview.no_courses')}
             </div>
           )}
         </FilterSection>
@@ -132,7 +132,7 @@ export const TasksFilterSidebar: React.FC<TasksFilterSidebarProps> = ({
             </div>
           ) : (
             <div className="text-2xs text-muted-foreground/50 border border-dashed border-glass-border rounded-lg p-3 text-center">
-              Тегов пока нет
+              {t('preview.no_tags')}
             </div>
           )}
         </FilterSection>
