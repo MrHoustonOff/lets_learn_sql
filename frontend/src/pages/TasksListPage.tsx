@@ -39,7 +39,7 @@ export const TasksListPage: React.FC = () => {
 
   const clearAll = useCallback(() => setFilters(DEFAULT_FILTERS), []);
 
-  const { tasks, total, tags, courses, databases, isLoading, error, refetch } = useTasksListData(filters);
+  const { tasks, total, tags, courses, databases, isLoading, error, refetch, updateTask } = useTasksListData(filters);
 
   const activeFilterCount =
     filters.selectedDifficulties.length +
@@ -223,6 +223,7 @@ export const TasksListPage: React.FC = () => {
           isOpen={true}
           onClose={() => setSelectedTaskId(null)}
           onDeleted={refetch}
+          onBookmarkToggle={(id, isBookmarked) => updateTask(id, { is_flagged: isBookmarked })}
         />
       )}
     </div>

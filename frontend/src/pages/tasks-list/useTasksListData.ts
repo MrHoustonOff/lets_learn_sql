@@ -43,7 +43,7 @@ export interface TasksListData {
 
 const BASE_URL = '/api';
 
-export function useTasksListData(filters: FilterState): TasksListData & { refetch: () => void } {
+export function useTasksListData(filters: FilterState): TasksListData & { refetch: () => void, updateTask: (taskId: number, partial: Partial<TaskItem>) => void } {
   const [tasks, setTasks] = useState<TaskItem[]>([]);
   const [total, setTotal] = useState(0);
   const [tags, setTags] = useState<TagOption[]>([]);
@@ -54,6 +54,10 @@ export function useTasksListData(filters: FilterState): TasksListData & { refetc
   const [tick, setTick] = useState(0);
 
   const refetch = useCallback(() => setTick(t => t + 1), []);
+
+  const updateTask = useCallback((taskId: number, partial: Partial<TaskItem>) => {
+    setTasks(prev => prev.map(t => t.id === taskId ? { ...t, ...partial } : t));
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -109,5 +113,5 @@ export function useTasksListData(filters: FilterState): TasksListData & { refetc
     tick,
   ]);
 
-  return { tasks, total, tags, courses, databases, isLoading, error, refetch };
+  return { tasks, total, tags, courses, databases, isLoading, error, refetch, updateTask };
 }
