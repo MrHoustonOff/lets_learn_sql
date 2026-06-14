@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Search, SlidersHorizontal, X, ArrowUp, ArrowDown, Database, Tag, Plus, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, SlidersHorizontal, X, ArrowUp, ArrowDown, Database, Tag, Plus, ChevronLeft, ChevronRight, ChevronDown } from 'lucide-react';
 import { FilterSection } from './tasks-list/FilterSection';
 import { FilterChip } from './tasks-list/FilterChip';
 import { DifficultyMatrix } from './tasks-list/DifficultyMatrix';
@@ -26,6 +26,7 @@ export const TasksListPage: React.FC = () => {
   const { t } = useTranslation('tasks_list');
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS);
   const [selectedTaskId, setSelectedTaskId] = useState<number | null>(null);
+  const [pageSizeOpen, setPageSizeOpen] = useState(false);
 
   const update = useCallback(<K extends keyof FilterState>(key: K, value: FilterState[K]) => {
     setFilters(prev => ({ ...prev, [key]: value, page: key === 'page' ? (value as number) : 1 }));
@@ -201,46 +202,73 @@ export const TasksListPage: React.FC = () => {
 
           {/* Controls Right */}
           <div className="flex items-center gap-3 shrink-0">
-            {/* Pagination Controls */}
-            {total > 0 && (
-              <div className="flex items-center gap-2 text-xs">
-                <select
-                  value={filters.pageSize}
-                  onChange={(e) => update('pageSize', Number(e.target.value))}
-                  className="bg-transparent border border-glass-border rounded-md px-2 py-1 outline-none focus:border-primary text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
-                >
-                  <option value={20}>20</option>
-                  <option value={50}>50</option>
-                  <option value={100}>100</option>
-                </select>
-                <div className="flex items-center gap-0.5">
-                  <button
-                    disabled={filters.page === 1}
-                    onClick={() => update('page', filters.page - 1)}
-                    className="p-1 rounded-md hover:bg-hover text-muted-foreground hover:text-foreground disabled:opacity-30 disabled:pointer-events-none transition-colors"
-                  >
-                    <ChevronLeft size={14} />
-                  </button>
-                  <span className="text-muted-foreground font-medium tabular-nums px-1">
-                    {filters.page} / {Math.ceil(total / filters.pageSize) || 1}
-                  </span>
-                  <button
-                    disabled={filters.page >= Math.ceil(total / filters.pageSize)}
-                    onClick={() => update('page', filters.page + 1)}
-                    className="p-1 rounded-md hover:bg-hover text-muted-foreground hover:text-foreground disabled:opacity-30 disabled:pointer-events-none transition-colors"
-                  >
-                    <ChevronRight size={14} />
-                  </button>
-                </div>
-              </div>
-            )}
-
             {/* Create */}
             <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-semibold shrink-0 hover:brightness-105 hover:shadow-[0_4px_16px_-4px_hsl(var(--glow)/0.5)] transition-all active:scale-[0.98]">
               <Plus size={13} />
               {t('page.create')}
             </button>
           </div>
+        </div>
+
+        {/* List Header / Pagination */}
+        <div className="px-6 py-2.5 border-b border-glass-border flex items-center justify-between bg-glass/20 backdrop-blur-sm z-layout shrink-0">
+          <div className="text-2xs font-medium text-muted-foreground">
+            {total > 0 ? `Показано ${Math.min((filters.page - 1) * filters.pageSize + 1, total)}–${Math.min(filters.page * filters.pageSize, total)} из ${total}` : ''}
+          </div>
+          
+          {/* Pagination Controls */}
+          {total > 0 && (
+            <div className="flex items-center gap-4 text-xs">
+              <div className="relative">
+                <button 
+                  onClick={() => setPageSizeOpen(!pageSizeOpen)}
+                  onBlur={() => setTimeout(() => setPageSizeOpen(false), 150)}
+                  className="flex items-center gap-1.5 px-2.5 py-1.5 bg-background border border-glass-border rounded-lg text-2xs font-medium hover:bg-hover transition-colors focus:outline-none"
+                >
+                  <span>{filters.pageSize} на стр.</span>
+                  <ChevronDown size={12} className={`text-muted-foreground transition-transform duration-200 ${pageSizeOpen ? 'rotate-180' : ''}`} />
+                </button>
+                {pageSizeOpen && (
+                  <div className="absolute top-full mt-1.5 right-0 w-28 bg-background border border-glass-border rounded-xl shadow-2xl overflow-hidden z-dropdown py-1 animate-in slide-in-from-top-1 fade-in duration-150">
+                    {[20, 50, 100].map(size => (
+                      <button
+                        key={size}
+                        onClick={() => {
+                          update('pageSize', size);
+                          setPageSizeOpen(false);
+                        }}
+                        className={`w-full text-left px-3 py-2 text-2xs transition-colors focus:outline-none ${
+                          filters.pageSize === size ? 'text-primary font-medium bg-primary/5' : 'text-foreground hover:bg-hover'
+                        }`}
+                      >
+                        {size} на стр.
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div className="flex items-center gap-1">
+                <button
+                  disabled={filters.page === 1}
+                  onClick={() => update('page', filters.page - 1)}
+                  className="p-1 rounded-md hover:bg-hover border border-transparent hover:border-glass-border text-muted-foreground hover:text-foreground disabled:opacity-30 disabled:pointer-events-none transition-all"
+                >
+                  <ChevronLeft size={14} />
+                </button>
+                <span className="text-muted-foreground font-semibold tabular-nums px-2 text-2xs">
+                  {filters.page} <span className="text-muted-foreground/50 mx-0.5">/</span> {Math.ceil(total / filters.pageSize) || 1}
+                </span>
+                <button
+                  disabled={filters.page >= Math.ceil(total / filters.pageSize)}
+                  onClick={() => update('page', filters.page + 1)}
+                  className="p-1 rounded-md hover:bg-hover border border-transparent hover:border-glass-border text-muted-foreground hover:text-foreground disabled:opacity-30 disabled:pointer-events-none transition-all"
+                >
+                  <ChevronRight size={14} />
+                </button>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* List */}
