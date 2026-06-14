@@ -50,6 +50,8 @@ async def list_tasks(
     status: str = Query("all"),                 # all | solved | unsolved | flagged
     sort_by: str = Query("created"),            # created | solved
     sort_dir: str = Query("desc"),              # asc | desc
+    page: int = Query(1, ge=1),
+    page_size: int = Query(50, ge=1, le=100),
 ):
     sqlite = await get_sqlite_conn()
     if not sqlite:
@@ -119,6 +121,13 @@ async def list_tasks(
     )
     sort_direction = "ASC" if sort_dir == "asc" else "DESC"
 
+    # --- Count total items ---
+    count_query = f"SELECT COUNT(*) as c FROM tasks t WHERE {where_sql}"
+    async with sqlite.execute(count_query, params) as ccur:
+        count_row = await ccur.fetchone()
+        total_items = count_row["c"] if count_row else 0
+
+    # --- Main query with pagination ---
     query = f"""
         SELECT
             t.id, t.title, t.difficulty, t.database_id, t.created_at,
@@ -138,9 +147,11 @@ async def list_tasks(
         JOIN databases d ON t.database_id = d.id
         WHERE {where_sql}
         ORDER BY {sort_field} {sort_direction}
+        LIMIT ? OFFSET ?
     """
     # user_id appears 3 times (is_solved, is_flagged, solved_at subqueries)
-    full_params = [user_id, user_id, user_id] + params
+    offset = (page - 1) * page_size
+    full_params = [user_id, user_id, user_id] + params + [page_size, offset]
 
     async with sqlite.execute(query, full_params) as cursor:
         rows = await cursor.fetchall()
@@ -192,7 +203,7 @@ async def list_tasks(
     async with sqlite.execute("SELECT id, technical_name, display_name FROM databases ORDER BY display_name") as dcur:
         all_dbs = [{"id": dr["id"], "technical_name": dr["technical_name"], "display_name": dr["display_name"]} for dr in await dcur.fetchall()]
 
-    return TasksListResponse(tasks=tasks_out, total=len(tasks_out), tags=all_tags, databases=all_dbs)
+    return TasksListResponse(tasks=tasks_out, total=total_items, tags=all_tags, databases=all_dbs)
 
 
 

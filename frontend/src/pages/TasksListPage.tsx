@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Search, SlidersHorizontal, X, ArrowUp, ArrowDown, Database, Tag, Plus } from 'lucide-react';
+import { Search, SlidersHorizontal, X, ArrowUp, ArrowDown, Database, Tag, Plus, ChevronLeft, ChevronRight } from 'lucide-react';
 import { FilterSection } from './tasks-list/FilterSection';
 import { FilterChip } from './tasks-list/FilterChip';
 import { DifficultyMatrix } from './tasks-list/DifficultyMatrix';
@@ -16,6 +16,8 @@ const DEFAULT_FILTERS: FilterState = {
   status: 'all',
   sortBy: 'created',
   sortDir: 'desc',
+  page: 1,
+  pageSize: 20,
 };
 
 const STATUS_IDS = ['all', 'solved', 'unsolved', 'flagged'] as const;
@@ -26,13 +28,13 @@ export const TasksListPage: React.FC = () => {
   const [selectedTaskId, setSelectedTaskId] = useState<number | null>(null);
 
   const update = useCallback(<K extends keyof FilterState>(key: K, value: FilterState[K]) => {
-    setFilters(prev => ({ ...prev, [key]: value }));
+    setFilters(prev => ({ ...prev, [key]: value, page: key === 'page' ? (value as number) : 1 }));
   }, []);
 
   const toggleItem = useCallback((key: 'selectedDifficulties' | 'selectedTagIds', value: number) => {
     setFilters(prev => {
       const list = prev[key];
-      return { ...prev, [key]: list.includes(value) ? list.filter(v => v !== value) : [...list, value] };
+      return { ...prev, [key]: list.includes(value) ? list.filter(v => v !== value) : [...list, value], page: 1 };
     });
   }, []);
 
@@ -197,11 +199,48 @@ export const TasksListPage: React.FC = () => {
             </button>
           </div>
 
-          {/* Create */}
-          <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-semibold shrink-0 hover:brightness-105 hover:shadow-[0_4px_16px_-4px_hsl(var(--glow)/0.5)] transition-all active:scale-[0.98]">
-            <Plus size={13} />
-            {t('page.create')}
-          </button>
+          {/* Controls Right */}
+          <div className="flex items-center gap-3 shrink-0">
+            {/* Pagination Controls */}
+            {total > 0 && (
+              <div className="flex items-center gap-2 text-xs">
+                <select
+                  value={filters.pageSize}
+                  onChange={(e) => update('pageSize', Number(e.target.value))}
+                  className="bg-transparent border border-glass-border rounded-md px-2 py-1 outline-none focus:border-primary text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                >
+                  <option value={20}>20</option>
+                  <option value={50}>50</option>
+                  <option value={100}>100</option>
+                </select>
+                <div className="flex items-center gap-0.5">
+                  <button
+                    disabled={filters.page === 1}
+                    onClick={() => update('page', filters.page - 1)}
+                    className="p-1 rounded-md hover:bg-hover text-muted-foreground hover:text-foreground disabled:opacity-30 disabled:pointer-events-none transition-colors"
+                  >
+                    <ChevronLeft size={14} />
+                  </button>
+                  <span className="text-muted-foreground font-medium tabular-nums px-1">
+                    {filters.page} / {Math.ceil(total / filters.pageSize) || 1}
+                  </span>
+                  <button
+                    disabled={filters.page >= Math.ceil(total / filters.pageSize)}
+                    onClick={() => update('page', filters.page + 1)}
+                    className="p-1 rounded-md hover:bg-hover text-muted-foreground hover:text-foreground disabled:opacity-30 disabled:pointer-events-none transition-colors"
+                  >
+                    <ChevronRight size={14} />
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Create */}
+            <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-semibold shrink-0 hover:brightness-105 hover:shadow-[0_4px_16px_-4px_hsl(var(--glow)/0.5)] transition-all active:scale-[0.98]">
+              <Plus size={13} />
+              {t('page.create')}
+            </button>
+          </div>
         </div>
 
         {/* List */}

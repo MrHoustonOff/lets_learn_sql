@@ -21,6 +21,8 @@ export interface FilterState {
   status: 'all' | 'solved' | 'unsolved' | 'flagged';
   sortBy: 'created' | 'solved';
   sortDir: 'asc' | 'desc';
+  page: number;
+  pageSize: number;
 }
 
 export interface TagOption { id: number; name: string; }
@@ -64,6 +66,8 @@ export function useTasksListData(filters: FilterState): TasksListData & { refetc
     if (filters.status !== 'all') params.set('status', filters.status);
     params.set('sort_by', filters.sortBy);
     params.set('sort_dir', filters.sortDir);
+    params.set('page', String(filters.page));
+    params.set('page_size', String(filters.pageSize));
 
     fetch(`${BASE_URL}/tasks?${params}`)
       .then(r => r.ok ? r.json() : Promise.reject(r.statusText))
@@ -91,6 +95,8 @@ export function useTasksListData(filters: FilterState): TasksListData & { refetc
     filters.status,
     filters.sortBy,
     filters.sortDir,
+    filters.page,
+    filters.pageSize,
     tick,
   ]);
 
