@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { PlayCircle, Trash2, Tag, User, Database, KeyRound, Pencil, X, BookOpen } from 'lucide-react';
+import { PlayCircle, Trash2, Tag, User, Database, KeyRound, Pencil, X, BookOpen, Bookmark } from 'lucide-react';
 import { ModalBase } from '../../components/ui/ModalBase';
 import { ConfirmModal } from '../../components/ui/ConfirmModal';
 import { HistoryPanel } from '../../components/workspace/submit/HistoryPanel';
@@ -82,6 +82,18 @@ export const TaskPreviewModal: React.FC<TaskPreviewModalProps> = ({ taskId, isOp
     fetchDetails();
   };
 
+  const handleToggleBookmark = async () => {
+    try {
+      const res = await fetch(`/api/tasks/${taskId}/bookmark`, { method: 'POST' });
+      if (res.ok) {
+        const data = await res.json();
+        setTask((prev: any) => ({ ...prev, is_bookmarked: data.is_bookmarked }));
+      }
+    } catch (err) {
+      console.error('Failed to toggle bookmark', err);
+    }
+  };
+
   return (
     <>
       <ModalBase 
@@ -133,6 +145,18 @@ export const TaskPreviewModal: React.FC<TaskPreviewModalProps> = ({ taskId, isOp
                 </div>
               </div>
               <div className="flex items-center gap-2 shrink-0">
+                <button
+                  onClick={handleToggleBookmark}
+                  className={`flex items-center justify-center gap-1.5 px-2 py-1 rounded-md transition-all border min-w-0 shadow-sm ${
+                    task.is_bookmarked
+                      ? 'bg-warning/10 border-warning/30 text-warning-text'
+                      : 'bg-background border-glass-border text-muted-foreground hover:bg-hover hover:text-foreground'
+                  }`}
+                  title={task.is_bookmarked ? "Убрать из закладок" : "В закладки"}
+                >
+                  <Bookmark size={14} className={`shrink-0 transition-opacity ${task.is_bookmarked ? 'opacity-100 fill-current' : 'opacity-70'}`} />
+                  <span className="text-xs font-medium truncate hidden sm:inline">Пометить</span>
+                </button>
                 <button
                   onClick={() => {}}
                   className="p-2 rounded-lg text-muted-foreground hover:bg-hover hover:text-foreground transition-colors outline-none"

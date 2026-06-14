@@ -12,6 +12,7 @@ export const DBViewerModal: React.FC<DBViewerModalProps> = ({ isOpen, onClose })
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && isOpen) {
+        e.stopPropagation();
         onClose();
       }
     };
