@@ -8,7 +8,7 @@ import { HistoryPanel } from '../../components/workspace/submit/HistoryPanel';
 import { AttemptModal } from '../../components/workspace/submit/AttemptModal';
 import { ReferenceModal } from '../../components/workspace/submit/ReferenceModal';
 import { DifficultyDots } from './DifficultyDots';
-import { DatabaseDetailsModal } from '../../components/workspace/DatabaseDetailsModal';
+import { DBViewerModal } from '../../components/workspace/DBViewerModal';
 
 interface TaskPreviewModalProps {
   taskId: number;
@@ -109,12 +109,15 @@ export const TaskPreviewModal: React.FC<TaskPreviewModalProps> = ({ taskId, isOp
                 </div>
                 
                 <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                  <button 
-                    onClick={() => setShowDbViewer(true)}
-                    className="flex items-center gap-1.5 bg-background border border-glass-border px-2 py-0.5 rounded-md shadow-sm hover:bg-hover transition-colors outline-none"
-                  >
-                    <Database size={11} className="text-primary" /> {task.db_name}
-                  </button>
+                  <span className="flex items-center gap-1.5">
+                    <Database size={11} className="text-primary" />
+                    <button 
+                      onClick={() => setShowDbViewer(true)}
+                      className="font-medium text-foreground hover:text-primary transition-colors hover:underline outline-none"
+                    >
+                      {task.db_name}
+                    </button>
+                  </span>
                   {task.author_name && (
                     <span className="flex items-center gap-1">
                       <User size={13} />
@@ -280,14 +283,10 @@ export const TaskPreviewModal: React.FC<TaskPreviewModalProps> = ({ taskId, isOp
         sql={task?.reference_sql}
       />
 
-      {/* Database Details Modal */}
-      {task && showDbViewer && (
-        <DatabaseDetailsModal
-          database={{
-            id: String(task.database_id),
-            technicalName: task.db_name,
-            name: task.db_name
-          }}
+      {/* Database Viewer Modal */}
+      {task && (
+        <DBViewerModal
+          dbName={task.db_name}
           isOpen={showDbViewer}
           onClose={() => setShowDbViewer(false)}
         />
