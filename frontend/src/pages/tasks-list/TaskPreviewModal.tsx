@@ -191,8 +191,10 @@ export const TaskPreviewModal: React.FC<TaskPreviewModalProps> = ({ taskId, isOp
                     ))}
                   </div>
                 ) : (
-                  <div className="text-2xs text-muted-foreground/50 border border-dashed border-glass-border rounded-lg p-3 text-center">
-                    Тегов пока нет
+                  <div className="flex">
+                    <span className="text-xs px-2 py-0.5 rounded-md font-medium border border-dashed border-glass-border text-muted-foreground/50 bg-glass/20">
+                      Тегов пока нет
+                    </span>
                   </div>
                 )}
               </div>
@@ -214,8 +216,10 @@ export const TaskPreviewModal: React.FC<TaskPreviewModalProps> = ({ taskId, isOp
                     ))}
                   </div>
                 ) : (
-                  <div className="text-2xs text-muted-foreground/50 border border-dashed border-glass-border rounded-lg p-3 text-center">
-                    Курсов пока нет
+                  <div className="flex">
+                    <span className="text-xs px-2 py-0.5 rounded-md font-medium border border-dashed border-glass-border text-muted-foreground/50 bg-glass/20">
+                      Курсов пока нет
+                    </span>
                   </div>
                 )}
               </div>
@@ -257,7 +261,7 @@ export const TaskPreviewModal: React.FC<TaskPreviewModalProps> = ({ taskId, isOp
         confirmText={isDeleting ? 'Удаление...' : 'Удалить навсегда'}
         variant="destructive"
       >
-        Задача «{task?.title}» будет безвозвратно удалена вместе со всеми решениями пользователей.
+        Задача <code className="px-1.5 py-0.5 mx-0.5 rounded bg-muted font-mono text-sm border border-glass-border">{task?.title}</code> будет безвозвратно удалена вместе со всеми решениями пользователей.
       </ConfirmModal>
 
       {/* Attempt Preview Modal */}
