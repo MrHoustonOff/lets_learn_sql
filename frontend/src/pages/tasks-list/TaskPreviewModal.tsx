@@ -9,6 +9,7 @@ import { AttemptModal } from '../../components/workspace/submit/AttemptModal';
 import { ReferenceModal } from '../../components/workspace/submit/ReferenceModal';
 import { DifficultyDots } from './DifficultyDots';
 import { DBViewerModal } from '../../components/workspace/DBViewerModal';
+import { MarkdownText } from '../../components/ui/MarkdownText';
 
 interface TaskPreviewModalProps {
   taskId: number;
@@ -117,7 +118,9 @@ export const TaskPreviewModal: React.FC<TaskPreviewModalProps> = ({ taskId, isOp
                   <div className="mt-1">
                     <DifficultyDots difficulty={task.difficulty} />
                   </div>
-                  <h2 className="text-sm font-bold tracking-tight text-foreground whitespace-normal leading-snug">{task.title}</h2>
+                  <h2 className="text-sm font-bold tracking-tight text-foreground whitespace-normal leading-snug">
+                    <MarkdownText inline text={task.title} />
+                  </h2>
                 </div>
                 
                 <div className="flex items-center gap-4 text-xs text-muted-foreground">
@@ -187,9 +190,7 @@ export const TaskPreviewModal: React.FC<TaskPreviewModalProps> = ({ taskId, isOp
               
               {/* Description */}
               {task.description && (
-                <div className="prose prose-sm dark:prose-invert max-w-none text-foreground/90">
-                  <p>{task.description}</p>
-                </div>
+                <MarkdownText text={task.description} />
               )}
 
               <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6">

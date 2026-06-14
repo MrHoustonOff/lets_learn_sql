@@ -2,6 +2,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { CheckCircle2, Bookmark, ArrowRight } from 'lucide-react';
 import { DifficultyDots } from './DifficultyDots';
+import { MarkdownText } from '../../components/ui/MarkdownText';
 import type { TaskItem } from './useTasksListData';
 
 interface TaskRowProps {
@@ -53,7 +54,7 @@ export const TaskRow: React.FC<TaskRowProps> = ({ task, onClick }) => {
               task.is_solved ? 'text-muted-foreground line-through opacity-70 group-hover:opacity-100 group-hover:no-underline' : 'font-medium text-foreground'
             }`}
           >
-            {task.title}
+            <MarkdownText inline text={task.title} />
           </span>
           
           {/* Bottom: Courses & Tags */}

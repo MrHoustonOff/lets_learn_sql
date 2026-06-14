@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft, CheckCircle2, Circle, Star, ArrowRight, Database, Bookmark } from 'lucide-react';
 import { DBViewerModal } from '../components/workspace/DBViewerModal';
+import { MarkdownText } from '../components/ui/MarkdownText';
 
 interface TaskDetails {
   id: number;
@@ -180,7 +181,7 @@ export const CourseDetailsPage: React.FC = () => {
                         )}
                       </div>
                       <span className={`text-sm ${isDone ? 'text-muted-foreground line-through opacity-70' : isBookmarked ? 'text-warning-text font-bold' : 'text-foreground font-medium'}`}>
-                        {idx + 1}. {task.title}
+                        {idx + 1}. <MarkdownText inline text={task.title} />
                       </span>
                     </div>
 
