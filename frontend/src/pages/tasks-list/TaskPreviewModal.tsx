@@ -208,7 +208,7 @@ export const TaskPreviewModal: React.FC<TaskPreviewModalProps> = ({ taskId, isOp
                     onClick={() => setShowReference(true)}
                     className="px-4 py-2 bg-background border border-glass-border hover:bg-hover text-foreground font-medium rounded-md text-xs transition-colors flex items-center gap-2 shadow-sm"
                   >
-                    <KeyRound className="text-muted-foreground" size={14} /> Правильное решение
+                    <KeyRound className="text-muted-foreground" size={14} /> {t('preview.solution')}
                   </button>
                 </div>
               )}
@@ -223,11 +223,11 @@ export const TaskPreviewModal: React.FC<TaskPreviewModalProps> = ({ taskId, isOp
         isOpen={deleteConfirm}
         onClose={() => setDeleteConfirm(false)}
         onConfirm={handleDeleteTask}
-        title="Удалить задачу?"
-        confirmText={isDeleting ? 'Удаление...' : 'Удалить навсегда'}
+        title={t('preview.delete_title')}
+        confirmText={isDeleting ? t('preview.delete_confirming') : t('preview.delete_confirm')}
         variant="destructive"
       >
-        Задача <code className="px-1.5 py-0.5 mx-0.5 rounded bg-muted font-mono text-sm border border-glass-border">{task?.title}</code> будет безвозвратно удалена вместе со всеми решениями пользователей.
+        {t('preview.delete_desc1')} <code className="px-1.5 py-0.5 mx-0.5 rounded bg-muted font-mono text-sm border border-glass-border">{task?.title}</code> {t('preview.delete_desc2')}
       </ConfirmModal>
 
       {/* Attempt Preview Modal */}

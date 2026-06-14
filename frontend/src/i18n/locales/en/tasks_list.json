@@ -63,7 +63,13 @@
     "flag": "Flag",
     "edit": "Edit task",
     "delete": "Delete task",
-    "close": "Close"
+    "close": "Close",
+    "solution": "Correct solution",
+    "delete_title": "Delete task?",
+    "delete_confirming": "Deleting...",
+    "delete_confirm": "Delete permanently",
+    "delete_desc1": "The task",
+    "delete_desc2": "will be permanently deleted along with all user solutions."
   },
   "pagination": {
     "per_page": "{{size}} / page"
