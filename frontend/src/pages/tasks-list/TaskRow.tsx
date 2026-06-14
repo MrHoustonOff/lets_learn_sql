@@ -45,31 +45,48 @@ export const TaskRow: React.FC<TaskRowProps> = ({ task, onClick }) => {
           )}
         </div>
 
-        {/* Title and Tags */}
-        <div className="flex items-center gap-2 min-w-0">
+        {/* Title and Meta (Courses/Tags) */}
+        <div className="flex flex-col gap-1 w-[60%] shrink-0 min-w-0">
+          {/* Top: Title */}
           <span
-            className={`text-sm truncate transition-colors ${
-              task.is_solved ? 'text-muted-foreground line-through opacity-70 group-hover:opacity-100 group-hover:no-underline' : 'font-medium'
+            className={`text-xs truncate transition-colors ${
+              task.is_solved ? 'text-muted-foreground line-through opacity-70 group-hover:opacity-100 group-hover:no-underline' : 'font-medium text-foreground'
             }`}
           >
             {task.title}
           </span>
-          {task.tags.length > 0 && (
-            <div className="hidden sm:flex items-center gap-1">
-              {task.tags.map(tag => (
-                <span
-                  key={tag.id}
-                  className="text-micro px-1.5 py-0.5 rounded font-medium opacity-80 group-hover:opacity-100 transition-opacity"
-                  style={{
-                    background: `hsl(var(--badge-bg) / var(--badge-bg-opacity))`,
-                    color: `hsl(var(--badge-fg))`,
-                  }}
-                >
-                  {tag.name}
-                </span>
-              ))}
+          
+          {/* Bottom: Courses & Tags */}
+          <div className="flex items-center gap-3 text-micro text-muted-foreground">
+            {/* Courses Placeholder */}
+            <div className="flex items-center gap-1.5">
+              <span>{t('row.course', 'Курс:')}</span>
+              <div className="flex items-center gap-1">
+                <span className="px-1 py-0.5 bg-glass border border-glass-border rounded font-medium text-foreground">SQL Basics</span>
+              </div>
             </div>
-          )}
+
+            {/* Tags */}
+            {task.tags.length > 0 && (
+              <div className="flex items-center gap-1.5">
+                <span>{t('row.tags', 'Теги:')}</span>
+                <div className="flex items-center gap-1">
+                  {task.tags.map(tag => (
+                    <span
+                      key={tag.id}
+                      className="px-1 py-0.5 rounded font-medium opacity-80 group-hover:opacity-100 transition-opacity"
+                      style={{
+                        background: `hsl(var(--badge-bg) / var(--badge-bg-opacity))`,
+                        color: `hsl(var(--badge-fg))`,
+                      }}
+                    >
+                      {tag.name}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
