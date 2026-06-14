@@ -50,7 +50,7 @@ export const TasksListPage: React.FC = () => {
 
 
   return (
-    <div className="flex-1 w-auto mx-2 mt-2 flex overflow-hidden bg-background border border-b-0 border-glass-border rounded-t-3xl shadow-[0_-12px_40px_-12px_rgba(0,0,0,0.3)]">
+    <div className="flex-1 w-auto mx-2 flex overflow-hidden bg-background border border-b-0 border-glass-border rounded-t-3xl shadow-[0_-12px_40px_-12px_rgba(0,0,0,0.3)]">
 
       {/* ── SIDEBAR ─────────────────────────────────────────────────────── */}
       <TasksFilterSidebar

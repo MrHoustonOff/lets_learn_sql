@@ -92,9 +92,9 @@ export const TaskRow: React.FC<TaskRowProps> = ({ task, onClick }) => {
       </div>
 
       {/* Hover action */}
-      <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 text-xs font-medium bg-primary/10 text-primary hover:bg-primary/20 px-3 py-1.5 rounded-lg shrink-0">
+      <button className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 text-xs font-medium bg-primary/10 text-primary hover:bg-primary/20 px-3 py-1.5 rounded-lg shrink-0 outline-none">
         {t('row.solve')} <ArrowRight size={14} />
-      </div>
+      </button>
     </li>
   );
 };
