@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { PenTool, CheckSquare, BookOpen, ChevronRight, Wand2, Copy, CheckCircle2 } from 'lucide-react';
 
@@ -27,7 +28,8 @@ const MOCK_PROMPTS = [
 ];
 
 export const StudioPage: React.FC = () => {
-  const { t } = useTranslation('common');
+  const { t } = useTranslation();
+  const navigate = useNavigate();
   const [copiedId, setCopiedId] = useState<number | null>(null);
 
   const handleCopy = (id: number, text: string) => {
@@ -60,7 +62,10 @@ export const StudioPage: React.FC = () => {
               <div className="flex items-center justify-between">
                 <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Текущие черновики</h2>
                 <div className="flex gap-2">
-                  <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary text-xs font-bold transition-colors">
+                  <button 
+                    onClick={() => navigate('/studio/task/new')}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary text-xs font-bold transition-colors"
+                  >
                     <CheckSquare size={14} /> Создать задачу
                   </button>
                   <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary text-xs font-bold transition-colors">

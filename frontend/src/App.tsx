@@ -9,6 +9,7 @@ import { ProfilePage } from './pages/ProfilePage';
 import { TasksListPage } from './pages/TasksListPage';
 import { StudioPage } from './pages/StudioPage';
 import { SettingsPage } from './pages/PlaceholderPages';
+import { TaskWizardScreen } from './pages/task-wizard/TaskWizardScreen';
 
 const router = createBrowserRouter([
   {
@@ -53,6 +54,10 @@ const router = createBrowserRouter([
       },
     ],
   },
+  {
+    path: '/studio/task/:id',
+    element: <TaskWizardScreen />
+  }
 ]);
 
 function App() {

@@ -1,0 +1,1790 @@
+import React, { useState, useRef, useMemo } from "react";
+import {
+  Upload,
+  ChevronLeft,
+  ChevronRight,
+  Check,
+  X,
+  Plus,
+  Bold,
+  Italic,
+  Code2,
+  Highlighter,
+  Link2,
+  Eye,
+  PlayCircle,
+  Trash2,
+  AlertTriangle,
+  AlertCircle,
+  CheckCircle2,
+  XCircle,
+  Database,
+  GraduationCap,
+  Tag as TagIcon,
+  Sparkles,
+  Loader2,
+  Info,
+} from "lucide-react";
+
+/* =============================================================================
+   КОНФИГУРАЦИЯ
+   ============================================================================= */
+
+const STEPS = [
+  { id: 1, label: "Информация" },
+  { id: 2, label: "Решение" },
+  { id: 3, label: "Правила проверки" },
+  { id: 4, label: "Превью и публикация" },
+];
+
+const DIFFICULTY_TIERS = [
+  { key: "easy", label: "Легкий", color: "bg-success", text: "text-success" },
+  { key: "medium", label: "Средний", color: "bg-warning", text: "text-warning-text" },
+  { key: "hard", label: "Тяжелый", color: "bg-destructive", text: "text-destructive" },
+];
+
+const DIFFICULTY_LEVELS = DIFFICULTY_TIERS.flatMap((tier) =>
+  [1, 2, 3].map((level) => ({
+    id: `${tier.key}-${level}`,
+    tier: tier.key,
+    level,
+    label: `${tier.label} ${level}/3`,
+    color: tier.color,
+    text: tier.text,
+  }))
+);
+
+const MOCK_DATABASES = [
+  { id: "northwind", label: "Northwind" },
+  { id: "chinook", label: "Chinook" },
+  { id: "hr_demo", label: "HR Demo" },
+];
+
+const MOCK_COURSES = [
+  { id: "sql_basics", label: "SQL: с нуля" },
+  { id: "joins_deep", label: "JOIN-ы глубоко" },
+  { id: "window_funcs", label: "Оконные функции" },
+];
+
+const MOCK_TAGS = [
+  "JOIN",
+  "GROUP BY",
+  "Подзапросы",
+  "Оконные функции",
+  "Агрегаты",
+  "CTE",
+  "Индексы",
+  "DISTINCT",
+];
+
+/* Категории правил (см. документ "Правила сравнения") */
+const RULE_CATEGORIES = [
+  { key: "construct", label: "Конструкция SQL" },
+  { key: "object", label: "Таблица / колонка" },
+  { key: "function", label: "Функция" },
+  { key: "select_star", label: "SELECT *" },
+  { key: "alias", label: "Алиасы" },
+  { key: "performance", label: "Производительность" },
+];
+
+const CONSTRUCT_TARGETS = [
+  "JOIN",
+  "INNER_JOIN",
+  "LEFT_JOIN",
+  "RIGHT_JOIN",
+  "FULL_JOIN",
+  "GROUP_BY",
+  "HAVING",
+  "SUBQUERY",
+  "WINDOW_FUNCTION",
+  "CTE",
+  "DISTINCT",
+  "UNION",
+  "CASE",
+  "AGGREGATE_FUNCTION",
+];
+
+const CONDITIONS_WITH_VALUE = ["count_min", "count_max", "count_exact"];
+
+const CONDITION_LABELS = {
+  required: "обязательна",
+  forbidden: "запрещена",
+  count_min: "минимум раз",
+  count_max: "максимум раз",
+  count_exact: "ровно раз",
+  no_seqscan: "без Seq Scan",
+};
+
+/* =============================================================================
+   УТИЛИТЫ
+   ============================================================================= */
+
+function uid() {
+  return Math.random().toString(36).slice(2, 10);
+}
+
+function difficultyMeta(id) {
+  return DIFFICULTY_LEVELS.find((d) => d.id === id);
+}
+
+/* Генерация человекочитаемого описания правила (без ручного ввода текста) */
+function generateRuleMessage(rule) {
+  const { category, condition, params } = rule;
+
+  switch (category) {
+    case "construct": {
+      const target = params.target || "—";
+      if (CONDITIONS_WITH_VALUE.includes(condition)) {
+        const cond = CONDITION_LABELS[condition];
+        return `Конструкция ${target}: ${cond} ${params.value ?? "?"}`;
+      }
+      return `Конструкция ${target}: ${CONDITION_LABELS[condition] || condition}`;
+    }
+    case "object": {
+      const type = params.object_type === "column" ? "Колонка" : "Таблица";
+      return `${type} «${params.object_name || "—"}»: ${CONDITION_LABELS[condition] || condition}`;
+    }
+    case "function": {
+      return `Функция ${params.function_name || "—"}: ${CONDITION_LABELS[condition] || condition}`;
+    }
+    case "select_star": {
+      return `SELECT * запрещён — перечисли колонки явно`;
+    }
+    case "alias": {
+      const scopeLabels = { columns: "колонок", tables: "таблиц", both: "таблиц и колонок" };
+      return `Алиасы для ${scopeLabels[params.scope] || params.scope || "—"}: ${
+        CONDITION_LABELS[condition] || condition
+      }`;
+    }
+    case "performance": {
+      return `Производительность: без Seq Scan по таблице «${params.table_name || "—"}»`;
+    }
+    default:
+      return "Новое правило";
+  }
+}
+
+/* Подробное объяснение для infotip — что проверяется и как влияет на вердикт */
+function generateRuleInfotip(rule) {
+  const { category, condition, params, severity } = rule;
+  let what = "";
+
+  switch (category) {
+    case "construct": {
+      const target = params.target || "—";
+      if (condition === "required") {
+        what = `Запрос должен содержать конструкцию ${target} хотя бы один раз.`;
+      } else if (condition === "forbidden") {
+        what = `Запрос не должен содержать конструкцию ${target} ни разу.`;
+      } else if (condition === "count_min") {
+        what = `Конструкция ${target} должна встречаться не менее ${params.value ?? "?"} раз.`;
+      } else if (condition === "count_max") {
+        what = `Конструкция ${target} должна встречаться не более ${params.value ?? "?"} раз.`;
+      } else if (condition === "count_exact") {
+        what = `Конструкция ${target} должна встречаться ровно ${params.value ?? "?"} раз.`;
+      }
+      what += " Проверяется через разбор AST запроса (sqlglot).";
+      break;
+    }
+    case "object": {
+      const type = params.object_type === "column" ? "колонку" : "таблицу";
+      const name = params.object_name || "—";
+      what =
+        condition === "required"
+          ? `Запрос обязательно должен использовать ${type} «${name}».`
+          : `Запрос не должен использовать ${type} «${name}».`;
+      break;
+    }
+    case "function": {
+      const fn = params.function_name || "—";
+      what =
+        condition === "required"
+          ? `В запросе должна быть вызвана функция ${fn}.`
+          : `Функция ${fn} не должна использоваться в запросе.`;
+      break;
+    }
+    case "select_star": {
+      what =
+        "SELECT * в любом виде запрещён — нужно явно перечислить все возвращаемые колонки. Это распространённое требование для читаемости и предсказуемости результата.";
+      break;
+    }
+    case "alias": {
+      const scopeLabels = { columns: "колонок", tables: "таблиц", both: "таблиц и колонок" };
+      const scope = scopeLabels[params.scope] || "объектов";
+      what = `Все используемые ${scope} должны иметь алиасы (через AS или сокращённую форму). Помогает с читаемостью запроса.`;
+      break;
+    }
+    case "performance": {
+      const table = params.table_name || "—";
+      what = `Выполняется EXPLAIN (FORMAT JSON) запроса в транзакции с ROLLBACK — в плане выполнения не должно быть Seq Scan по таблице «${table}».`;
+      break;
+    }
+    default:
+      what = "Параметры правила ещё не заданы.";
+  }
+
+  return what;
+}
+
+/* Текст про влияние severity на итоговый вердикт */
+function severityImpactText(severity) {
+  return severity === "blocking"
+    ? "Если правило не выполнено — задача не засчитывается (блокирующее правило)."
+    : "Если правило не выполнено — в отчёте появится замечание, но задача всё равно может быть засчитана.";
+}
+
+/* =============================================================================
+   ОБЩИЕ UI-КОМПОНЕНТЫ
+   ============================================================================= */
+
+function FieldLabel({ children, required, hint }) {
+  return (
+    <label className="flex items-center gap-1.5 text-sm font-medium text-foreground mb-1.5">
+      {children}
+      {required && <span className="text-destructive">*</span>}
+      {hint && <span className="text-[11px] text-muted-foreground font-normal">{hint}</span>}
+    </label>
+  );
+}
+
+function TextInput({ value, onChange, placeholder, type = "text" }) {
+  return (
+    <input
+      type={type}
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      placeholder={placeholder}
+      className="w-full bg-popover border border-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring/40 focus:border-primary transition-all placeholder:text-muted-foreground"
+    />
+  );
+}
+
+function SelectInput({ value, onChange, options, placeholder }) {
+  return (
+    <select
+      value={value ?? ""}
+      onChange={(e) => onChange(e.target.value)}
+      className="w-full bg-popover border border-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring/40 focus:border-primary transition-all appearance-none cursor-pointer"
+    >
+      {placeholder && (
+        <option value="" disabled>
+          {placeholder}
+        </option>
+      )}
+      {options.map((opt) => (
+        <option key={opt.value ?? opt} value={opt.value ?? opt}>
+          {opt.label ?? opt}
+        </option>
+      ))}
+    </select>
+  );
+}
+
+function SectionCard({ title, description, children }) {
+  return (
+    <div className="bg-card border border-border/60 rounded-xl p-5">
+      {title && (
+        <div className="mb-4">
+          <h3 className="text-sm font-semibold">{title}</h3>
+          {description && (
+            <p className="text-[11px] text-muted-foreground mt-0.5">{description}</p>
+          )}
+        </div>
+      )}
+      {children}
+    </div>
+  );
+}
+
+/* Infotip — иконка (i), при наведении/фокусе показывает всплывающее пояснение */
+function InfoTooltip({ text, side = "top" }) {
+  const [open, setOpen] = useState(false);
+
+  const positionClasses =
+    side === "top"
+      ? "bottom-full left-1/2 -translate-x-1/2 mb-2"
+      : "top-full left-1/2 -translate-x-1/2 mt-2";
+
+  return (
+    <span className="relative inline-flex">
+      <button
+        type="button"
+        onMouseEnter={() => setOpen(true)}
+        onMouseLeave={() => setOpen(false)}
+        onFocus={() => setOpen(true)}
+        onBlur={() => setOpen(false)}
+        className="inline-flex items-center justify-center w-4 h-4 rounded-full text-muted-foreground hover:text-primary transition-colors"
+        aria-label="Подробнее"
+      >
+        <Info className="w-3.5 h-3.5" />
+      </button>
+      {open && (
+        <div
+          role="tooltip"
+          className={`absolute z-20 w-64 ${positionClasses} rounded-lg border backdrop-blur-xl shadow-lg px-3 py-2.5 text-[11px] leading-relaxed text-foreground/90`}
+          style={{
+            backgroundColor: `hsl(var(--glass-bg) / var(--glass-opacity))`,
+            borderColor: `hsl(var(--glass-border) / var(--glass-border-opacity))`,
+          }}
+        >
+          {text}
+        </div>
+      )}
+    </span>
+  );
+}
+
+/* =============================================================================
+   RICH-TEXT РЕДАКТОР ОПИСАНИЯ ЗАДАЧИ
+   ============================================================================= */
+
+const HIGHLIGHT_COLORS = [
+  { id: "amber", label: "Желтый", hex: "#facc15" },
+  { id: "green", label: "Зеленый", hex: "#4ade80" },
+  { id: "blue", label: "Синий", hex: "#60a5fa" },
+  { id: "pink", label: "Розовый", hex: "#f472b6" },
+  { id: "purple", label: "Фиолетовый", hex: "#c084fc" },
+];
+
+function RichTextEditor({ value, onChange, placeholder }) {
+  const editorRef = useRef(null);
+  const [showHighlightMenu, setShowHighlightMenu] = useState(false);
+  const [activeFormats, setActiveFormats] = useState({});
+
+  const updateActiveFormats = () => {
+    setActiveFormats({
+      bold: document.queryCommandState("bold"),
+      italic: document.queryCommandState("italic"),
+    });
+  };
+
+  const exec = (command, arg) => {
+    editorRef.current?.focus();
+    document.execCommand(command, false, arg);
+    onChange(editorRef.current?.innerHTML || "");
+    updateActiveFormats();
+  };
+
+  const insertCode = () => {
+    editorRef.current?.focus();
+    const sel = window.getSelection();
+    if (!sel || sel.rangeCount === 0) return;
+    const range = sel.getRangeAt(0);
+    const selected = range.toString() || "код";
+    const code = document.createElement("code");
+    code.textContent = selected;
+    code.style.cssText =
+      "background: hsl(var(--muted)); color: hsl(var(--primary)); padding: 1px 5px; border-radius: 4px; font-family: ui-monospace, monospace; font-size: 0.85em;";
+    range.deleteContents();
+    range.insertNode(code);
+    onChange(editorRef.current?.innerHTML || "");
+  };
+
+  const applyHighlight = (hex) => {
+    editorRef.current?.focus();
+    document.execCommand("hiliteColor", false, hex + "55");
+    onChange(editorRef.current?.innerHTML || "");
+    setShowHighlightMenu(false);
+  };
+
+  const insertLink = () => {
+    const url = window.prompt("Введите URL:");
+    if (!url) return;
+    exec("createLink", url);
+  };
+
+  return (
+    <div className="border border-border rounded-lg bg-popover overflow-hidden focus-within:ring-2 focus-within:ring-ring/40 focus-within:border-primary transition-all">
+      {/* Toolbar */}
+      <div className="flex items-center gap-1 px-2 py-1.5 border-b border-border bg-secondary/40">
+        <ToolbarButton
+          icon={Bold}
+          active={activeFormats.bold}
+          onClick={() => exec("bold")}
+          title="Жирный"
+        />
+        <ToolbarButton
+          icon={Italic}
+          active={activeFormats.italic}
+          onClick={() => exec("italic")}
+          title="Курсив"
+        />
+        <ToolbarButton icon={Code2} onClick={insertCode} title="Инлайн-код" />
+        <div className="relative">
+          <ToolbarButton
+            icon={Highlighter}
+            onClick={() => setShowHighlightMenu((v) => !v)}
+            title="Подсветка текста"
+          />
+          {showHighlightMenu && (
+            <div className="absolute top-full left-0 mt-1 bg-popover border border-border rounded-lg shadow-lg p-1.5 flex gap-1 z-10">
+              {HIGHLIGHT_COLORS.map((c) => (
+                <button
+                  key={c.id}
+                  onClick={() => applyHighlight(c.hex)}
+                  title={c.label}
+                  className="w-5 h-5 rounded-full border border-border/60 hover:scale-110 transition-transform"
+                  style={{ backgroundColor: c.hex }}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+        <ToolbarButton icon={Link2} onClick={insertLink} title="Ссылка" />
+        <div className="w-px h-4 bg-border mx-1" />
+        <span className="text-[11px] text-muted-foreground">
+          Выдели текст и применяй форматирование
+        </span>
+      </div>
+
+      {/* Editable area */}
+      <div
+        ref={editorRef}
+        contentEditable
+        suppressContentEditableWarning
+        onInput={(e) => onChange(e.currentTarget.innerHTML)}
+        onMouseUp={updateActiveFormats}
+        onKeyUp={updateActiveFormats}
+        onBlur={() => setShowHighlightMenu(false)}
+        data-placeholder={placeholder}
+        className="min-h-[160px] px-3 py-2.5 text-sm leading-relaxed focus:outline-none rich-text-editor"
+        dangerouslySetInnerHTML={{ __html: value }}
+      />
+      <style>{`
+        .rich-text-editor:empty:before {
+          content: attr(data-placeholder);
+          color: hsl(var(--muted-foreground));
+          pointer-events: none;
+        }
+        .rich-text-editor code {
+          background: hsl(var(--muted));
+          color: hsl(var(--primary));
+          padding: 1px 5px;
+          border-radius: 4px;
+          font-family: ui-monospace, monospace;
+          font-size: 0.85em;
+        }
+        .rich-text-editor a {
+          color: hsl(var(--primary));
+          text-decoration: underline;
+        }
+      `}</style>
+    </div>
+  );
+}
+
+function ToolbarButton({ icon: Icon, onClick, active, title }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      title={title}
+      className={`p-1.5 rounded-md transition-colors ${
+        active
+          ? "bg-primary text-primary-foreground"
+          : "text-muted-foreground hover:text-foreground hover:bg-secondary"
+      }`}
+    >
+      <Icon className="w-3.5 h-3.5" />
+    </button>
+  );
+}
+
+/* =============================================================================
+   ШАГ 1 — ИНФОРМАЦИЯ О ЗАДАЧЕ
+   ============================================================================= */
+
+function DifficultyPicker({ value, onChange }) {
+  return (
+    <div className="space-y-3">
+      {DIFFICULTY_TIERS.map((tier) => (
+        <div key={tier.key} className="space-y-1.5">
+          <div className="flex items-center gap-2 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+            <span className={`w-1.5 h-1.5 rounded-full ${tier.color}`} />
+            {tier.label}
+          </div>
+          <div className="flex gap-1.5">
+            {[1, 2, 3].map((level) => {
+              const id = `${tier.key}-${level}`;
+              const active = value === id;
+              return (
+                <button
+                  key={id}
+                  type="button"
+                  onClick={() => onChange(id)}
+                  className={`flex-1 h-11 rounded-lg border flex items-center justify-center gap-1 transition-all duration-150 ${
+                    active
+                      ? `border-transparent ${tier.color} shadow-sm`
+                      : "border-border bg-popover hover:border-foreground/20 hover:bg-secondary"
+                  }`}
+                  title={`${tier.label} ${level}/3`}
+                >
+                  {[1, 2, 3].map((i) => (
+                    <span
+                      key={i}
+                      className={`w-1.5 h-1.5 rounded-full transition-colors ${
+                        i <= level
+                          ? active
+                            ? "bg-primary-foreground"
+                            : tier.color
+                          : active
+                          ? "bg-primary-foreground/30"
+                          : "bg-muted"
+                      }`}
+                    />
+                  ))}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function TagSelector({ selected, onToggle, onCreate }) {
+  const [newTag, setNewTag] = useState("");
+  const allTags = useMemo(() => {
+    const extra = selected.filter((t) => !MOCK_TAGS.includes(t));
+    return [...MOCK_TAGS, ...extra];
+  }, [selected]);
+
+  const handleCreate = () => {
+    const tag = newTag.trim();
+    if (!tag) return;
+    onCreate(tag);
+    setNewTag("");
+  };
+
+  return (
+    <div>
+      <div className="flex flex-wrap gap-1.5 mb-2.5">
+        {allTags.map((tag) => {
+          const active = selected.includes(tag);
+          return (
+            <button
+              key={tag}
+              type="button"
+              onClick={() => onToggle(tag)}
+              className={`px-2.5 py-1.5 rounded-md text-xs font-medium transition-all duration-150 flex items-center gap-1.5 border ${
+                active
+                  ? "bg-primary text-primary-foreground border-transparent shadow-sm"
+                  : "bg-popover border-border text-muted-foreground hover:text-foreground hover:border-foreground/20 hover:bg-secondary"
+              }`}
+            >
+              <TagIcon className="w-3 h-3" />
+              {tag}
+            </button>
+          );
+        })}
+      </div>
+      <div className="flex items-center gap-2">
+        <input
+          value={newTag}
+          onChange={(e) => setNewTag(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), handleCreate())}
+          placeholder="Новый тег..."
+          className="flex-1 bg-popover border border-border rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-ring/40 focus:border-primary transition-all placeholder:text-muted-foreground"
+        />
+        <button
+          type="button"
+          onClick={handleCreate}
+          className="px-3 py-1.5 rounded-lg text-xs font-medium bg-secondary hover:bg-accent text-foreground transition-colors flex items-center gap-1"
+        >
+          <Plus className="w-3 h-3" />
+          Добавить
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function StepInformation({ data, setData }) {
+  const fileInputRef = useRef(null);
+
+  const handleImportClick = () => fileInputRef.current?.click();
+
+  const handleFileChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      try {
+        const parsed = JSON.parse(ev.target.result);
+        setData((prev) => ({ ...prev, ...parsed }));
+      } catch {
+        alert("Не удалось разобрать JSON-файл");
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = "";
+  };
+
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+      <div className="lg:col-span-2 space-y-5">
+        <SectionCard title="Основное">
+          <div className="space-y-4">
+            <div>
+              <FieldLabel required>Название задачи</FieldLabel>
+              <TextInput
+                value={data.title}
+                onChange={(v) => setData((p) => ({ ...p, title: v }))}
+                placeholder="Например: Топ-10 заказов клиентов из Германии по сумме"
+              />
+            </div>
+
+            <div>
+              <FieldLabel required hint="условие, которое видит решающий">
+                Описание задачи
+              </FieldLabel>
+              <RichTextEditor
+                value={data.description}
+                onChange={(v) => setData((p) => ({ ...p, description: v }))}
+                placeholder="Опиши условие задачи. Можно выделять текст, добавлять `код`, подсветку и ссылки..."
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <FieldLabel required>Автор</FieldLabel>
+                <TextInput
+                  value={data.author}
+                  onChange={(v) => setData((p) => ({ ...p, author: v }))}
+                  placeholder="Имя автора задачи"
+                />
+              </div>
+              <div>
+                <FieldLabel hint="опционально">Ссылка</FieldLabel>
+                <TextInput
+                  value={data.referenceLink}
+                  onChange={(v) => setData((p) => ({ ...p, referenceLink: v }))}
+                  placeholder="https://..."
+                  type="url"
+                />
+              </div>
+            </div>
+          </div>
+        </SectionCard>
+
+        <SectionCard title="Теги" description="Опционально — для фильтрации задач">
+          <TagSelector
+            selected={data.tags}
+            onToggle={(tag) =>
+              setData((p) => ({
+                ...p,
+                tags: p.tags.includes(tag) ? p.tags.filter((t) => t !== tag) : [...p.tags, tag],
+              }))
+            }
+            onCreate={(tag) =>
+              setData((p) => (p.tags.includes(tag) ? p : { ...p, tags: [...p.tags, tag] }))
+            }
+          />
+        </SectionCard>
+      </div>
+
+      <div className="space-y-5">
+        <SectionCard title="Сложность" description="9 уровней — выбери один">
+          <DifficultyPicker
+            value={data.difficulty}
+            onChange={(v) => setData((p) => ({ ...p, difficulty: v }))}
+          />
+        </SectionCard>
+
+        <SectionCard title="Привязка">
+          <div className="space-y-4">
+            <div>
+              <FieldLabel required>База данных</FieldLabel>
+              <SelectInput
+                value={data.database}
+                onChange={(v) => setData((p) => ({ ...p, database: v }))}
+                placeholder="Выбери базу данных"
+                options={MOCK_DATABASES.map((d) => ({ value: d.id, label: d.label }))}
+              />
+            </div>
+            <div>
+              <FieldLabel hint="опционально">Курс</FieldLabel>
+              <SelectInput
+                value={data.course}
+                onChange={(v) => setData((p) => ({ ...p, course: v }))}
+                placeholder="Без привязки к курсу"
+                options={MOCK_COURSES.map((c) => ({ value: c.id, label: c.label }))}
+              />
+            </div>
+          </div>
+        </SectionCard>
+
+        <button
+          type="button"
+          onClick={handleImportClick}
+          className="w-full border border-dashed border-border rounded-xl py-4 flex flex-col items-center gap-1.5 text-muted-foreground hover:border-primary/40 hover:text-primary hover:bg-secondary/40 transition-all"
+        >
+          <Upload className="w-4 h-4" />
+          <span className="text-xs font-medium">Импортировать из JSON</span>
+        </button>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="application/json"
+          className="hidden"
+          onChange={handleFileChange}
+        />
+      </div>
+    </div>
+  );
+}
+
+/* =============================================================================
+   SQL — ПОДСВЕТКА СИНТАКСИСА (легковесная)
+   ============================================================================= */
+
+const SQL_KEYWORDS = [
+  "SELECT", "FROM", "WHERE", "JOIN", "INNER", "LEFT", "RIGHT", "FULL", "OUTER",
+  "ON", "GROUP BY", "ORDER BY", "HAVING", "LIMIT", "OFFSET", "AS", "AND", "OR",
+  "NOT", "IN", "EXISTS", "DISTINCT", "UNION", "ALL", "CASE", "WHEN", "THEN",
+  "ELSE", "END", "WITH", "OVER", "PARTITION BY", "DESC", "ASC", "NULL", "IS",
+  "BETWEEN", "LIKE", "INSERT", "UPDATE", "DELETE", "INTO", "VALUES", "SET",
+];
+
+const SQL_FUNCTIONS = [
+  "COUNT", "SUM", "AVG", "MIN", "MAX", "ROUND", "COALESCE", "NOW", "CAST",
+  "ROW_NUMBER", "RANK", "DENSE_RANK", "LAG", "LEAD",
+];
+
+function highlightSql(sql) {
+  if (!sql) return "";
+  let escaped = sql
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+
+  // Строки
+  escaped = escaped.replace(
+    /('(?:[^'\\]|\\.)*')/g,
+    '<span class="sql-string">$1</span>'
+  );
+
+  // Числа
+  escaped = escaped.replace(
+    /\b(\d+\.?\d*)\b/g,
+    '<span class="sql-number">$1</span>'
+  );
+
+  // Комментарии
+  escaped = escaped.replace(
+    /(--.*$)/gm,
+    '<span class="sql-comment">$1</span>'
+  );
+
+  // Функции
+  const fnPattern = new RegExp(`\\b(${SQL_FUNCTIONS.join("|")})\\b`, "gi");
+  escaped = escaped.replace(fnPattern, '<span class="sql-function">$1</span>');
+
+  // Ключевые слова
+  const kwPattern = new RegExp(`\\b(${SQL_KEYWORDS.join("|")})\\b`, "gi");
+  escaped = escaped.replace(kwPattern, '<span class="sql-keyword">$1</span>');
+
+  return escaped;
+}
+
+function SqlCodeBlock({ sql, editable, onChange, placeholder }) {
+  const [focused, setFocused] = useState(false);
+
+  if (editable) {
+    return (
+      <div className="relative border border-border rounded-lg bg-popover overflow-hidden focus-within:ring-2 focus-within:ring-ring/40 focus-within:border-primary transition-all">
+        <div className="flex items-center justify-between px-3 py-1.5 border-b border-border bg-secondary/40">
+          <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide">
+            SQL
+          </span>
+          <span className="text-[11px] text-muted-foreground">PostgreSQL</span>
+        </div>
+        <div className="relative">
+          {!focused && sql && (
+            <pre
+              className="absolute inset-0 px-4 py-3 text-sm font-mono leading-relaxed whitespace-pre-wrap pointer-events-none m-0"
+              dangerouslySetInnerHTML={{ __html: highlightSql(sql) }}
+            />
+          )}
+          <textarea
+            value={sql}
+            onChange={(e) => onChange(e.target.value)}
+            onFocus={() => setFocused(true)}
+            onBlur={() => setFocused(false)}
+            placeholder={placeholder}
+            spellCheck={false}
+            className={`w-full min-h-[220px] px-4 py-3 text-sm font-mono leading-relaxed bg-transparent resize-y focus:outline-none placeholder:text-muted-foreground ${
+              !focused && sql ? "text-transparent caret-foreground" : "text-foreground"
+            }`}
+            style={{ caretColor: "hsl(var(--foreground))" }}
+          />
+        </div>
+        <style>{`
+          .sql-keyword { color: hsl(var(--primary)); font-weight: 600; }
+          .sql-function { color: hsl(var(--info)); font-weight: 500; }
+          .sql-string { color: hsl(var(--success)); }
+          .sql-number { color: hsl(var(--accent-alt-text)); }
+          .sql-comment { color: hsl(var(--muted-foreground)); font-style: italic; }
+        `}</style>
+      </div>
+    );
+  }
+
+  return (
+    <div className="border border-border rounded-lg bg-popover overflow-hidden">
+      <div className="flex items-center justify-between px-3 py-1.5 border-b border-border bg-secondary/40">
+        <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide">SQL</span>
+        <span className="text-[11px] text-muted-foreground">PostgreSQL</span>
+      </div>
+      <pre
+        className="px-4 py-3 text-sm font-mono leading-relaxed whitespace-pre-wrap overflow-x-auto m-0"
+        dangerouslySetInnerHTML={{ __html: highlightSql(sql) || `<span class="sql-comment">// пусто</span>` }}
+      />
+      <style>{`
+        .sql-keyword { color: hsl(var(--primary)); font-weight: 600; }
+        .sql-function { color: hsl(var(--info)); font-weight: 500; }
+        .sql-string { color: hsl(var(--success)); }
+        .sql-number { color: hsl(var(--accent-alt-text)); }
+        .sql-comment { color: hsl(var(--muted-foreground)); font-style: italic; }
+      `}</style>
+    </div>
+  );
+}
+
+/* =============================================================================
+   ШАГ 2 — ЭТАЛОННОЕ РЕШЕНИЕ
+   ============================================================================= */
+
+function StepSolution({ data, setData }) {
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+      <div className="lg:col-span-2 space-y-5">
+        <SectionCard
+          title="Эталонный SQL-запрос"
+          description="Этот запрос — точка отсчёта для сравнения ответов пользователей"
+        >
+          <SqlCodeBlock
+            sql={data.referenceSql}
+            editable
+            onChange={(v) => setData((p) => ({ ...p, referenceSql: v }))}
+            placeholder={`SELECT ...\nFROM ...\nWHERE ...`}
+          />
+        </SectionCard>
+      </div>
+
+      <div className="space-y-5">
+        <SectionCard title="Порядок строк" description="Влияет на проверку Этапа 1">
+          <label className="flex items-start gap-3 cursor-pointer group">
+            <div className="relative flex items-center justify-center mt-0.5">
+              <input
+                type="checkbox"
+                checked={data.orderMatters}
+                onChange={(e) => setData((p) => ({ ...p, orderMatters: e.target.checked }))}
+                className="peer w-4 h-4 rounded border-border text-primary focus:ring-2 focus:ring-ring/40 cursor-pointer appearance-none border bg-popover checked:bg-primary checked:border-primary transition-colors"
+              />
+              <Check className="w-3 h-3 text-primary-foreground absolute opacity-0 peer-checked:opacity-100 pointer-events-none transition-opacity" />
+            </div>
+            <div>
+              <p className="text-sm font-medium leading-none mb-1">Порядок вывода важен</p>
+              <p className="text-[11px] text-muted-foreground leading-relaxed">
+                Если включено — после совпадения данных дополнительно проверяется
+                совпадение позиций строк (через ROW_NUMBER без внутреннего ORDER BY).
+                Несовпадение порядка при верных данных = «данные верны, порядок не совпадает».
+              </p>
+            </div>
+          </label>
+        </SectionCard>
+
+        <SectionCard title="Подсказка по проверке">
+          <ul className="space-y-2 text-[11px] text-muted-foreground leading-relaxed">
+            <li className="flex gap-2">
+              <span className="text-primary font-semibold shrink-0">1.</span>
+              Контрольная сумма (count + md5) — быстрая проверка совпадения.
+            </li>
+            <li className="flex gap-2">
+              <span className="text-primary font-semibold shrink-0">2.</span>
+              EXCEPT ALL — точное мультисет-сравнение результатов.
+            </li>
+            <li className="flex gap-2">
+              <span className="text-primary font-semibold shrink-0">3.</span>
+              При расхождении — отчёт с примерами строк (до 50) и точным количеством.
+            </li>
+          </ul>
+        </SectionCard>
+      </div>
+    </div>
+  );
+}
+
+/* =============================================================================
+   ШАГ 3 — КОНСТРУКТОР ПРАВИЛ ПРОВЕРКИ
+   ============================================================================= */
+
+function emptyRule() {
+  return {
+    id: uid(),
+    category: "construct",
+    condition: "required",
+    params: { target: "JOIN" },
+    severity: "blocking",
+  };
+}
+
+function RuleParamsEditor({ rule, onChange }) {
+  const { category, condition, params } = rule;
+
+  const setParams = (patch) => onChange({ ...rule, params: { ...params, ...patch } });
+
+  switch (category) {
+    case "construct":
+      return (
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <FieldLabel>Конструкция</FieldLabel>
+            <SelectInput
+              value={params.target}
+              onChange={(v) => setParams({ target: v })}
+              options={CONSTRUCT_TARGETS}
+            />
+          </div>
+          {CONDITIONS_WITH_VALUE.includes(condition) && (
+            <div>
+              <FieldLabel>Значение</FieldLabel>
+              <TextInput
+                type="number"
+                value={params.value ?? ""}
+                onChange={(v) => setParams({ value: Number(v) })}
+                placeholder="например, 2"
+              />
+            </div>
+          )}
+        </div>
+      );
+
+    case "object":
+      return (
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <FieldLabel>Тип объекта</FieldLabel>
+            <SelectInput
+              value={params.object_type || "table"}
+              onChange={(v) => setParams({ object_type: v })}
+              options={[
+                { value: "table", label: "Таблица" },
+                { value: "column", label: "Колонка" },
+              ]}
+            />
+          </div>
+          <div>
+            <FieldLabel>Имя</FieldLabel>
+            <TextInput
+              value={params.object_name || ""}
+              onChange={(v) => setParams({ object_name: v })}
+              placeholder={params.object_type === "column" ? "таблица.колонка" : "имя таблицы"}
+            />
+          </div>
+        </div>
+      );
+
+    case "function":
+      return (
+        <div>
+          <FieldLabel>Название функции</FieldLabel>
+          <TextInput
+            value={params.function_name || ""}
+            onChange={(v) => setParams({ function_name: v.toUpperCase() })}
+            placeholder="например, ROUND, COALESCE, COUNT"
+          />
+        </div>
+      );
+
+    case "select_star":
+      return (
+        <p className="text-[11px] text-muted-foreground py-1">
+          Дополнительные параметры не требуются — SELECT * будет запрещён.
+        </p>
+      );
+
+    case "alias":
+      return (
+        <div>
+          <FieldLabel>Область применения</FieldLabel>
+          <SelectInput
+            value={params.scope || "both"}
+            onChange={(v) => setParams({ scope: v })}
+            options={[
+              { value: "columns", label: "Только колонки" },
+              { value: "tables", label: "Только таблицы" },
+              { value: "both", label: "Таблицы и колонки" },
+            ]}
+          />
+        </div>
+      );
+
+    case "performance":
+      return (
+        <div>
+          <FieldLabel>Таблица</FieldLabel>
+          <TextInput
+            value={params.table_name || ""}
+            onChange={(v) => setParams({ table_name: v })}
+            placeholder="имя таблицы для проверки Seq Scan"
+          />
+        </div>
+      );
+
+    default:
+      return null;
+  }
+}
+
+function getAvailableConditions(category) {
+  switch (category) {
+    case "construct":
+      return ["required", "forbidden", "count_min", "count_max", "count_exact"];
+    case "object":
+    case "function":
+      return ["required", "forbidden"];
+    case "select_star":
+      return ["forbidden"];
+    case "alias":
+      return ["required"];
+    case "performance":
+      return ["no_seqscan"];
+    default:
+      return [];
+  }
+}
+
+function getDefaultParams(category) {
+  switch (category) {
+    case "construct":
+      return { target: "JOIN" };
+    case "object":
+      return { object_type: "table", object_name: "" };
+    case "function":
+      return { function_name: "" };
+    case "select_star":
+      return {};
+    case "alias":
+      return { scope: "both" };
+    case "performance":
+      return { table_name: "" };
+    default:
+      return {};
+  }
+}
+
+function RuleCard({ rule, onChange, onRemove }) {
+  const handleCategoryChange = (category) => {
+    const conditions = getAvailableConditions(category);
+    onChange({
+      ...rule,
+      category,
+      condition: conditions[0],
+      params: getDefaultParams(category),
+    });
+  };
+
+  const handleConditionChange = (condition) => {
+    onChange({ ...rule, condition });
+  };
+
+  const message = generateRuleMessage(rule);
+  const categoryLabel = RULE_CATEGORIES.find((c) => c.key === rule.category)?.label;
+
+  return (
+    <div className="bg-popover border border-border rounded-xl p-4 space-y-3">
+      <div className="flex items-start justify-between gap-3">
+        <div className="grid grid-cols-2 gap-3 flex-1">
+          <div>
+            <FieldLabel>Категория</FieldLabel>
+            <SelectInput
+              value={rule.category}
+              onChange={handleCategoryChange}
+              options={RULE_CATEGORIES.map((c) => ({ value: c.key, label: c.label }))}
+            />
+          </div>
+          <div>
+            <FieldLabel>Условие</FieldLabel>
+            <SelectInput
+              value={rule.condition}
+              onChange={handleConditionChange}
+              options={getAvailableConditions(rule.category).map((c) => ({
+                value: c,
+                label: CONDITION_LABELS[c] || c,
+              }))}
+            />
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={onRemove}
+          className="p-2 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors mt-5 shrink-0"
+          title="Удалить правило"
+        >
+          <Trash2 className="w-3.5 h-3.5" />
+        </button>
+      </div>
+
+      <RuleParamsEditor rule={rule} onChange={onChange} />
+
+      {/* Превью правила — формируется автоматически */}
+      <div className="rounded-lg border border-border/60 bg-secondary/40 px-3 py-2.5">
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex items-start gap-2 min-w-0">
+            <span className="text-[10px] uppercase tracking-wide text-muted-foreground shrink-0 mt-0.5">
+              {categoryLabel}
+            </span>
+            <span className="text-xs text-foreground/90 leading-relaxed">{message}</span>
+            <InfoTooltip text={generateRuleInfotip(rule)} />
+          </div>
+
+          <div className="flex items-center bg-muted rounded-lg p-0.5 shrink-0">
+            <button
+              type="button"
+              onClick={() => onChange({ ...rule, severity: "blocking" })}
+              className={`px-2.5 py-1 rounded-md text-[11px] font-medium transition-colors flex items-center gap-1 ${
+                rule.severity === "blocking"
+                  ? "bg-destructive text-destructive-foreground"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <AlertCircle className="w-3 h-3" />
+              Блокирует
+            </button>
+            <button
+              type="button"
+              onClick={() => onChange({ ...rule, severity: "warning" })}
+              className={`px-2.5 py-1 rounded-md text-[11px] font-medium transition-colors flex items-center gap-1 ${
+                rule.severity === "warning"
+                  ? "bg-warning text-foreground"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <AlertTriangle className="w-3 h-3" />
+              Замечание
+            </button>
+          </div>
+        </div>
+
+        <p className="text-[11px] text-muted-foreground mt-1.5 flex items-center gap-1">
+          {rule.severity === "blocking" ? (
+            <AlertCircle className="w-3 h-3 text-destructive shrink-0" />
+          ) : (
+            <AlertTriangle className="w-3 h-3 text-warning-text shrink-0" />
+          )}
+          {severityImpactText(rule.severity)}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function StepRules({ data, setData, validation, onRunValidation, isValidating }) {
+  const rules = data.rules;
+
+  const addRule = () => {
+    setData((p) => ({ ...p, rules: [...p.rules, emptyRule()] }));
+  };
+
+  const updateRule = (id, next) => {
+    setData((p) => ({ ...p, rules: p.rules.map((r) => (r.id === id ? next : r)) }));
+  };
+
+  const removeRule = (id) => {
+    setData((p) => ({ ...p, rules: p.rules.filter((r) => r.id !== id) }));
+  };
+
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+      <div className="lg:col-span-2 space-y-5">
+        {/* order_matters особняком сверху */}
+        <SectionCard>
+          <label className="flex items-start gap-3 cursor-pointer">
+            <div className="relative flex items-center justify-center mt-0.5">
+              <input
+                type="checkbox"
+                checked={data.orderMatters}
+                onChange={(e) => setData((p) => ({ ...p, orderMatters: e.target.checked }))}
+                className="peer w-4 h-4 rounded border-border text-primary focus:ring-2 focus:ring-ring/40 cursor-pointer appearance-none border bg-popover checked:bg-primary checked:border-primary transition-colors"
+              />
+              <Check className="w-3 h-3 text-primary-foreground absolute opacity-0 peer-checked:opacity-100 pointer-events-none transition-opacity" />
+            </div>
+            <div>
+              <p className="text-sm font-medium leading-none mb-1">Порядок вывода важен</p>
+              <p className="text-[11px] text-muted-foreground leading-relaxed">
+                Проверяется отдельно от правил ниже — после совпадения данных Этапа 1.
+              </p>
+            </div>
+          </label>
+        </SectionCard>
+
+        <SectionCard
+          title="Правила проверки запроса"
+          description="Дополнительные условия для эталонного SQL — категория и условие задают проверку, описание формируется автоматически"
+        >
+          {rules.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">
+              <p className="text-sm mb-1">Правил пока нет</p>
+              <p className="text-[11px]">Этот шаг полностью опционален</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {rules.map((rule) => (
+                <RuleCard
+                  key={rule.id}
+                  rule={rule}
+                  onChange={(next) => updateRule(rule.id, next)}
+                  onRemove={() => removeRule(rule.id)}
+                />
+              ))}
+            </div>
+          )}
+
+          <button
+            type="button"
+            onClick={addRule}
+            className="w-full mt-3 border border-dashed border-border rounded-xl py-3 flex items-center justify-center gap-1.5 text-muted-foreground hover:border-primary/40 hover:text-primary hover:bg-secondary/40 transition-all"
+          >
+            <Plus className="w-4 h-4" />
+            <span className="text-xs font-medium">Добавить правило</span>
+          </button>
+        </SectionCard>
+      </div>
+
+      <div className="space-y-5">
+        <SectionCard
+          title="Проверка эталона"
+          description="Обязательно перед переходом к финалу"
+        >
+          <p className="text-[11px] text-muted-foreground leading-relaxed mb-3">
+            Прогони эталонный SQL по сравнению с самим собой и по всем правилам,
+            чтобы убедиться: эталон проходит свои же требования.
+          </p>
+          <button
+            type="button"
+            onClick={onRunValidation}
+            disabled={isValidating}
+            className="w-full bg-primary text-primary-foreground rounded-lg px-4 py-2.5 text-sm font-semibold flex items-center justify-center gap-2 hover:brightness-105 transition-all duration-200 active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed"
+          >
+            {isValidating ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Проверяем...
+              </>
+            ) : (
+              <>
+                <PlayCircle className="w-4 h-4" />
+                Прогнать проверку
+              </>
+            )}
+          </button>
+
+          {validation && (
+            <div className="mt-4 space-y-2">
+              <ValidationRow
+                ok={validation.stage1}
+                label="Этап 1 — сравнение результатов"
+              />
+              {data.orderMatters && (
+                <ValidationRow ok={validation.orderOk} label="Порядок строк совпадает" />
+              )}
+              {rules.length > 0 && (
+                <div className="pt-2 border-t border-border/60 space-y-2">
+                  <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide">
+                    Этап 2 — правила
+                  </p>
+                  {validation.ruleResults.map((r) => (
+                    <ValidationRow
+                      key={r.id}
+                      ok={r.passed}
+                      label={r.message}
+                      severity={r.severity}
+                    />
+                  ))}
+                </div>
+              )}
+              <div
+                className={`mt-3 rounded-lg px-3 py-2.5 flex items-center gap-2 text-sm font-medium ${
+                  validation.overallOk
+                    ? "bg-success/10 text-success"
+                    : "bg-destructive/10 text-destructive"
+                }`}
+              >
+                {validation.overallOk ? (
+                  <CheckCircle2 className="w-4 h-4 shrink-0" />
+                ) : (
+                  <XCircle className="w-4 h-4 shrink-0" />
+                )}
+                {validation.overallOk
+                  ? "Эталон проходит проверку"
+                  : "Эталон не проходит собственные правила"}
+              </div>
+            </div>
+          )}
+        </SectionCard>
+      </div>
+    </div>
+  );
+}
+
+function ValidationRow({ ok, label, severity }) {
+  const isWarningOnly = !ok && severity === "warning";
+  return (
+    <div className="flex items-start gap-2 text-xs">
+      {ok ? (
+        <CheckCircle2 className="w-3.5 h-3.5 text-success shrink-0 mt-0.5" />
+      ) : isWarningOnly ? (
+        <AlertTriangle className="w-3.5 h-3.5 text-warning-text shrink-0 mt-0.5" />
+      ) : (
+        <XCircle className="w-3.5 h-3.5 text-destructive shrink-0 mt-0.5" />
+      )}
+      <span
+        className={
+          ok
+            ? "text-foreground/80"
+            : isWarningOnly
+            ? "text-warning-text"
+            : "text-destructive"
+        }
+      >
+        {label}
+      </span>
+    </div>
+  );
+}
+
+/* =============================================================================
+   ШАГ 4 — ПРЕВЬЮ И ПУБЛИКАЦИЯ
+   ============================================================================= */
+
+function PreviewCard({ data }) {
+  const meta = difficultyMeta(data.difficulty);
+  const db = MOCK_DATABASES.find((d) => d.id === data.database);
+  const course = MOCK_COURSES.find((c) => c.id === data.course);
+
+  return (
+    <div className="bg-card border border-border/60 rounded-xl p-6">
+      <div className="flex items-start justify-between gap-4 mb-3">
+        <div>
+          <h2 className="text-lg font-semibold mb-1">
+            {data.title || (
+              <span className="text-muted-foreground italic">Без названия</span>
+            )}
+          </h2>
+          <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
+            <span>Автор: {data.author || "—"}</span>
+            {data.referenceLink && (
+              <a
+                href={data.referenceLink}
+                target="_blank"
+                rel="noreferrer"
+                className="text-primary hover:underline"
+              >
+                Ссылка
+              </a>
+            )}
+          </div>
+        </div>
+        {meta && (
+          <div className="flex items-center gap-1 shrink-0" title={meta.label}>
+            {[1, 2, 3].map((i) => (
+              <span
+                key={i}
+                className={`w-2 h-2 rounded-full ${i <= meta.level ? meta.color : "bg-muted"}`}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div
+        className="text-sm leading-relaxed text-foreground/90 mb-4 [&_code]:bg-muted [&_code]:text-primary [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded [&_code]:font-mono [&_code]:text-[0.85em] [&_a]:text-primary [&_a]:underline"
+        dangerouslySetInnerHTML={{
+          __html:
+            data.description ||
+            `<span style="color: hsl(var(--muted-foreground)); font-style: italic;">Описание не заполнено</span>`,
+        }}
+      />
+
+      <div className="flex flex-wrap items-center gap-2 mb-4">
+        {meta && (
+          <span className={`text-[11px] font-medium px-2 py-1 rounded-md ${meta.text} bg-muted`}>
+            {meta.label}
+          </span>
+        )}
+        {db && (
+          <span className="text-[11px] font-medium px-2 py-1 rounded-md bg-muted text-muted-foreground flex items-center gap-1">
+            <Database className="w-3 h-3" />
+            {db.label}
+          </span>
+        )}
+        {course && (
+          <span className="text-[11px] font-medium px-2 py-1 rounded-md bg-muted text-muted-foreground flex items-center gap-1">
+            <GraduationCap className="w-3 h-3" />
+            {course.label}
+          </span>
+        )}
+        {data.orderMatters && (
+          <span className="text-[11px] font-medium px-2 py-1 rounded-md bg-info/10 text-info">
+            Порядок важен
+          </span>
+        )}
+      </div>
+
+      {data.tags.length > 0 && (
+        <div className="flex flex-wrap gap-1.5 mb-4">
+          {data.tags.map((tag) => (
+            <span
+              key={tag}
+              className="text-[10px] leading-none px-1.5 py-1 rounded-md font-medium"
+              style={{
+                backgroundColor: `hsl(var(--badge-bg) / var(--badge-bg-opacity))`,
+                color: `hsl(var(--badge-fg))`,
+              }}
+            >
+              {tag}
+            </span>
+          ))}
+        </div>
+      )}
+
+      <SqlCodeBlock sql={data.referenceSql} />
+    </div>
+  );
+}
+
+function StepPreview({ data, validation }) {
+  const blockingRule = data.rules.find((r) => r.severity === "blocking");
+
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+      <div className="lg:col-span-2">
+        <PreviewCard data={data} />
+      </div>
+
+      <div className="space-y-5">
+        <SectionCard title="Сводка">
+          <div className="space-y-2.5 text-xs">
+            <SummaryRow label="Название" ok={!!data.title} />
+            <SummaryRow label="Описание" ok={!!data.description} />
+            <SummaryRow label="Автор" ok={!!data.author} />
+            <SummaryRow label="Сложность" ok={!!data.difficulty} />
+            <SummaryRow label="База данных" ok={!!data.database} />
+            <SummaryRow label="Эталонный SQL" ok={!!data.referenceSql.trim()} />
+            <SummaryRow
+              label="Правила проверки"
+              ok={true}
+              detail={`${data.rules.length} шт.`}
+            />
+            <SummaryRow
+              label="Проверка эталона"
+              ok={!!validation?.overallOk}
+              detail={validation ? (validation.overallOk ? "пройдена" : "не пройдена") : "не запущена"}
+            />
+          </div>
+        </SectionCard>
+
+        {!validation?.overallOk && data.rules.some((r) => r.severity === "blocking") && (
+          <div className="bg-warning/10 border border-warning/30 rounded-xl p-4 flex gap-2.5">
+            <AlertTriangle className="w-4 h-4 text-warning-text shrink-0 mt-0.5" />
+            <p className="text-[11px] text-warning-text leading-relaxed">
+              Эталонное решение не прошло собственные блокирующие правила.
+              Вернись на шаг «Правила проверки» и прогони проверку перед публикацией.
+            </p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function SummaryRow({ label, ok, detail }) {
+  return (
+    <div className="flex items-center justify-between">
+      <span className="text-muted-foreground">{label}</span>
+      <div className="flex items-center gap-1.5">
+        {detail && <span className="text-foreground/70">{detail}</span>}
+        {ok ? (
+          <CheckCircle2 className="w-3.5 h-3.5 text-success" />
+        ) : (
+          <X className="w-3.5 h-3.5 text-muted-foreground" />
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* =============================================================================
+   ИНИЦИАЛЬНОЕ СОСТОЯНИЕ
+   ============================================================================= */
+
+function initialData() {
+  return {
+    title: "",
+    description: "",
+    author: "",
+    referenceLink: "",
+    difficulty: "",
+    tags: [],
+    database: "",
+    course: "",
+    referenceSql: "",
+    orderMatters: false,
+    rules: [],
+  };
+}
+
+/* Заполнение обязательных полей шага 1 */
+function isStep1Valid(data) {
+  return !!(data.title.trim() && data.description.trim() && data.author.trim() && data.difficulty && data.database);
+}
+
+function isStep2Valid(data) {
+  return !!data.referenceSql.trim();
+}
+
+/* =============================================================================
+   ХЕДЕР / СТЕППЕР
+   ============================================================================= */
+
+function Stepper({ current, onStepClick, maxReached }) {
+  return (
+    <div className="flex items-center gap-2 flex-1 max-w-2xl">
+      {STEPS.map((step, idx) => {
+        const isActive = step.id === current;
+        const isDone = step.id < current;
+        const isReachable = step.id <= maxReached;
+        return (
+          <React.Fragment key={step.id}>
+            <button
+              onClick={() => isReachable && onStepClick(step.id)}
+              disabled={!isReachable}
+              className={`flex items-center gap-2 group ${
+                isReachable ? "cursor-pointer" : "cursor-not-allowed"
+              }`}
+            >
+              <div
+                className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold shrink-0 transition-all duration-200 ${
+                  isActive
+                    ? "bg-primary text-primary-foreground shadow-[0_0_0_4px_hsl(var(--glow)/var(--glow-opacity))]"
+                    : isDone
+                    ? "bg-success text-primary-foreground"
+                    : "bg-muted text-muted-foreground"
+                }`}
+              >
+                {isDone ? <Check className="w-3.5 h-3.5" /> : step.id}
+              </div>
+              <span
+                className={`text-xs font-medium whitespace-nowrap transition-colors hidden sm:inline ${
+                  isActive
+                    ? "text-foreground"
+                    : isDone
+                    ? "text-foreground/70"
+                    : "text-muted-foreground"
+                }`}
+              >
+                {step.label}
+              </span>
+            </button>
+            {idx < STEPS.length - 1 && (
+              <div
+                className={`flex-1 h-px transition-colors ${
+                  step.id < current ? "bg-success/50" : "bg-border"
+                }`}
+              />
+            )}
+          </React.Fragment>
+        );
+      })}
+    </div>
+  );
+}
+
+/* =============================================================================
+   ГЛАВНЫЙ КОМПОНЕНТ
+   ============================================================================= */
+
+export default function TaskCreatePage() {
+  const [step, setStep] = useState(1);
+  const [maxReached, setMaxReached] = useState(1);
+  const [data, setData] = useState(initialData());
+  const [validation, setValidation] = useState(null);
+  const [isValidating, setIsValidating] = useState(false);
+  const fileInputRef = useRef(null);
+
+  const canGoNext = useMemo(() => {
+    if (step === 1) return isStep1Valid(data);
+    if (step === 2) return isStep2Valid(data);
+    if (step === 3) return !!validation?.overallOk || data.rules.length === 0;
+    return true;
+  }, [step, data, validation]);
+
+  const handleNext = () => {
+    if (!canGoNext) return;
+    const next = Math.min(step + 1, STEPS.length);
+    setStep(next);
+    setMaxReached((m) => Math.max(m, next));
+  };
+
+  const handleBack = () => setStep((s) => Math.max(1, s - 1));
+
+  const handleStepClick = (id) => {
+    if (id <= maxReached) setStep(id);
+  };
+
+  /* Мок «прогона» проверки эталона по собственным правилам */
+  const runValidation = () => {
+    setIsValidating(true);
+    setValidation(null);
+    setTimeout(() => {
+      const ruleResults = data.rules.map((rule) => {
+        // Мок: считаем что эталон проходит required/forbidden корректно настроенные правила,
+        // но "падает" если параметры явно не заполнены.
+        let passed = true;
+        if (rule.category === "object" && !rule.params.object_name) passed = false;
+        if (rule.category === "function" && !rule.params.function_name) passed = false;
+        if (rule.category === "performance" && !rule.params.table_name) passed = false;
+        if (
+          rule.category === "construct" &&
+          CONDITIONS_WITH_VALUE.includes(rule.condition) &&
+          (rule.params.value === undefined || rule.params.value === null)
+        ) {
+          passed = false;
+        }
+        return {
+          id: rule.id,
+          passed,
+          severity: rule.severity,
+          message: generateRuleMessage(rule),
+        };
+      });
+
+      const stage1 = true; // эталон против самого себя — всегда совпадает
+      const orderOk = true;
+
+      const blockingFailed = ruleResults.some((r) => !r.passed && r.severity === "blocking");
+
+      setValidation({
+        stage1,
+        orderOk,
+        ruleResults,
+        overallOk: stage1 && orderOk && !blockingFailed,
+      });
+      setIsValidating(false);
+    }, 900);
+  };
+
+  /* Импорт / экспорт JSON всей задачи */
+  const handleImportClick = () => fileInputRef.current?.click();
+
+  const handleFileChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      try {
+        const parsed = JSON.parse(ev.target.result);
+        setData((prev) => ({ ...initialData(), ...prev, ...parsed }));
+        setValidation(null);
+      } catch {
+        alert("Не удалось разобрать JSON-файл");
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = "";
+  };
+
+  const handlePublish = () => {
+    // eslint-disable-next-line no-console
+    console.log("Публикация задачи:", data);
+    alert("Задача создана! (демо — логика сохранения подключается позже)");
+  };
+
+  return (
+    <div className="h-full w-full flex flex-col bg-background text-foreground overflow-hidden">
+      {/* ===================== HEADER ===================== */}
+      <div className="px-8 py-4 border-b border-border/60 flex items-center gap-6 shrink-0">
+        <div className="shrink-0">
+          <h1 className="text-lg font-semibold tracking-tight flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-primary" />
+            Создание задачи
+          </h1>
+          <p className="text-[11px] text-muted-foreground mt-0.5">Шаг {step} из {STEPS.length}</p>
+        </div>
+
+        <Stepper current={step} maxReached={maxReached} onStepClick={handleStepClick} />
+
+        <button
+          onClick={handleImportClick}
+          className="ml-auto shrink-0 px-3 py-2 rounded-lg text-xs font-medium bg-secondary hover:bg-accent text-foreground transition-colors flex items-center gap-1.5"
+        >
+          <Upload className="w-3.5 h-3.5" />
+          Импорт из JSON
+        </button>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="application/json"
+          className="hidden"
+          onChange={handleFileChange}
+        />
+      </div>
+
+      {/* ===================== CONTENT ===================== */}
+      <div className="flex-1 overflow-y-auto custom-scrollbar px-8 py-6">
+        {step === 1 && <StepInformation data={data} setData={setData} />}
+        {step === 2 && <StepSolution data={data} setData={setData} />}
+        {step === 3 && (
+          <StepRules
+            data={data}
+            setData={setData}
+            validation={validation}
+            onRunValidation={runValidation}
+            isValidating={isValidating}
+          />
+        )}
+        {step === 4 && <StepPreview data={data} validation={validation} />}
+      </div>
+
+      {/* ===================== FOOTER NAV ===================== */}
+      <div className="px-8 py-4 border-t border-border/60 flex items-center justify-between shrink-0">
+        <button
+          onClick={handleBack}
+          disabled={step === 1}
+          className="px-4 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors flex items-center gap-1.5 disabled:opacity-0 disabled:pointer-events-none"
+        >
+          <ChevronLeft className="w-4 h-4" />
+          Назад
+        </button>
+
+        <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
+          {step === 1 && !canGoNext && "Заполни обязательные поля, чтобы продолжить"}
+          {step === 2 && !canGoNext && "Добавь эталонный SQL-запрос"}
+          {step === 3 && !canGoNext && "Прогони проверку эталона перед продолжением"}
+        </div>
+
+        {step < STEPS.length ? (
+          <button
+            onClick={handleNext}
+            disabled={!canGoNext}
+            className="px-4 py-2 rounded-lg text-sm font-semibold bg-primary text-primary-foreground hover:brightness-105 transition-all duration-200 active:scale-[0.98] flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100"
+          >
+            Далее
+            <ChevronRight className="w-4 h-4" />
+          </button>
+        ) : (
+          <button
+            onClick={handlePublish}
+            className="px-5 py-2 rounded-lg text-sm font-semibold bg-primary text-primary-foreground hover:brightness-105 transition-all duration-200 active:scale-[0.98] flex items-center gap-1.5"
+          >
+            <Check className="w-4 h-4" />
+            Создать задачу
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
