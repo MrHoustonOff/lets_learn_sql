@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Search, SlidersHorizontal, X, ArrowUp, ArrowDown, Database, Tag, Plus, ChevronLeft, ChevronRight, ChevronDown } from 'lucide-react';
+import { Search, SlidersHorizontal, X, ArrowUp, ArrowDown, Database, Tag, Plus, ChevronLeft, ChevronRight, ChevronDown, BookOpen } from 'lucide-react';
 import { FilterSection } from './tasks-list/FilterSection';
 import { FilterChip } from './tasks-list/FilterChip';
 import { DifficultyMatrix } from './tasks-list/DifficultyMatrix';
@@ -12,6 +12,7 @@ const DEFAULT_FILTERS: FilterState = {
   search: '',
   selectedDifficulties: [],
   selectedTagIds: [],
+  selectedCourseIds: [],
   selectedDatabaseId: null,
   status: 'all',
   sortBy: 'created',
@@ -32,7 +33,7 @@ export const TasksListPage: React.FC = () => {
     setFilters(prev => ({ ...prev, [key]: value, page: key === 'page' ? (value as number) : 1 }));
   }, []);
 
-  const toggleItem = useCallback((key: 'selectedDifficulties' | 'selectedTagIds', value: number) => {
+  const toggleItem = useCallback((key: 'selectedDifficulties' | 'selectedTagIds' | 'selectedCourseIds', value: number) => {
     setFilters(prev => {
       const list = prev[key];
       return { ...prev, [key]: list.includes(value) ? list.filter(v => v !== value) : [...list, value], page: 1 };
@@ -41,7 +42,7 @@ export const TasksListPage: React.FC = () => {
 
   const clearAll = useCallback(() => setFilters(DEFAULT_FILTERS), []);
 
-  const { tasks, total, tags, databases, isLoading, error, refetch } = useTasksListData(filters);
+  const { tasks, total, tags, courses, databases, isLoading, error, refetch } = useTasksListData(filters);
 
   const activeFilterCount =
     filters.selectedDifficulties.length +
@@ -102,6 +103,26 @@ export const TasksListPage: React.FC = () => {
               selected={filters.selectedDifficulties}
               onToggle={id => toggleItem('selectedDifficulties', id)}
             />
+          </FilterSection>
+
+          {/* Courses */}
+          <FilterSection title={t('filter.courses', 'Курсы')} icon={BookOpen} defaultOpen={false}>
+            {courses.length > 0 ? (
+              <div className="flex flex-wrap gap-1">
+                {courses.map(course => (
+                  <FilterChip
+                    key={course.id}
+                    label={course.title}
+                    active={filters.selectedCourseIds.includes(course.id)}
+                    onClick={() => toggleItem('selectedCourseIds', course.id)}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="text-2xs text-muted-foreground/50 border border-dashed border-glass-border rounded-lg p-3 text-center">
+                Курсов пока нет
+              </div>
+            )}
           </FilterSection>
 
           {/* Database */}

@@ -58,13 +58,19 @@ export const TaskRow: React.FC<TaskRowProps> = ({ task, onClick }) => {
           
           {/* Bottom: Courses & Tags */}
           <div className="flex items-center gap-3 text-micro text-muted-foreground">
-            {/* Courses Placeholder */}
-            <div className="flex items-center gap-1.5">
-              <span>{t('row.course', 'Курс:')}</span>
-              <div className="flex items-center gap-1">
-                <span className="px-1 py-0.5 bg-glass border border-glass-border rounded font-medium text-foreground">SQL Basics</span>
+            {/* Courses */}
+            {task.courses && task.courses.length > 0 && (
+              <div className="flex items-center gap-1.5">
+                <span>{t('row.course', 'Курс:')}</span>
+                <div className="flex items-center gap-1">
+                  {task.courses.map(c => (
+                    <span key={c.id} className="px-1 py-0.5 bg-glass border border-glass-border rounded font-medium text-foreground">
+                      {c.title}
+                    </span>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Tags */}
             {task.tags.length > 0 && (

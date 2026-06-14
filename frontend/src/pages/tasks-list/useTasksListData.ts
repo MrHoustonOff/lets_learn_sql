@@ -9,6 +9,7 @@ export interface TaskItem {
   is_solved: boolean;
   is_flagged: boolean;
   tags: TagOption[];
+  courses: CourseOption[];
   created_at: string;
   solved_at: string | null;
 }
@@ -17,6 +18,7 @@ export interface FilterState {
   search: string;
   selectedDifficulties: number[];
   selectedTagIds: number[];
+  selectedCourseIds: number[];
   selectedDatabaseId: number | null;
   status: 'all' | 'solved' | 'unsolved' | 'flagged';
   sortBy: 'created' | 'solved';
@@ -26,12 +28,14 @@ export interface FilterState {
 }
 
 export interface TagOption { id: number; name: string; }
+export interface CourseOption { id: number; title: string; }
 export interface DbOption { id: number; technical_name: string; display_name: string; }
 
 export interface TasksListData {
   tasks: TaskItem[];
   total: number;
   tags: TagOption[];
+  courses: CourseOption[];
   databases: DbOption[];
   isLoading: boolean;
   error: string | null;
@@ -43,6 +47,7 @@ export function useTasksListData(filters: FilterState): TasksListData & { refetc
   const [tasks, setTasks] = useState<TaskItem[]>([]);
   const [total, setTotal] = useState(0);
   const [tags, setTags] = useState<TagOption[]>([]);
+  const [courses, setCourses] = useState<CourseOption[]>([]);
   const [databases, setDatabases] = useState<DbOption[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -61,6 +66,8 @@ export function useTasksListData(filters: FilterState): TasksListData & { refetc
       params.set('difficulty', filters.selectedDifficulties.join(','));
     if (filters.selectedTagIds.length)
       params.set('tag_ids', filters.selectedTagIds.join(','));
+    if (filters.selectedCourseIds.length)
+      params.set('course_ids', filters.selectedCourseIds.join(','));
     if (filters.selectedDatabaseId)
       params.set('database_id', String(filters.selectedDatabaseId));
     if (filters.status !== 'all') params.set('status', filters.status);
@@ -76,6 +83,7 @@ export function useTasksListData(filters: FilterState): TasksListData & { refetc
         setTasks(data.tasks);
         setTotal(data.total);
         setTags(data.tags);
+        setCourses(data.courses);
         setDatabases(data.databases);
       })
       .catch(e => {
@@ -91,6 +99,7 @@ export function useTasksListData(filters: FilterState): TasksListData & { refetc
     filters.search,
     filters.selectedDifficulties,
     filters.selectedTagIds,
+    filters.selectedCourseIds,
     filters.selectedDatabaseId,
     filters.status,
     filters.sortBy,
@@ -100,5 +109,5 @@ export function useTasksListData(filters: FilterState): TasksListData & { refetc
     tick,
   ]);
 
-  return { tasks, total, tags, databases, isLoading, error, refetch };
+  return { tasks, total, tags, courses, databases, isLoading, error, refetch };
 }

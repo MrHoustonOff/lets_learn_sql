@@ -17,6 +17,10 @@ class TagOut(BaseModel):
     id: int
     name: str
 
+class CourseOut(BaseModel):
+    id: int
+    title: str
+
 class TaskListItem(BaseModel):
     id: int
     title: str
@@ -27,6 +31,7 @@ class TaskListItem(BaseModel):
     is_solved: bool
     is_flagged: bool
     tags: List[TagOut]
+    courses: List[CourseOut]
     created_at: str
     solved_at: Optional[str]
 
@@ -34,6 +39,7 @@ class TasksListResponse(BaseModel):
     tasks: List[TaskListItem]
     total: int
     tags: List[TagOut]          # All available tags for filter
+    courses: List[CourseOut]    # All available courses for filter
     databases: List[dict]       # All databases for filter
 
 # ---------------------------------------------------------------------------
@@ -46,6 +52,7 @@ async def list_tasks(
     search: Optional[str] = Query(None),
     difficulty: Optional[str] = Query(None),   # comma-separated ints e.g. "1,2,3"
     tag_ids: Optional[str] = Query(None),       # comma-separated ints
+    course_ids: Optional[str] = Query(None),    # comma-separated ints
     database_id: Optional[int] = Query(None),
     status: str = Query("all"),                 # all | solved | unsolved | flagged
     sort_by: str = Query("created"),            # created | solved
@@ -71,6 +78,13 @@ async def list_tasks(
     if tag_ids:
         try:
             tag_id_list = [int(x.strip()) for x in tag_ids.split(",") if x.strip()]
+        except ValueError:
+            pass
+
+    course_id_list: list[int] = []
+    if course_ids:
+        try:
+            course_id_list = [int(x.strip()) for x in course_ids.split(",") if x.strip()]
         except ValueError:
             pass
 
@@ -113,6 +127,13 @@ async def list_tasks(
                 "EXISTS(SELECT 1 FROM task_tags tt WHERE tt.task_id=t.id AND tt.tag_id=?)"
             )
             params.append(tid)
+
+    if course_id_list:
+        for cid in course_id_list:
+            where_clauses.append(
+                "EXISTS(SELECT 1 FROM section_tasks st JOIN sections s ON s.id = st.section_id WHERE st.task_id=t.id AND s.course_id=?)"
+            )
+            params.append(cid)
 
     where_sql = " AND ".join(where_clauses)
 
@@ -175,8 +196,28 @@ async def list_tasks(
             tags_map.setdefault(tr["task_id"], []).append(
                 TagOut(id=tr["tag_id"], name=tr["name"])
             )
+
+        # Fetch courses per task
+        courses_query = f"""
+            SELECT st.task_id, c.id as course_id, c.title
+            FROM section_tasks st
+            JOIN sections s ON s.id = st.section_id
+            JOIN courses c ON c.id = s.course_id
+            WHERE st.task_id IN ({placeholders})
+        """
+        async with sqlite.execute(courses_query, task_ids) as ccur:
+            course_rows = await ccur.fetchall()
+            
+        courses_map: dict[int, list[CourseOut]] = {}
+        for cr in course_rows:
+            # We use a set or list? A task could theoretically appear in multiple sections of the SAME course.
+            # It's better to just build it. We'll rely on DISTINCT-like logic if needed, but for now just append
+            courses_list = courses_map.setdefault(cr["task_id"], [])
+            if not any(c.id == cr["course_id"] for c in courses_list):
+                courses_list.append(CourseOut(id=cr["course_id"], title=cr["title"]))
     else:
         tags_map = {}
+        courses_map = {}
 
     tasks_out = [
         TaskListItem(
@@ -189,6 +230,7 @@ async def list_tasks(
             is_solved=bool(r["is_solved"]),
             is_flagged=bool(r["is_flagged"]),
             tags=tags_map.get(r["id"], []),
+            courses=courses_map.get(r["id"], []),
             created_at=str(r["created_at"]),
             solved_at=str(r["solved_at"]) if r["solved_at"] else None,
         )
@@ -199,11 +241,15 @@ async def list_tasks(
     async with sqlite.execute("SELECT id, name FROM tags ORDER BY name") as tcur:
         all_tags = [TagOut(id=tr["id"], name=tr["name"]) for tr in await tcur.fetchall()]
 
+    # All available courses for filter panel
+    async with sqlite.execute("SELECT id, title FROM courses ORDER BY title") as ccur:
+        all_courses = [CourseOut(id=cr["id"], title=cr["title"]) for cr in await ccur.fetchall()]
+
     # All databases for filter panel
     async with sqlite.execute("SELECT id, technical_name, display_name FROM databases ORDER BY display_name") as dcur:
         all_dbs = [{"id": dr["id"], "technical_name": dr["technical_name"], "display_name": dr["display_name"]} for dr in await dcur.fetchall()]
 
-    return TasksListResponse(tasks=tasks_out, total=total_items, tags=all_tags, databases=all_dbs)
+    return TasksListResponse(tasks=tasks_out, total=total_items, tags=all_tags, courses=all_courses, databases=all_dbs)
 
 
 
