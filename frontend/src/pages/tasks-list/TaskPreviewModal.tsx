@@ -125,7 +125,7 @@ export const TaskPreviewModal: React.FC<TaskPreviewModalProps> = ({ taskId, isOp
               onClose={onClose}
               onEditClick={() => {
                 onClose();
-                navigate(`/task-wizard/${taskId}`);
+                navigate(`/studio/task/${taskId}`);
               }}
             />
 
@@ -146,9 +146,9 @@ export const TaskPreviewModal: React.FC<TaskPreviewModalProps> = ({ taskId, isOp
                 </h3>
                 {task.tags && task.tags.length > 0 ? (
                   <div className="flex flex-wrap gap-1.5">
-                    {task.tags.map((tag: any) => (
-                      <Badge key={tag.id} variant="default">
-                        {tag.name}
+                    {task.tags.map((tag: any, idx: number) => (
+                      <Badge key={tag?.id || idx} variant="default">
+                        {tag?.name || tag}
                       </Badge>
                     ))}
                   </div>
@@ -168,9 +168,9 @@ export const TaskPreviewModal: React.FC<TaskPreviewModalProps> = ({ taskId, isOp
                 </h3>
                 {task.courses && task.courses.length > 0 ? (
                   <div className="flex flex-wrap gap-1.5">
-                    {task.courses.map((course: any) => (
-                      <Badge key={course.id} variant="outline">
-                        {course.title}
+                    {task.courses.map((course: any, idx: number) => (
+                      <Badge key={course?.id || idx} variant="outline">
+                        {course?.title || course}
                       </Badge>
                     ))}
                   </div>
