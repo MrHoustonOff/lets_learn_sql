@@ -45,7 +45,7 @@ export const WizardStepPreview: React.FC<WizardStepPreviewProps> = ({ data, allC
       <div className="bg-card border border-border/60 rounded-2xl p-6 shadow-sm space-y-6">
         <div className="flex items-start justify-between gap-4 border-b border-border/50 pb-5">
           <div>
-            <h3 className="text-xl font-bold mb-1.5 text-foreground">{data.title || <span className="text-muted-foreground italic">{t('wizard.preview.no_title')}</span>}</h3>
+            <h3 className="text-xl font-bold mb-1.5 text-foreground whitespace-pre-wrap">{data.title || <span className="text-muted-foreground italic">{t('wizard.preview.no_title')}</span>}</h3>
             <div className="flex items-center gap-3 text-xs text-muted-foreground font-medium">
               <span>{t('wizard.preview.author')} {data.author || t('wizard.preview.unknown')}</span>
               {data.referenceLink && (

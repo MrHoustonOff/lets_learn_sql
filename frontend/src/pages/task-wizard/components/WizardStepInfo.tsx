@@ -217,6 +217,7 @@ export const WizardStepInfo: React.FC<WizardStepInfoProps> = ({ data, setData, a
                 value={data.title}
                 onChange={(v) => setData((p) => ({ ...p, title: v }))}
                 placeholder={t('wizard.info.title_placeholder')}
+                multiline
               />
             </div>
 

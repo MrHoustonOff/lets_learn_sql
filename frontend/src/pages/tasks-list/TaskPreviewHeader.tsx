@@ -29,7 +29,7 @@ export const TaskPreviewHeader: React.FC<TaskPreviewHeaderProps> = ({
           <div className="mt-1">
             <DifficultyDots difficulty={task.difficulty} />
           </div>
-          <h2 className="text-sm font-bold tracking-tight text-foreground whitespace-normal leading-snug">
+          <h2 className="text-sm font-bold tracking-tight text-foreground whitespace-pre-wrap leading-snug">
             <MarkdownText inline text={task.title} />
           </h2>
         </div>
