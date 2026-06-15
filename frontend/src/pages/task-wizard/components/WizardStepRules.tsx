@@ -1,7 +1,10 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Plus, Trash2, Check, X } from 'lucide-react';
-import { FieldLabel, SelectInput, SectionCard, InfoTooltip } from './ui';
+import { FieldLabel } from '../../../components/ui/FieldLabel';
+import { SelectInput } from '../../../components/ui/SelectInput';
+import { SectionCard } from '../../../components/ui/SectionCard';
+import { InfoTooltip } from '../../../components/ui/InfoTooltip';
 import { RULE_CATEGORIES, CONSTRUCT_TARGETS, CONDITIONS_WITH_VALUE, CONDITION_LABELS } from './rulesConstants';
 
 export interface RuleMock {

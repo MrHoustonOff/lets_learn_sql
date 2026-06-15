@@ -1,29 +1,6 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { createPortal } from 'react-dom';
-import { ChevronDown, Info } from 'lucide-react';
-import { InfoTooltip as BaseInfoTooltip } from '../../../components/ui/InfoTooltip';
-
-export const FieldLabel: React.FC<{ children: React.ReactNode; required?: boolean; hint?: string }> = ({ children, required, hint }) => {
-  return (
-    <label className="flex items-center gap-1.5 text-sm font-medium text-foreground mb-1.5">
-      {children}
-      {required && <span className="text-destructive">*</span>}
-      {hint && <span className="text-mini text-muted-foreground font-normal">{hint}</span>}
-    </label>
-  );
-};
-
-export const TextInput: React.FC<{ value: string; onChange: (v: string) => void; placeholder?: string; type?: string }> = ({ value, onChange, placeholder, type = "text" }) => {
-  return (
-    <input
-      type={type}
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      placeholder={placeholder}
-      className="w-full bg-popover border border-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring/40 focus:border-primary transition-all placeholder:text-muted-foreground"
-    />
-  );
-};
+import { ChevronDown } from 'lucide-react';
 
 export const SelectInput: React.FC<{ value: string | null; onChange: (v: string) => void; options: { value: string; label: string; info?: string }[]; placeholder?: string; className?: string }> = ({ value, onChange, options, placeholder, className }) => {
   const [isOpen, setIsOpen] = React.useState(false);
@@ -133,21 +110,3 @@ const OptionItem = ({ opt, isSelected, onClick }: { opt: { value: string; label:
     </>
   );
 };
-
-export const SectionCard: React.FC<{ title?: string; description?: string; children: React.ReactNode }> = ({ title, description, children }) => {
-  return (
-    <div className="bg-card border border-border/60 rounded-xl p-5">
-      {title && (
-        <div className="mb-4">
-          <h3 className="text-sm font-semibold">{title}</h3>
-          {description && (
-            <p className="text-mini text-muted-foreground mt-0.5">{description}</p>
-          )}
-        </div>
-      )}
-      {children}
-    </div>
-  );
-};
-
-export const InfoTooltip = BaseInfoTooltip;

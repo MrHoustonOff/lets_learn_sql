@@ -1,7 +1,10 @@
 import React, { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Upload, Plus, Tag as TagIcon, Bold, Italic, Strikethrough, Underline, Code2 } from 'lucide-react';
-import { FieldLabel, TextInput, SelectInput, SectionCard } from './ui';
+import { Upload, Plus, Tag as TagIcon, Bold, Italic, Strikethrough, Underline, Code2, Trash2, GripVertical } from 'lucide-react';
+import { FieldLabel } from '../../../components/ui/FieldLabel';
+import { TextInput } from '../../../components/ui/TextInput';
+import { SelectInput } from '../../../components/ui/SelectInput';
+import { SectionCard } from '../../../components/ui/SectionCard';
 import { DIFFICULTY_TIERS, DIFFICULTY_LEVELS } from '../mocks';
 import { MarkdownText } from '../../../components/ui/MarkdownText';
 
