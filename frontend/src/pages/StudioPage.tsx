@@ -164,7 +164,7 @@ export const StudioPage: React.FC = () => {
       const res = await fetch('/api/tasks/draft', { method: 'POST' });
       if (!res.ok) throw new Error('Failed to create draft');
       const data = await res.json();
-      navigate(`/studio/task/${data.id}`);
+      navigate(`/studio/task/${data.id}`, { state: { isNew: true } });
     } catch (e) {
       console.error(e);
       alert('Ошибка при создании черновика');

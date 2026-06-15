@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { ChevronLeft, AlertTriangle, Check } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
@@ -20,7 +20,9 @@ const getSteps = (t: any) => [
 export const TaskWizardScreen: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const location = useLocation();
   const { id } = useParams(); // 'new' or UUID (which is actually INTEGER id)
+  const isNewTask = location.state?.isNew === true;
   const [currentStep, setCurrentStep] = useState(1);
   const [isSaving, setIsSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
@@ -211,11 +213,20 @@ export const TaskWizardScreen: React.FC = () => {
       <header className="h-14 border-b border-glass-border flex items-center px-4 shrink-0 bg-background/80 backdrop-blur z-layout justify-between">
         <div className="flex items-center gap-4">
           <button 
-            onClick={() => {
-              if (id !== 'new') {
-                setIsExitModalOpen(true);
-              } else {
+            onClick={async () => {
+              if (isNewTask) {
+                // If completely empty, delete it
+                const isEmpty = !draftData.title && !draftData.description && !draftData.database && !draftData.referenceSql;
+                if (isEmpty && id !== 'new') {
+                  try {
+                    await fetch(`/api/tasks/${id}`, { method: 'DELETE' });
+                  } catch (e) {
+                    console.error('Failed to delete empty draft', e);
+                  }
+                }
                 navigate('/studio');
+              } else {
+                setIsExitModalOpen(true);
               }
             }}
             className="p-2 hover:bg-hover rounded-xl text-muted-foreground transition-colors outline-none"
@@ -223,7 +234,7 @@ export const TaskWizardScreen: React.FC = () => {
             <ChevronLeft size={20} />
           </button>
           <div>
-            <div className="text-sm font-bold tracking-tight">{id === 'new' ? t('wizard.header.create_task') : t('wizard.header.edit_task')}</div>
+            <div className="text-sm font-bold tracking-tight">{isNewTask ? t('wizard.header.create_task') : t('wizard.header.edit_task')}</div>
             <div className="text-mini text-muted-foreground font-medium flex items-center gap-2">
               {isSaving ? (
                 <span className="text-muted-foreground flex items-center gap-1">
@@ -337,8 +348,8 @@ export const TaskWizardScreen: React.FC = () => {
 
       <PublishSuccessModal 
         isOpen={isPublishedModalOpen} 
-        isEditing={id !== 'new'}
-        onBackToStudio={() => navigate(id !== 'new' ? '/tasks' : '/studio')} 
+        isEditing={!isNewTask}
+        onBackToStudio={() => navigate(!isNewTask ? '/tasks' : '/studio')} 
       />
 
       <ConfirmModal
