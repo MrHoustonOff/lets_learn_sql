@@ -7,6 +7,7 @@ import { WizardStepInfo } from './components/WizardStepInfo';
 import { WizardStepSolution } from './components/WizardStepSolution';
 import { WizardStepRules } from './components/WizardStepRules';
 import { WizardStepPreview } from './components/WizardStepPreview';
+import { PublishSuccessModal } from './components/PublishSuccessModal';
 
 const getSteps = (t: any) => [
   { id: 1, label: t('wizard.steps.info') },
@@ -324,25 +325,10 @@ export const TaskWizardScreen: React.FC = () => {
         </div>
       </main>
 
-      {isPublishedModalOpen && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-modal-backdrop flex items-center justify-center animate-in fade-in duration-200">
-          <div className="bg-background border border-glass-border rounded-2xl p-6 w-[400px] shadow-[0_10px_40px_-10px_rgba(0,0,0,0.3)] flex flex-col items-center text-center animate-in zoom-in-95 duration-200">
-            <div className="w-12 h-12 rounded-full bg-success/10 text-success flex items-center justify-center mb-4">
-              <Check size={24} />
-            </div>
-            <h3 className="text-lg font-semibold mb-2">{t('wizard.publishSuccess.title')}</h3>
-            <p className="text-sm text-muted-foreground mb-6">
-              {t('wizard.publishSuccess.description')}
-            </p>
-            <button
-              onClick={() => navigate('/studio')}
-              className="w-full py-2.5 bg-primary hover:bg-primary-hover text-primary-foreground rounded-xl font-medium transition-colors outline-none"
-            >
-              {t('wizard.publishSuccess.backToStudio')}
-            </button>
-          </div>
-        </div>
-      )}
+      <PublishSuccessModal 
+        isOpen={isPublishedModalOpen} 
+        onBackToStudio={() => navigate('/studio')} 
+      />
     </div>
   );
 };
