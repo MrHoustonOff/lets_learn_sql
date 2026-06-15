@@ -356,12 +356,12 @@ export const TaskWizardScreen: React.FC = () => {
         isOpen={isExitModalOpen}
         onClose={() => setIsExitModalOpen(false)}
         onConfirm={() => navigate('/tasks')}
-        title={t('exitConfirm.title')}
-        confirmText={t('exitConfirm.leave')}
-        cancelText={t('exitConfirm.stay')}
+        title={t('wizard.exitConfirm.title')}
+        confirmText={t('wizard.exitConfirm.leave')}
+        cancelText={t('wizard.exitConfirm.stay')}
         variant="warning"
       >
-        {t('exitConfirm.description')}
+        {t('wizard.exitConfirm.description')}
       </ConfirmModal>
     </div>
   );
