@@ -215,8 +215,8 @@ export const TaskWizardScreen: React.FC = () => {
           <button 
             onClick={async () => {
               if (isNewTask) {
-                // If completely empty, delete it
-                const isEmpty = !draftData.title && !draftData.description && !draftData.database && !draftData.referenceSql;
+                // If completely empty (only title and description count), delete it
+                const isEmpty = !draftData.title?.trim() && !draftData.description?.trim();
                 if (isEmpty && id !== 'new') {
                   try {
                     await fetch(`/api/tasks/${id}`, { method: 'DELETE' });
