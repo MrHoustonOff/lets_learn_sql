@@ -1,10 +1,11 @@
 import React, { useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Search, ArrowUp, ArrowDown, Plus, ChevronLeft, ChevronRight, ChevronDown } from 'lucide-react';
+import { Search, ArrowUp, ArrowDown, Plus, ChevronLeft, ChevronRight, ChevronDown, Dices } from 'lucide-react';
 import { TasksFilterSidebar } from './tasks-list/TasksFilterSidebar';
 import { TaskRow } from './tasks-list/TaskRow';
 import { TaskPreviewModal } from './tasks-list/TaskPreviewModal';
 import { useTasksListData, type FilterState } from './tasks-list/useTasksListData';
+import { RandomTaskModal } from './tasks-list/RandomTaskModal';
 
 const DEFAULT_FILTERS: FilterState = {
   search: '',
@@ -25,6 +26,7 @@ export const TasksListPage: React.FC = () => {
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS);
   const [selectedTaskId, setSelectedTaskId] = useState<number | null>(null);
   const [pageSizeOpen, setPageSizeOpen] = useState(false);
+  const [randomModalOpen, setRandomModalOpen] = useState(false);
 
   const update = useCallback(<K extends keyof FilterState>(key: K, value: FilterState[K]) => {
     setFilters(prev => ({ ...prev, [key]: value, page: key === 'page' ? (value as number) : 1 }));
@@ -116,10 +118,13 @@ export const TasksListPage: React.FC = () => {
 
           {/* Controls Right */}
           <div className="flex items-center gap-3 shrink-0">
-            {/* Create */}
-            <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-semibold shrink-0 hover:brightness-105 hover:shadow-[0_4px_16px_-4px_hsl(var(--glow)/0.5)] transition-all active:scale-[0.98]">
-              <Plus size={13} />
-              {t('page.create')}
+            {/* Random Task */}
+            <button 
+              onClick={() => setRandomModalOpen(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-semibold shrink-0 hover:brightness-105 hover:shadow-[0_4px_16px_-4px_hsl(var(--glow)/0.5)] transition-all active:scale-[0.98]"
+            >
+              <Dices size={13} />
+              {t('page.random_task')}
             </button>
           </div>
         </div>
@@ -226,6 +231,14 @@ export const TasksListPage: React.FC = () => {
           onBookmarkToggle={(id, isBookmarked) => updateTask(id, { is_flagged: isBookmarked })}
         />
       )}
+
+      <RandomTaskModal
+        isOpen={randomModalOpen}
+        onClose={() => setRandomModalOpen(false)}
+        tags={tags}
+        courses={courses}
+        databases={databases}
+      />
     </div>
   );
 };

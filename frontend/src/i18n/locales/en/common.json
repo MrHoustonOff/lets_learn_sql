@@ -31,5 +31,188 @@
     "panel_editor": "SQL Editor",
     "panel_db": "DB Viewer",
     "panel_results": "Output / Explain"
+  },
+  "wizard": {
+    "steps": {
+      "info": "Information",
+      "solution": "Solution",
+      "rules": "Validation Rules",
+      "preview": "Preview & Publish"
+    },
+    "header": {
+      "create_task": "Create Task",
+      "edit_task": "Edit Task",
+      "saving": "Saving...",
+      "saved": "Saved",
+      "not_saved": "Not saved"
+    },
+    "footer": {
+      "back": "Back",
+      "next": "Next",
+      "check": "Check",
+      "checking": "Checking...",
+      "publish": "Publish Task"
+    },
+    "info": {
+      "main": "Main Information",
+      "title": "Task Title",
+      "title_placeholder": "E.g., Find all users older than 18",
+      "description": "Task Description",
+      "description_placeholder": "Detailed description of the problem...",
+      "tags": "Tags",
+      "tags_placeholder": "Select tags",
+      "difficulty": "Difficulty",
+      "bindings": "Bindings",
+      "course": "Course",
+      "course_placeholder": "No course",
+      "database": "Database",
+      "database_placeholder": "No database",
+      "save": "Save and continue",
+      "author": "Author",
+      "author_placeholder": "Author name",
+      "new_tag_placeholder": "New tag...",
+      "add_tag": "Add",
+      "tags_desc": "Optional — for task filtering",
+      "difficulty_desc": "9 levels — select one",
+      "difficulty_tiers": {
+        "easy": "Easy",
+        "medium": "Medium",
+        "hard": "Hard"
+      },
+      "description_hint": "what the solver sees",
+      "optional": "optional",
+      "reference_link": "Reference Link",
+      "import_json": "Import from JSON",
+      "import_json_alert": "JSON import is under development"
+    },
+    "solution": {
+      "empty_placeholder": "Write a query and press \"Execute\".\nYou must successfully execute the query to proceed.",
+      "correct_answer": "Correct Answer",
+      "schema_tooltip": "DB Schema",
+      "schema": "Schema",
+      "execute": "Execute",
+      "execution_result": "Execution Result",
+      "executing": "Executing query...",
+      "execution_error": "Execution Error:",
+      "rows_shown": "Rows shown: {{count}}",
+      "execution_time": "Time: {{ms}} ms"
+    },
+    "rules": {
+      "ast_info": "AST rules allow you to verify the structure of the SQL query, not just its output. You can require or forbid specific constructs (JOIN, CTE), tables, functions.",
+      "order_matters": "Order matters (ORDER BY)",
+      "order_matters_tooltip": "If enabled — after matching data, the order of rows is additionally checked. Mismatching order with correct data = 'data is correct, order is not'.",
+      "order_matters_desc": "Checked separately from the rules below — right after data match.",
+      "ast_rules_title": "AST Rules (Optional)",
+      "ast_rules_desc": "Add static checks for the query structure",
+      "add_rule": "Add rule",
+      "no_rules": "No additional rules. The query will only be checked for data match.",
+      "category": "Category",
+      "condition": "Condition",
+      "categories": {
+        "construct": "SQL Construct",
+        "object": "Table / Column",
+        "function": "Function",
+        "select_star": "SELECT *",
+        "alias": "Aliases"
+      },
+      "conditions": {
+        "required": "required",
+        "forbidden": "forbidden",
+        "count_min": "min count",
+        "count_max": "max count",
+        "count_exact": "exact count"
+      },
+      "category_info": {
+        "construct": "Checks for basic constructs: JOIN, GROUP BY, subqueries, CTEs, etc.",
+        "object": "Checks if a specific table or column is used.",
+        "function": "Checks if a specific SQL function is used (e.g., UPPER, SUM).",
+        "select_star": "Checks for the use of 'SELECT *'. Often used to forbid bad practices.",
+        "alias": "Requires a specific alias (AS) to be used for a table or column."
+      },
+      "condition_info": {
+        "required": "The element must be present in the query.",
+        "forbidden": "The use of the element is strictly forbidden.",
+        "count_min": "The element must appear at least the specified number of times.",
+        "count_max": "The element must appear at most the specified number of times.",
+        "count_exact": "The element must appear exactly the specified number of times."
+      },
+      "params": {
+        "object_name_placeholder": "Name (e.g., users)",
+        "function_name_placeholder": "Function (e.g., UPPER)",
+        "required_alias_placeholder": "Alias (e.g., u)",
+        "count_placeholder": "Count"
+      },
+      "custom_error_placeholder": "Custom error message (optional)",
+      "severity_blocking": "Error",
+      "severity_warning": "Warning",
+      "validation": {
+        "passed": "Successfully passed",
+        "failed": "Rule not met"
+      }
+    },
+    "preview": {
+      "ready_title": "Ready to publish!",
+      "ready_desc": "One last step. Review the final task data before it becomes available to users.",
+      "no_title": "Untitled",
+      "author": "Author:",
+      "unknown": "Unknown",
+      "source_link": "Source link",
+      "database": "Database:",
+      "not_selected": "Not selected",
+      "course": "Course:",
+      "ast_rules": "AST Rules:",
+      "count_pcs": "{{count}} pcs.",
+      "order_matters": "Row order:",
+      "important": "Important",
+      "not_important": "Not important",
+      "description_title": "Task Description",
+      "no_description": "No description provided"
+    },
+    "publishSuccess": {
+      "title": "Task Published!",
+      "description": "The task has been successfully published and is now available to be solved.",
+      "backToStudio": "Back to Studio"
+    }
+  },
+  "studio_page": {
+    "title": "Studio",
+    "subtitle": "A place to create and edit your materials",
+    "current_drafts": "Current drafts",
+    "create_task": "Create task",
+    "create_course": "Create course",
+    "filters": {
+      "all_types": "All types",
+      "tasks": "Tasks",
+      "courses": "Courses",
+      "newest": "Newest first",
+      "oldest": "Oldest first"
+    },
+    "pagination": {
+      "showing": "Showing {{start}}–{{end}} of {{total}}",
+      "per_page": " / page"
+    },
+    "no_drafts": "Nothing found",
+    "step_prefix": "Step",
+    "step_of": "of",
+    "step_main": "Main",
+    "step_solution": "Solution",
+    "step_rules": "Rules",
+    "step_preview": "Preview",
+    "updated": "Updated",
+    "time": {
+      "just_now": "just now",
+      "minutes_ago": "{{count}} m ago",
+      "hours_ago": "{{count}} h ago"
+    },
+    "delete_draft": "Delete draft",
+    "ai_prompts": "AI Prompts",
+    "copy": "Copy",
+    "delete_modal": {
+      "title": "Delete draft",
+      "confirm": "Yes, delete",
+      "text1": "Are you sure you want to delete this",
+      "text2": "draft",
+      "text3": "? This action is irreversible."
+    }
   }
 }

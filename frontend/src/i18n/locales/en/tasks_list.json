@@ -4,7 +4,16 @@
     "subtitle": "All course tasks in one place",
     "search_placeholder": "Search tasks...",
     "create": "Create task",
+    "random_task": "Random task",
     "loading": "Loading..."
+  },
+  "random_modal": {
+    "title": "Random task",
+    "subtitle": "Adjust filters to find a task",
+    "clear": "Clear",
+    "all": "All",
+    "not_found": "Oops, no matching tasks found!",
+    "solve": "Solve"
   },
   "sidebar": {
     "title": "Filters",

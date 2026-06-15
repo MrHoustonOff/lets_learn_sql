@@ -43,6 +43,76 @@ class TasksListResponse(BaseModel):
     databases: List[dict]       # All databases for filter
 
 # ---------------------------------------------------------------------------
+# GET /studio/drafts — list of drafts
+# ---------------------------------------------------------------------------
+
+class DraftListItem(BaseModel):
+    id: int
+    type: str
+    title: str
+    step: str
+    updatedAt: str
+    difficulty: Optional[int] = None
+    tags: Optional[List[dict]] = None
+
+@router.get("/studio/drafts", response_model=List[DraftListItem])
+async def get_studio_drafts(request: Request):
+    sqlite = await get_sqlite_conn()
+    if not sqlite:
+        raise HTTPException(status_code=500, detail="Database connection not available")
+
+    query = """
+        SELECT t.id, t.title, t.created_at, t.reference_sql, t.database_id, t.metadata_json,
+               (SELECT COUNT(*) FROM task_rules r WHERE r.task_id = t.id) as rules_count,
+               (
+                   SELECT json_group_array(json_object('id', tags.id, 'name', tags.name))
+                   FROM task_tags
+                   JOIN tags ON task_tags.tag_id = tags.id
+                   WHERE task_tags.task_id = t.id
+               ) as tags_json
+        FROM tasks t
+        WHERE t.status = 'draft'
+        ORDER BY t.created_at DESC
+    """
+    
+    async with sqlite.execute(query) as cursor:
+        rows = await cursor.fetchall()
+        
+    drafts = []
+    for row in rows:
+        title = row["title"] if row["title"] else "Без названия"
+        
+        # Calculate step
+        if not row["database_id"] or not row["title"] or row["title"] == "Без названия":
+            step = "Шаг 1 из 4 (Основное)"
+        elif not row["reference_sql"]:
+            step = "Шаг 2 из 4 (Решение)"
+        elif row["rules_count"] == 0:
+            step = "Шаг 3 из 4 (Правила)"
+        else:
+            step = "Шаг 4 из 4 (Превью)"
+            
+        meta = json.loads(row["metadata_json"]) if row["metadata_json"] else {}
+        difficulty = meta.get("difficulty", None)
+        
+        tags = []
+        if row["tags_json"]:
+            parsed_tags = json.loads(row["tags_json"])
+            tags = [t for t in parsed_tags if t and t.get('id')]
+
+        drafts.append({
+            "id": row["id"],
+            "type": "task",
+            "title": title,
+            "step": step,
+            "updatedAt": row["created_at"],
+            "difficulty": difficulty,
+            "tags": tags
+        })
+        
+    return drafts
+
+# ---------------------------------------------------------------------------
 # GET /tasks — list with filtering
 # ---------------------------------------------------------------------------
 
@@ -255,19 +325,41 @@ async def list_tasks(
 
 class TaskResponse(BaseModel):
     id: int
-    title: str
+    title: Optional[str]
     difficulty: Optional[int]
     description: Optional[str]
     hint: Optional[str]
-    database_id: int
-    db_name: str
+    database_id: Optional[int]
+    db_name: Optional[str]
     is_bookmarked: bool
     is_solved: bool
     author_name: Optional[str] = None
-    author_url: Optional[str] = None
+    source_url: Optional[str] = None
     reference_sql: Optional[str] = None
-    tags: List[TagOut] = []
+    status: str
+    order_matters: bool
+    tags: List[str] = []
     courses: List[CourseOut] = []
+    rules: List[dict] = []
+
+class RuleInput(BaseModel):
+    category: str
+    condition: str
+    params: dict
+    severity: str = "blocking"
+    message: str = ""
+
+class DraftUpdateInput(BaseModel):
+    title: Optional[str] = None
+    description: Optional[str] = None
+    author_name: Optional[str] = None
+    source_url: Optional[str] = None
+    difficulty: Optional[str] = None
+    database_id: Optional[int] = None
+    reference_sql: Optional[str] = None
+    order_matters: Optional[bool] = None
+    tags: List[str] = []
+    rules: List[RuleInput] = []
 
 class SolutionResponse(BaseModel):
     solution_sql: str
@@ -275,6 +367,146 @@ class SolutionResponse(BaseModel):
     rows: List[List]
     row_count: int
     duration_ms: float
+
+# ---------------------------------------------------------------------------
+# Task Draft System
+# ---------------------------------------------------------------------------
+
+@router.post("/tasks/draft")
+async def create_task_draft(request: Request):
+    sqlite = await get_sqlite_conn()
+    if not sqlite:
+        raise HTTPException(status_code=500, detail="Database connection not available")
+        
+    async with sqlite.execute(
+        "INSERT INTO tasks (title, description, reference_sql, database_id, status) VALUES ('', '', '', 1, 'draft')"
+    ) as cursor:
+        draft_id = cursor.lastrowid
+        
+    await sqlite.commit()
+    return {"id": draft_id, "status": "draft"}
+
+@router.put("/tasks/{id}")
+async def update_task_draft(id: int, payload: DraftUpdateInput, request: Request):
+    sqlite = await get_sqlite_conn()
+    if not sqlite:
+        raise HTTPException(status_code=500, detail="Database connection not available")
+
+    # Update base fields
+    await sqlite.execute(
+        """
+        UPDATE tasks 
+        SET title = COALESCE(?, title),
+            description = COALESCE(?, description),
+            author_name = COALESCE(?, author_name),
+            source_url = COALESCE(?, source_url),
+            difficulty = COALESCE(?, difficulty),
+            database_id = COALESCE(?, database_id),
+            reference_sql = COALESCE(?, reference_sql),
+            order_matters = COALESCE(?, order_matters),
+            updated_at = datetime('now')
+        WHERE id = ?
+        """,
+        (payload.title, payload.description, payload.author_name, payload.source_url,
+         payload.difficulty, payload.database_id, payload.reference_sql, payload.order_matters, id)
+    )
+
+    # Full Replace Tags
+    await sqlite.execute("DELETE FROM task_tags WHERE task_id = ?", (id,))
+    for tag_name in payload.tags:
+        await sqlite.execute("INSERT OR IGNORE INTO tags (name) VALUES (?)", (tag_name,))
+        async with sqlite.execute("SELECT id FROM tags WHERE name = ?", (tag_name,)) as cursor:
+            row = await cursor.fetchone()
+            if row:
+                await sqlite.execute("INSERT OR IGNORE INTO task_tags (task_id, tag_id) VALUES (?, ?)", (id, row["id"]))
+
+    # Full Replace Rules
+    await sqlite.execute("DELETE FROM task_rules WHERE task_id = ?", (id,))
+    for i, rule in enumerate(payload.rules):
+        await sqlite.execute(
+            """
+            INSERT INTO task_rules (task_id, category, condition, params_json, severity, message, sort_order)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+            """,
+            (id, rule.category, rule.condition, json.dumps(rule.params), rule.severity, rule.message, i)
+        )
+
+    await sqlite.commit()
+    return {"status": "ok"}
+
+@router.post("/tasks/{id}/publish")
+async def publish_task(id: int, request: Request):
+    sqlite = await get_sqlite_conn()
+    if not sqlite:
+        raise HTTPException(status_code=500, detail="Database connection not available")
+
+    async with sqlite.execute("SELECT * FROM tasks WHERE id = ?", (id,)) as cursor:
+        task = await cursor.fetchone()
+
+    if not task:
+        raise HTTPException(status_code=404, detail="Task not found")
+
+    # Validate required fields
+    if not task["title"] or not task["description"] or not task["difficulty"] or not task["database_id"]:
+        raise HTTPException(status_code=400, detail="Не все обязательные поля заполнены")
+
+    if not task["reference_sql"]:
+        raise HTTPException(status_code=400, detail="SQL запрос не заполнен")
+
+    # Change status
+    await sqlite.execute("UPDATE tasks SET status = 'published' WHERE id = ?", (id,))
+    await sqlite.commit()
+    return {"status": "published"}
+
+@router.post("/tasks/{id}/execute-reference", response_model=SolutionResponse)
+async def execute_reference_sql(id: int, request: Request):
+    return await get_task_solution(id)
+
+class CheckRulesRequest(BaseModel):
+    rules: List[RuleInput]
+
+@router.post("/tasks/{id}/check_rules")
+async def check_task_rules(id: int, req: CheckRulesRequest):
+    sqlite = await get_sqlite_conn()
+    if not sqlite:
+        raise HTTPException(status_code=500, detail="Database connection not available")
+
+    async with sqlite.execute("SELECT t.reference_sql, d.technical_name as db_name FROM tasks t JOIN databases d ON t.database_id = d.id WHERE t.id = ?", (id,)) as cur:
+        task_row = await cur.fetchone()
+    
+    if not task_row or not task_row["reference_sql"]:
+        raise HTTPException(status_code=400, detail="SQL запрос (reference_sql) не задан")
+        
+    rules = []
+    for i, r in enumerate(req.rules):
+        rules.append({
+            "id": i, # Temporary ID for matching
+            "category": r.category,
+            "condition": r.condition,
+            "params": r.params,
+            "severity": r.severity,
+            "message": r.message
+        })
+    
+    if not rules:
+        return {"rules": []}
+
+    from core.grader import _get_conn, run_stage2
+    
+    conn = await _get_conn(task_row["db_name"])
+    try:
+        stage2 = await run_stage2(conn, task_row["reference_sql"], rules)
+        def _rule(r):
+            return {
+                "rule_id": r.rule_id, # This maps back to the index in req.rules
+                "passed": r.passed,
+                "severity": r.severity,
+                "message": r.message,
+                "detail_msg": getattr(r, "detail_msg", None)
+            }
+        return {"rules": [_rule(r) for r in stage2.rules]}
+    finally:
+        await conn.close()
 
 @router.get("/tasks/{id}", response_model=TaskResponse)
 async def get_task_details(id: int, request: Request):
@@ -286,7 +518,7 @@ async def get_task_details(id: int, request: Request):
 
     query = """
         SELECT t.id, t.title, t.difficulty, t.database_id, t.description, t.metadata_json, d.technical_name as db_name,
-               t.author_name, t.author_url, t.reference_sql,
+               t.author_name, t.source_url, t.reference_sql, t.status, t.order_matters,
                EXISTS(SELECT 1 FROM task_flags tf WHERE tf.task_id = t.id AND tf.user_id = ?) as is_bookmarked,
                EXISTS(SELECT 1 FROM attempts a WHERE a.task_id = t.id AND a.user_id = ? AND a.is_correct = 1) as is_solved
         FROM tasks t
@@ -309,10 +541,10 @@ async def get_task_details(id: int, request: Request):
             pass
             
     async with sqlite.execute(
-        "SELECT tg.id, tg.name FROM tags tg JOIN task_tags tt ON tg.id = tt.tag_id WHERE tt.task_id = ?",
+        "SELECT tg.name FROM tags tg JOIN task_tags tt ON tg.id = tt.tag_id WHERE tt.task_id = ?",
         (id,)
     ) as tcur:
-        tags_list = [{"id": r["id"], "name": r["name"]} for r in await tcur.fetchall()]
+        tags_list = [r["name"] for r in await tcur.fetchall()]
 
     async with sqlite.execute(
         """
@@ -325,6 +557,24 @@ async def get_task_details(id: int, request: Request):
         (id,)
     ) as ccur:
         courses_list = [{"id": r["id"], "title": r["title"]} for r in await ccur.fetchall()]
+
+    async with sqlite.execute(
+        "SELECT category, condition, params_json, severity, message FROM task_rules WHERE task_id = ? ORDER BY sort_order",
+        (id,)
+    ) as rcur:
+        rules_list = []
+        for r in await rcur.fetchall():
+            try:
+                params = json.loads(r["params_json"])
+            except:
+                params = {}
+            rules_list.append({
+                "category": r["category"],
+                "condition": r["condition"],
+                "params": params,
+                "severity": r["severity"],
+                "message": r["message"]
+            })
 
     is_solved = bool(row["is_solved"])
 
@@ -339,10 +589,13 @@ async def get_task_details(id: int, request: Request):
         is_bookmarked=bool(row["is_bookmarked"]),
         is_solved=is_solved,
         author_name=row["author_name"],
-        author_url=row["author_url"],
+        source_url=row["source_url"],
         reference_sql=row["reference_sql"],
+        status=row["status"],
+        order_matters=bool(row["order_matters"]),
         tags=tags_list,
         courses=courses_list,
+        rules=rules_list
     )
 
 @router.delete("/tasks/{id}")
@@ -355,6 +608,9 @@ async def delete_task(id: int):
     await sqlite.commit()
     return {"status": "ok"}
 
+
+class RollbackTransaction(Exception):
+    pass
 
 @router.post("/tasks/{id}/solution", response_model=SolutionResponse)
 async def get_task_solution(id: int):
@@ -382,19 +638,21 @@ async def get_task_solution(id: int):
         raise HTTPException(status_code=500, detail="Database pool not initialized")
         
     start = time.monotonic()
+    
+    async def _run_with_rollback(conn):
+        await conn.execute(f"SET statement_timeout = '{settings.QUERY_TIMEOUT_MS}ms'")
+        try:
+            async with conn.transaction():
+                records = await conn.fetch(solution_sql)
+                raise RollbackTransaction(records)
+        except RollbackTransaction as e:
+            return e.args[0]
+
     try:
-        # Connect to Postgres (using the task's database)
-        # Note: since user_pool is tied to settings.POSTGRES_DB (default "northwind"), 
-        # for dynamic multi-db we can create a temporary connection if it's not the default db!
-        # Wait, for now settings.POSTGRES_DB is "northwind", which matches row["db_name"]. 
-        # If it's different, we can connect using asyncpg.connect()
         if db_name == settings.POSTGRES_DB:
             async with db_module.user_pool.acquire() as conn:
-                await conn.execute(f"SET statement_timeout = '{settings.QUERY_TIMEOUT_MS}ms'")
-                async with conn.transaction():
-                    records = await conn.fetch(solution_sql)
+                records = await _run_with_rollback(conn)
         else:
-            # Connect dynamically to the specific database
             import asyncpg
             conn = await asyncpg.connect(
                 host=settings.POSTGRES_HOST,
@@ -405,9 +663,7 @@ async def get_task_solution(id: int):
                 timeout=5.0
             )
             try:
-                await conn.execute(f"SET statement_timeout = '{settings.QUERY_TIMEOUT_MS}ms'")
-                async with conn.transaction():
-                    records = await conn.fetch(solution_sql)
+                records = await _run_with_rollback(conn)
             finally:
                 await conn.close()
                 
