@@ -181,10 +181,10 @@
       "backToTasks": "Back to Tasks"
     },
     "exitConfirm": {
-      "title": "Leave without saving?",
-      "description": "You have unsaved changes. If you leave now, they will be lost. Are you sure?",
-      "stay": "Stay",
-      "leave": "Yes, leave"
+      "title": "Cancel editing?",
+      "description": "Any unsaved changes to this task will be lost. Are you sure you want to stop editing?",
+      "stay": "Continue editing",
+      "leave": "Cancel changes"
     }
   },
   "studio_page": {
