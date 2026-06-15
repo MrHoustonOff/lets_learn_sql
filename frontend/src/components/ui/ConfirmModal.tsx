@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { Trash2, Info, X } from 'lucide-react';
+import { Trash2, Info, X, CheckCircle2, AlertTriangle } from 'lucide-react';
 
 export interface ConfirmModalProps {
   isOpen: boolean;
@@ -10,7 +10,7 @@ export interface ConfirmModalProps {
   children: React.ReactNode;
   confirmText?: string;
   cancelText?: string;
-  variant?: 'destructive' | 'success' | 'primary';
+  variant?: 'destructive' | 'success' | 'primary' | 'warning';
 }
 
 export const ConfirmModal: React.FC<ConfirmModalProps> = ({ 
@@ -41,8 +41,9 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
 
   const getIcon = () => {
     switch (variant) {
-      case 'success': return <Trash2 size={24} />;
+      case 'success': return <CheckCircle2 size={24} />;
       case 'primary': return <Info size={24} />;
+      case 'warning': return <AlertTriangle size={24} />;
       case 'destructive':
       default: return <Trash2 size={24} />;
     }
@@ -52,6 +53,7 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
     switch (variant) {
       case 'success': return 'bg-success/10 text-success';
       case 'primary': return 'bg-primary/10 text-primary';
+      case 'warning': return 'bg-warning/10 text-warning-text';
       case 'destructive':
       default: return 'bg-destructive/10 text-destructive';
     }
@@ -61,6 +63,7 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
     switch (variant) {
       case 'success': return 'bg-success/10 text-success hover:bg-success/20 border border-transparent';
       case 'primary': return 'bg-primary/10 text-primary hover:bg-primary/20 border border-transparent';
+      case 'warning': return 'bg-warning/10 text-warning-text hover:bg-warning/20 border border-transparent';
       case 'destructive':
       default: return 'bg-destructive/10 text-destructive hover:bg-destructive/20 border border-transparent';
     }

@@ -179,6 +179,12 @@
       "title": "Task updated!",
       "description": "Changes have been successfully saved.",
       "backToTasks": "Back to Tasks"
+    },
+    "exitConfirm": {
+      "title": "Leave without saving?",
+      "description": "You have unsaved changes. If you leave now, they will be lost. Are you sure?",
+      "stay": "Stay",
+      "leave": "Yes, leave"
     }
   },
   "studio_page": {

@@ -8,6 +8,7 @@ import { WizardStepSolution } from './components/WizardStepSolution';
 import { WizardStepRules } from './components/WizardStepRules';
 import { WizardStepPreview } from './components/WizardStepPreview';
 import { PublishSuccessModal } from './components/PublishSuccessModal';
+import { ConfirmModal } from '../../components/ui/ConfirmModal';
 
 const getSteps = (t: any) => [
   { id: 1, label: t('wizard.steps.info') },
@@ -24,6 +25,7 @@ export const TaskWizardScreen: React.FC = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [isPublishedModalOpen, setIsPublishedModalOpen] = useState(false);
+  const [isExitModalOpen, setIsExitModalOpen] = useState(false);
   
   const STEPS = useMemo(() => getSteps(t), [t]);
   
@@ -209,7 +211,13 @@ export const TaskWizardScreen: React.FC = () => {
       <header className="h-14 border-b border-glass-border flex items-center px-4 shrink-0 bg-background/80 backdrop-blur z-layout justify-between">
         <div className="flex items-center gap-4">
           <button 
-            onClick={() => navigate('/studio')}
+            onClick={() => {
+              if (id !== 'new') {
+                setIsExitModalOpen(true);
+              } else {
+                navigate('/studio');
+              }
+            }}
             className="p-2 hover:bg-hover rounded-xl text-muted-foreground transition-colors outline-none"
           >
             <ChevronLeft size={20} />
@@ -332,6 +340,18 @@ export const TaskWizardScreen: React.FC = () => {
         isEditing={id !== 'new'}
         onBackToStudio={() => navigate(id !== 'new' ? '/tasks' : '/studio')} 
       />
+
+      <ConfirmModal
+        isOpen={isExitModalOpen}
+        onClose={() => setIsExitModalOpen(false)}
+        onConfirm={() => navigate('/tasks')}
+        title={t('exitConfirm.title')}
+        confirmText={t('exitConfirm.leave')}
+        cancelText={t('exitConfirm.stay')}
+        variant="warning"
+      >
+        {t('exitConfirm.description')}
+      </ConfirmModal>
     </div>
   );
 };
