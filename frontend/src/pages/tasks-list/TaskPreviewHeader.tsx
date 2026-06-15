@@ -10,6 +10,7 @@ interface TaskPreviewHeaderProps {
   onDeleteClick: () => void;
   onShowDbViewer: () => void;
   onClose: () => void;
+  onEditClick: () => void;
 }
 
 export const TaskPreviewHeader: React.FC<TaskPreviewHeaderProps> = ({
@@ -17,7 +18,8 @@ export const TaskPreviewHeader: React.FC<TaskPreviewHeaderProps> = ({
   onToggleBookmark,
   onDeleteClick,
   onShowDbViewer,
-  onClose
+  onClose,
+  onEditClick
 }) => {
   const { t } = useTranslation('tasks_list');
   return (
@@ -70,7 +72,7 @@ export const TaskPreviewHeader: React.FC<TaskPreviewHeaderProps> = ({
           <span className="text-xs font-medium truncate hidden sm:inline">{t('preview.flag')}</span>
         </button>
         <button
-          onClick={() => {}}
+          onClick={onEditClick}
           className="p-2 rounded-lg text-muted-foreground hover:bg-hover hover:text-foreground transition-colors outline-none"
           title={t('preview.edit')}
         >

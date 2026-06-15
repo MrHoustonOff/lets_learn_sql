@@ -4,10 +4,11 @@ import { Check } from 'lucide-react';
 
 interface PublishSuccessModalProps {
   isOpen: boolean;
+  isEditing?: boolean;
   onBackToStudio: () => void;
 }
 
-export const PublishSuccessModal: React.FC<PublishSuccessModalProps> = ({ isOpen, onBackToStudio }) => {
+export const PublishSuccessModal: React.FC<PublishSuccessModalProps> = ({ isOpen, isEditing, onBackToStudio }) => {
   const { t } = useTranslation();
 
   if (!isOpen) return null;
@@ -18,15 +19,17 @@ export const PublishSuccessModal: React.FC<PublishSuccessModalProps> = ({ isOpen
         <div className="w-12 h-12 rounded-full bg-success/10 text-success flex items-center justify-center mb-4">
           <Check size={24} />
         </div>
-        <h3 className="text-lg font-semibold mb-2">{t('wizard.publishSuccess.title')}</h3>
+        <h3 className="text-lg font-semibold mb-2">
+          {isEditing ? t('wizard.editSuccess.title') : t('wizard.publishSuccess.title')}
+        </h3>
         <p className="text-sm text-muted-foreground mb-6">
-          {t('wizard.publishSuccess.description')}
+          {isEditing ? t('wizard.editSuccess.description') : t('wizard.publishSuccess.description')}
         </p>
         <button
           onClick={onBackToStudio}
           className="w-full py-2.5 bg-primary hover:bg-primary-hover text-primary-foreground rounded-xl font-medium transition-colors outline-none"
         >
-          {t('wizard.publishSuccess.backToStudio')}
+          {isEditing ? t('wizard.editSuccess.backToTasks') : t('wizard.publishSuccess.backToStudio')}
         </button>
       </div>
     </div>

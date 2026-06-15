@@ -152,7 +152,9 @@
     },
     "preview": {
       "ready_title": "Ready to publish!",
-      "ready_desc": "One last step. Review the final task data before it becomes available to users.",
+      "ready_edit_title": "Ready to update!",
+      "ready_desc": "One last step. Review the final task data before it becomes available to other users.",
+      "ready_edit_desc": "One last step. Review the final task data before changes are applied.",
       "no_title": "Untitled",
       "author": "Author:",
       "unknown": "Unknown",
@@ -169,9 +171,14 @@
       "no_description": "No description provided"
     },
     "publishSuccess": {
-      "title": "Task Published!",
-      "description": "The task has been successfully published and is now available to be solved.",
+      "title": "Task published!",
+      "description": "Task has been successfully published and is now available to solve.",
       "backToStudio": "Back to Studio"
+    },
+    "editSuccess": {
+      "title": "Task updated!",
+      "description": "Changes have been successfully saved.",
+      "backToTasks": "Back to Tasks"
     }
   },
   "studio_page": {

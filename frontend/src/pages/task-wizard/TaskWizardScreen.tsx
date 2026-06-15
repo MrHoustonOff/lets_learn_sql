@@ -288,7 +288,7 @@ export const TaskWizardScreen: React.FC = () => {
                setValidationStatus={setRulesValidationStatus}
              />
            )}
-           {currentStep === 4 && <WizardStepPreview data={draftData} setData={setDraftData} allCourses={allCourses} allDatabases={allDatabases} />}
+           {currentStep === 4 && <WizardStepPreview data={draftData} setData={setDraftData} allCourses={allCourses} allDatabases={allDatabases} isEditing={id !== 'new'} />}
         </div>
 
         {/* FOOTER NAV (FLOATING) */}
@@ -329,7 +329,8 @@ export const TaskWizardScreen: React.FC = () => {
 
       <PublishSuccessModal 
         isOpen={isPublishedModalOpen} 
-        onBackToStudio={() => navigate('/studio')} 
+        isEditing={id !== 'new'}
+        onBackToStudio={() => navigate(id !== 'new' ? '/tasks' : '/studio')} 
       />
     </div>
   );

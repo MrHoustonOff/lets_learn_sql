@@ -2,35 +2,42 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Sparkles, Database, CheckCircle2, ListOrdered, GraduationCap } from 'lucide-react';
 import { MarkdownText } from '../../../components/ui/MarkdownText';
-import { DIFFICULTY_TIERS } from '../mocks';
+import { DIFFICULTY_TIERS, DIFFICULTY_LEVELS } from '../mocks';
 
 interface WizardStepPreviewProps {
   data: any;
   setData: React.Dispatch<React.SetStateAction<any>>;
   allCourses: any[];
   allDatabases: any[];
+  isEditing?: boolean;
 }
 
-export const WizardStepPreview: React.FC<WizardStepPreviewProps> = ({ data, allCourses, allDatabases }) => {
+export const WizardStepPreview: React.FC<WizardStepPreviewProps> = ({ data, allCourses, allDatabases, isEditing }) => {
   const { t } = useTranslation();
 
-  const diffInt = typeof data.difficulty === 'number' ? data.difficulty : parseInt(data.difficulty || '1', 10);
-  const tierIdx = Math.floor((diffInt - 1) / 3);
-  const diffTier = DIFFICULTY_TIERS[tierIdx >= 0 && tierIdx < DIFFICULTY_TIERS.length ? tierIdx : 0];
-  const diffLevel = ((diffInt - 1) % 3) + 1;
+  const author = data.author || t('wizard.preview.unknown');
+  const diffTier = data.difficulty ? DIFFICULTY_TIERS.find(t => t.key === DIFFICULTY_LEVELS[data.difficulty]?.tier) : null;
+  const diffLevel = data.difficulty ? DIFFICULTY_LEVELS[data.difficulty]?.level : null;
+  
+  const rulesCount = (data.rules || []).length;
   const db = allDatabases.find(d => d.id.toString() === data.database?.toString());
   const course = allCourses.find(c => c.id.toString() === data.course?.toString());
 
   return (
-    <div className="max-w-3xl mx-auto space-y-8 mt-4">
-      <div className="text-center space-y-4">
-        <div className="w-16 h-16 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mx-auto shadow-sm">
-          <Sparkles className="w-8 h-8" />
-        </div>
-        <div>
-          <h2 className="text-2xl font-bold text-foreground mb-2">{t('wizard.preview.ready_title')}</h2>
+    <div className="flex flex-col gap-8 max-w-4xl mx-auto w-full animate-in fade-in zoom-in-95 duration-200">
+      
+      {/* 1. Header Hero */}
+      <div className="bg-card border border-border/60 rounded-2xl p-8 relative overflow-hidden flex flex-col items-center justify-center text-center">
+        <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent" />
+        <div className="relative z-10 flex flex-col items-center">
+          <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-6 text-primary">
+            <Sparkles size={32} />
+          </div>
+          <h2 className="text-2xl font-bold text-foreground mb-2">
+            {isEditing ? t('wizard.preview.ready_edit_title') : t('wizard.preview.ready_title')}
+          </h2>
           <p className="text-sm text-muted-foreground max-w-md mx-auto">
-            {t('wizard.preview.ready_desc')}
+            {isEditing ? t('wizard.preview.ready_edit_desc') : t('wizard.preview.ready_desc')}
           </p>
         </div>
       </div>

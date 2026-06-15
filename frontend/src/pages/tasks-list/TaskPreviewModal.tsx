@@ -123,6 +123,10 @@ export const TaskPreviewModal: React.FC<TaskPreviewModalProps> = ({ taskId, isOp
               onDeleteClick={() => setDeleteConfirm(true)}
               onShowDbViewer={() => setShowDbViewer(true)}
               onClose={onClose}
+              onEditClick={() => {
+                onClose();
+                navigate(`/task-wizard/${taskId}`);
+              }}
             />
 
             {/* Scrollable Body */}
