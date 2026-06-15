@@ -22,7 +22,8 @@ export const TaskWizardScreen: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { id } = useParams(); // 'new' or UUID (which is actually INTEGER id)
-  const isNewTask = location.state?.isNew === true;
+  const isFromEditTask = location.state?.fromEditTask === true;
+  const isCreatingRef = React.useRef(false);
   const [currentStep, setCurrentStep] = useState(1);
   const [isSaving, setIsSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
@@ -98,6 +99,25 @@ export const TaskWizardScreen: React.FC = () => {
       })
       .catch(console.error);
   }, [id]);
+
+  // Auto-create draft when user starts typing if id === 'new'
+  React.useEffect(() => {
+    if (id === 'new') {
+      const hasContent = !!draftData.title?.trim() || !!draftData.description?.trim();
+      if (hasContent && !isCreatingRef.current) {
+        isCreatingRef.current = true;
+        fetch('/api/tasks/draft', { method: 'POST' })
+          .then(res => res.json())
+          .then(data => {
+            navigate(`/studio/task/${data.id}`, { replace: true, state: location.state });
+          })
+          .catch(e => {
+            console.error('Failed to auto-create draft', e);
+            isCreatingRef.current = false;
+          });
+      }
+    }
+  }, [id, draftData.title, draftData.description, navigate, location.state]);
 
   // Auto-save logic
   React.useEffect(() => {
@@ -214,19 +234,26 @@ export const TaskWizardScreen: React.FC = () => {
         <div className="flex items-center gap-4">
           <button 
             onClick={async () => {
-              if (isNewTask) {
-                // If completely empty (only title and description count), delete it
-                const isEmpty = !draftData.title?.trim() && !draftData.description?.trim();
-                if (isEmpty && id !== 'new') {
-                  try {
-                    await fetch(`/api/tasks/${id}`, { method: 'DELETE' });
-                  } catch (e) {
-                    console.error('Failed to delete empty draft', e);
-                  }
+              if (id === 'new') {
+                navigate('/studio');
+                return;
+              }
+
+              const isEmpty = !draftData.title?.trim() && !draftData.description?.trim();
+              if (isEmpty) {
+                try {
+                  await fetch(`/api/tasks/${id}`, { method: 'DELETE' });
+                } catch (e) {
+                  console.error('Failed to delete empty draft', e);
                 }
                 navigate('/studio');
-              } else {
+                return;
+              }
+
+              if (isFromEditTask) {
                 setIsExitModalOpen(true);
+              } else {
+                navigate('/studio');
               }
             }}
             className="p-2 hover:bg-hover rounded-xl text-muted-foreground transition-colors outline-none"
@@ -234,7 +261,7 @@ export const TaskWizardScreen: React.FC = () => {
             <ChevronLeft size={20} />
           </button>
           <div>
-            <div className="text-sm font-bold tracking-tight">{isNewTask ? t('wizard.header.create_task') : t('wizard.header.edit_task')}</div>
+            <div className="text-sm font-bold tracking-tight">{!isFromEditTask ? t('wizard.header.create_task') : t('wizard.header.edit_task')}</div>
             <div className="text-mini text-muted-foreground font-medium flex items-center gap-2">
               {isSaving ? (
                 <span className="text-muted-foreground flex items-center gap-1">
@@ -348,8 +375,8 @@ export const TaskWizardScreen: React.FC = () => {
 
       <PublishSuccessModal 
         isOpen={isPublishedModalOpen} 
-        isEditing={!isNewTask}
-        onBackToStudio={() => navigate(!isNewTask ? '/tasks' : '/studio')} 
+        isEditing={isFromEditTask}
+        onBackToStudio={() => navigate(isFromEditTask ? '/tasks' : '/studio')} 
       />
 
       <ConfirmModal

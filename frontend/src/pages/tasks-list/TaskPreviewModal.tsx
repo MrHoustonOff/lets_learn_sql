@@ -125,7 +125,7 @@ export const TaskPreviewModal: React.FC<TaskPreviewModalProps> = ({ taskId, isOp
               onClose={onClose}
               onEditClick={() => {
                 onClose();
-                navigate(`/studio/task/${taskId}`);
+                navigate(`/studio/task/${taskId}`, { state: { fromEditTask: true } });
               }}
             />
 
