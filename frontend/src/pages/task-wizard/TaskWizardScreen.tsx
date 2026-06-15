@@ -190,7 +190,7 @@ export const TaskWizardScreen: React.FC = () => {
   return (
     <div className="h-screen w-screen bg-background flex flex-col font-sans text-foreground overflow-hidden">
       {/* HEADER */}
-      <header className="h-14 border-b border-glass-border flex items-center px-4 shrink-0 bg-background/80 backdrop-blur z-20 justify-between">
+      <header className="h-14 border-b border-glass-border flex items-center px-4 shrink-0 bg-background/80 backdrop-blur z-layout justify-between">
         <div className="flex items-center gap-4">
           <button 
             onClick={() => navigate('/studio')}
@@ -200,7 +200,7 @@ export const TaskWizardScreen: React.FC = () => {
           </button>
           <div>
             <div className="text-sm font-bold tracking-tight">{id === 'new' ? t('wizard.header.create_task') : t('wizard.header.edit_task')}</div>
-            <div className="text-[11px] text-muted-foreground font-medium flex items-center gap-2">
+            <div className="text-mini text-muted-foreground font-medium flex items-center gap-2">
               {isSaving ? (
                 <span className="text-muted-foreground flex items-center gap-1">
                   {t('wizard.header.saving')}
@@ -276,7 +276,7 @@ export const TaskWizardScreen: React.FC = () => {
         </div>
 
         {/* FOOTER NAV (FLOATING) */}
-        <div className="absolute bottom-6 left-6 right-6 flex items-center justify-between pointer-events-none z-50">
+        <div className="absolute bottom-6 left-6 right-6 flex items-center justify-between pointer-events-none z-menu">
         <button
           onClick={() => setCurrentStep(prev => Math.max(1, prev - 1))}
           disabled={currentStep === 1}
@@ -325,7 +325,7 @@ export const TaskWizardScreen: React.FC = () => {
       </main>
 
       {isPublishedModalOpen && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center animate-in fade-in duration-200">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-modal-backdrop flex items-center justify-center animate-in fade-in duration-200">
           <div className="bg-background border border-glass-border rounded-2xl p-6 w-[400px] shadow-[0_10px_40px_-10px_rgba(0,0,0,0.3)] flex flex-col items-center text-center animate-in zoom-in-95 duration-200">
             <div className="w-12 h-12 rounded-full bg-success/10 text-success flex items-center justify-center mb-4">
               <Check size={24} />

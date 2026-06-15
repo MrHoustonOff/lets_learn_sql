@@ -104,7 +104,7 @@ export const WizardStepRules: React.FC<WizardStepRulesProps> = ({ data, setData,
               <p className="text-sm font-medium leading-none">{t('wizard.rules.order_matters')}</p>
               <InfoTooltip text={t('wizard.rules.order_matters_tooltip')} />
             </div>
-            <p className="text-[11px] text-muted-foreground leading-relaxed">
+            <p className="text-mini text-muted-foreground leading-relaxed">
               {t('wizard.rules.order_matters_desc')}
             </p>
           </div>

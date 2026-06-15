@@ -35,7 +35,7 @@ const DifficultyPicker: React.FC<{ value: number | null; onChange: (v: number) =
     <div className="space-y-3">
       {DIFFICULTY_TIERS.map((tier, tierIdx) => (
         <div key={tier.key} className="space-y-1.5">
-          <div className="flex items-center gap-2 text-[11px] font-medium uppercase tracking-wide text-muted-foreground ml-1">
+          <div className="flex items-center gap-2 text-mini font-medium uppercase tracking-wide text-muted-foreground ml-1">
             <span className={`w-1.5 h-1.5 rounded-full ${tier.color}`} />
             {t(`wizard.info.difficulty_tiers.${tier.key}`)}
           </div>

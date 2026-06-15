@@ -8,7 +8,7 @@ export const FieldLabel: React.FC<{ children: React.ReactNode; required?: boolea
     <label className="flex items-center gap-1.5 text-sm font-medium text-foreground mb-1.5">
       {children}
       {required && <span className="text-destructive">*</span>}
-      {hint && <span className="text-[11px] text-muted-foreground font-normal">{hint}</span>}
+      {hint && <span className="text-mini text-muted-foreground font-normal">{hint}</span>}
     </label>
   );
 };
@@ -141,7 +141,7 @@ export const SectionCard: React.FC<{ title?: string; description?: string; child
         <div className="mb-4">
           <h3 className="text-sm font-semibold">{title}</h3>
           {description && (
-            <p className="text-[11px] text-muted-foreground mt-0.5">{description}</p>
+            <p className="text-mini text-muted-foreground mt-0.5">{description}</p>
           )}
         </div>
       )}
