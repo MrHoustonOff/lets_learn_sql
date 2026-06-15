@@ -130,22 +130,37 @@ export const TaskWizardScreen: React.FC = () => {
     return () => clearTimeout(handler);
   }, [draftData, id]);
 
-  const isStepValid = useMemo(() => {
+  const { canGoNext, needsCheckRules, footerNextText } = useMemo(() => {
+    let canGoNext = false;
+    let needsCheckRules = false;
+    let footerNextText = t('wizard.footer.next');
+
     if (currentStep === 1) {
-      return !!(draftData.title && draftData.description && draftData.author && draftData.difficulty && draftData.database);
-    }
-    if (currentStep === 2) {
-      return !!draftData.isQueryValid;
-    }
-    if (currentStep === 3) {
-      if ((draftData.rules || []).length > 0) {
-        if (rulesValidationStatus !== 'checked') return false;
-        return (draftData.rules || []).every((r: any) => rulesValidationResults[r.id]?.passed === true);
+      canGoNext = !!(draftData.title && draftData.description && draftData.author && draftData.difficulty && draftData.database);
+    } else if (currentStep === 2) {
+      canGoNext = !!draftData.isQueryValid;
+    } else if (currentStep === 3) {
+      const hasRules = (draftData.rules || []).length > 0;
+      const allPassed = hasRules && (draftData.rules || []).every((r: any) => rulesValidationResults[r.id]?.passed === true);
+      
+      if (hasRules) {
+        if (rulesValidationStatus !== 'checked' || !allPassed) {
+          canGoNext = rulesValidationStatus !== 'checking'; // Allow clicking "Check Rules" if not currently checking
+          needsCheckRules = true;
+          footerNextText = rulesValidationStatus === 'checking' ? t('wizard.footer.checking') : t('wizard.footer.check');
+        } else {
+          canGoNext = true;
+        }
+      } else {
+        canGoNext = true;
       }
-      return true;
+    } else if (currentStep === STEPS.length) {
+      canGoNext = true;
+      footerNextText = t('wizard.footer.publish');
     }
-    return true;
-  }, [currentStep, draftData, rulesValidationStatus, rulesValidationResults]);
+
+    return { canGoNext, needsCheckRules, footerNextText };
+  }, [currentStep, draftData, rulesValidationStatus, rulesValidationResults, t]);
 
   const checkRules = async () => {
     if (!id || id === 'new') return;
@@ -292,9 +307,7 @@ export const TaskWizardScreen: React.FC = () => {
 
         <button
           onClick={() => {
-            const allPassed = (draftData.rules || []).every((r: any) => rulesValidationResults[r.id]?.passed === true);
-            const needsCheck = currentStep === 3 && (draftData.rules || []).length > 0 && (rulesValidationStatus !== 'checked' || !allPassed);
-            if (needsCheck) {
+            if (needsCheckRules) {
               checkRules();
             } else if (currentStep === STEPS.length) {
               publishTask();
@@ -302,25 +315,14 @@ export const TaskWizardScreen: React.FC = () => {
               setCurrentStep(prev => Math.min(STEPS.length, prev + 1));
             }
           }}
-          disabled={
-            rulesValidationStatus === 'checking' || 
-            (!isStepValid && !(currentStep === 3 && (draftData.rules || []).length > 0 && (rulesValidationStatus !== 'checked' || !(draftData.rules || []).every((r: any) => rulesValidationResults[r.id]?.passed === true))))
-          }
+          disabled={!canGoNext || rulesValidationStatus === 'checking'}
           className={`pointer-events-auto px-6 py-2 rounded-xl text-sm font-bold transition-all shadow-md ${
-            (isStepValid || (currentStep === 3 && (draftData.rules || []).length > 0 && (rulesValidationStatus !== 'checked' || !(draftData.rules || []).every((r: any) => rulesValidationResults[r.id]?.passed === true)))) && rulesValidationStatus !== 'checking'
+            canGoNext && rulesValidationStatus !== 'checking'
               ? "bg-primary text-primary-foreground hover:brightness-110 shadow-[0_4px_16px_rgba(var(--primary),0.3)]"
               : "bg-muted border border-border text-muted-foreground opacity-50 cursor-not-allowed"
           }`}
         >
-          {(() => {
-            if (currentStep === 3 && (draftData.rules || []).length > 0) {
-              const allPassed = (draftData.rules || []).every((r: any) => rulesValidationResults[r.id]?.passed === true);
-              if (rulesValidationStatus !== 'checked' || !allPassed) {
-                return rulesValidationStatus === 'checking' ? t('wizard.footer.checking') : t('wizard.footer.check');
-              }
-            }
-            return currentStep === STEPS.length ? t('wizard.footer.publish') : t('wizard.footer.next');
-          })()}
+          {footerNextText}
         </button>
         </div>
       </main>
