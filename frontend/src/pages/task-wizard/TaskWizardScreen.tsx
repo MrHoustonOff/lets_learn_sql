@@ -69,6 +69,10 @@ export const TaskWizardScreen: React.FC = () => {
   // Fetch task draft
   React.useEffect(() => {
     if (!id || id === 'new') return;
+    if (isCreatingRef.current) {
+      isCreatingRef.current = false;
+      return;
+    }
     fetch(`/api/tasks/${id}`)
       .then(res => {
         if (!res.ok) throw new Error('Failed to fetch draft');
