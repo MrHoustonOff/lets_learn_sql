@@ -9,5 +9,16 @@
   "retry": "Repeat →",
   "open": "Open →",
   "back_to_courses": "Courses (Esc)",
-  "solve": "Solve"
+  "solve": "Solve",
+  "edit": "Edit Course",
+  "delete": "Delete Course",
+  "delete_modal": {
+    "title": "Delete Course",
+    "description": "Are you sure you want to delete this course? This action cannot be undone. What should we do with the tasks included in this course?",
+    "cancel": "Cancel",
+    "delete_orphaned": "Delete Unique Tasks",
+    "delete_orphaned_tip": "Tasks that belong only to this course will be permanently deleted. Tasks used in other courses will remain.",
+    "keep_tasks": "Keep All Tasks",
+    "keep_tasks_tip": "The course itself will be deleted, but all its tasks will remain in the studio (unlinked from this course)."
+  }
 }

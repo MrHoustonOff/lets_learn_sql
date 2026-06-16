@@ -11,6 +11,7 @@ interface TaskPreviewHeaderProps {
   onShowDbViewer: () => void;
   onClose: () => void;
   onEditClick: () => void;
+  isReadOnly?: boolean;
 }
 
 export const TaskPreviewHeader: React.FC<TaskPreviewHeaderProps> = ({
@@ -19,7 +20,8 @@ export const TaskPreviewHeader: React.FC<TaskPreviewHeaderProps> = ({
   onDeleteClick,
   onShowDbViewer,
   onClose,
-  onEditClick
+  onEditClick,
+  isReadOnly
 }) => {
   const { t } = useTranslation('tasks_list');
   return (
@@ -59,32 +61,36 @@ export const TaskPreviewHeader: React.FC<TaskPreviewHeaderProps> = ({
         </div>
       </div>
       <div className="flex items-center gap-2 shrink-0">
-        <button
-          onClick={onToggleBookmark}
-          className={`flex items-center justify-center gap-1.5 px-2 py-1 rounded-md transition-all border min-w-0 shadow-sm ${
-            task.is_bookmarked
-              ? 'bg-warning/10 border-warning/30 text-warning-text'
-              : 'bg-background border-glass-border text-muted-foreground hover:bg-hover hover:text-foreground'
-          }`}
-          title={task.is_bookmarked ? t('preview.unbookmark') : t('preview.bookmark')}
-        >
-          <Bookmark size={14} className={`shrink-0 transition-opacity ${task.is_bookmarked ? 'opacity-100 fill-current' : 'opacity-70'}`} />
-          <span className="text-xs font-medium truncate hidden sm:inline">{t('preview.flag')}</span>
-        </button>
-        <button
-          onClick={onEditClick}
-          className="p-2 rounded-lg text-muted-foreground hover:bg-hover hover:text-foreground transition-colors outline-none"
-          title={t('preview.edit')}
-        >
-          <Pencil size={16} />
-        </button>
-        <button
-          onClick={onDeleteClick}
-          className="p-2 rounded-lg text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors outline-none"
-          title={t('preview.delete')}
-        >
-          <Trash2 size={16} />
-        </button>
+        {!isReadOnly && (
+          <>
+            <button
+              onClick={onToggleBookmark}
+              className={`flex items-center justify-center gap-1.5 px-2 py-1 rounded-md transition-all border min-w-0 shadow-sm ${
+                task.is_bookmarked
+                  ? 'bg-warning/10 border-warning/30 text-warning-text'
+                  : 'bg-background border-glass-border text-muted-foreground hover:bg-hover hover:text-foreground'
+              }`}
+              title={task.is_bookmarked ? t('preview.unbookmark') : t('preview.bookmark')}
+            >
+              <Bookmark size={14} className={`shrink-0 transition-opacity ${task.is_bookmarked ? 'opacity-100 fill-current' : 'opacity-70'}`} />
+              <span className="text-xs font-medium truncate hidden sm:inline">{t('preview.flag')}</span>
+            </button>
+            <button
+              onClick={onEditClick}
+              className="p-2 rounded-lg text-muted-foreground hover:bg-hover hover:text-foreground transition-colors outline-none"
+              title={t('preview.edit')}
+            >
+              <Pencil size={16} />
+            </button>
+            <button
+              onClick={onDeleteClick}
+              className="p-2 rounded-lg text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors outline-none"
+              title={t('preview.delete')}
+            >
+              <Trash2 size={16} />
+            </button>
+          </>
+        )}
 
         <button
           onClick={onClose}

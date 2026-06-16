@@ -187,6 +187,73 @@
       "leave": "Cancel changes"
     }
   },
+  "wizard_course": {
+    "steps": {
+      "info": "Information",
+      "content": "Course Content",
+      "preview": "Preview"
+    },
+    "header": {
+      "create_course": "Create Course",
+      "edit_course": "Edit Course",
+      "saving": "Saving...",
+      "saved": "Saved",
+      "not_saved": "Not saved",
+      "save_changes": "Save",
+      "last_saved": "Last saved: {{time}}"
+    },
+    "footer": {
+      "back": "Back",
+      "next": "Next",
+      "publish": "Publish Course"
+    },
+    "info": {
+      "main": "Basic Info",
+      "title": "Course Title",
+      "title_placeholder": "e.g. Basic SQL",
+      "description": "Course Description",
+      "description_placeholder": "What is this course about...",
+      "difficulty": "Difficulty",
+      "difficulty_desc": "Overall course level",
+      "tags": "Tags",
+      "tags_desc": "Course topics",
+      "author": "Author",
+      "author_name_placeholder": "Author's name",
+      "author_link_placeholder": "https://... (optional)",
+      "cover": "Cover Image (optional)",
+      "cover_placeholder": "Image URL",
+      "add_tag": "Add"
+    },
+    "content": {
+      "title": "Course Curriculum",
+      "empty": "No sections in this course yet",
+      "add_section": "Add Section",
+      "section_name_placeholder": "Section Name",
+      "add_subsection": "Add Subsection",
+      "subsection_name_placeholder": "Subsection Name",
+      "add_task": "Add Task",
+      "delete_confirm_title": "Delete?",
+      "delete_confirm_desc": "Are you sure you want to delete this element and all its contents?"
+    },
+    "preview": {
+      "ready_title": "Ready for Publication!",
+      "ready_desc": "Check the final course structure before publishing.",
+      "total_tasks": "Total tasks: {{count}}"
+    },
+    "exitConfirm": {
+      "title": "Cancel Creation?",
+      "description": "All unsaved course data will be lost. Are you sure?",
+      "stay": "Stay",
+      "leave": "Cancel"
+    },
+    "editExitConfirm": {
+      "title": "Save changes?",
+      "description": "You have unsaved changes. The course was last saved {{time}} ago. What would you like to do?",
+      "stay": "Stay",
+      "save_and_leave": "Save and exit",
+      "leave_without_saving": "Exit without saving"
+    }
+  },
   "studio_page": {
     "title": "Studio",
     "subtitle": "A place to create and edit your materials",

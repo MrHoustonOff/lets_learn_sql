@@ -109,7 +109,7 @@ export const StudioPage: React.FC = () => {
   const [isCreatingTask, setIsCreatingTask] = useState(false);
   const [drafts, setDrafts] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [deletingDraftId, setDeletingDraftId] = useState<number | null>(null);
+  const [deletingDraft, setDeletingDraft] = useState<{id: number, type: string} | null>(null);
   
   // Filters & Pagination
   const [filterType, setFilterType] = useState('all'); // 'all', 'task', 'course'
@@ -136,19 +136,24 @@ export const StudioPage: React.FC = () => {
     setPage(1);
   }, [filterType, sortOrder, drafts.length]);
 
-  const handleDeleteDraftClick = (e: React.MouseEvent, id: number) => {
+  const handleDeleteDraftClick = (e: React.MouseEvent, id: number, type: string) => {
     e.stopPropagation();
-    setDeletingDraftId(id);
+    setDeletingDraft({ id, type });
   };
 
   const confirmDeleteDraft = async () => {
-    if (deletingDraftId === null) return;
+    if (!deletingDraft) return;
     try {
-      await fetch(`/api/tasks/${deletingDraftId}`, { method: 'DELETE' });
-      setDrafts(prev => prev.filter(d => d.id !== deletingDraftId));
+      const endpoint = deletingDraft.type === 'course' 
+        ? `/api/courses/${deletingDraft.id}` 
+        : `/api/tasks/${deletingDraft.id}`;
+      await fetch(endpoint, { method: 'DELETE' });
+      setDrafts(prev => prev.filter(d => !(d.id === deletingDraft.id && d.type === deletingDraft.type)));
     } catch (err) {
       console.error(err);
       alert('Ошибка при удалении');
+    } finally {
+      setDeletingDraft(null);
     }
   };
 
@@ -212,7 +217,10 @@ export const StudioPage: React.FC = () => {
                     )}
                     {t('studio_page.create_task')}
                   </button>
-                  <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary text-xs font-bold transition-colors">
+                  <button 
+                    onClick={() => navigate('/studio/course/new', { state: { isNew: true } })}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary text-xs font-bold transition-colors"
+                  >
                     <BookOpen size={14} /> {t('studio_page.create_course')}
                   </button>
                 </div>
@@ -325,7 +333,7 @@ export const StudioPage: React.FC = () => {
                   paginatedDrafts.map(draft => (
                     <div 
                       key={`${draft.type}-${draft.id}`} 
-                      onClick={() => navigate(`/studio/task/${draft.id}`)}
+                      onClick={() => navigate(`/studio/${draft.type === 'course' ? 'course' : 'task'}/${draft.id}`)}
                       className="flex items-center justify-between py-2 px-3 rounded-xl transition-all duration-300 group cursor-pointer border bg-glass border-transparent hover:border-glass-border/50 hover:bg-glass-hover shadow-[0_2px_16px_-4px_hsl(var(--glow)/0.05)] hover:-translate-y-[2px] hover:shadow-[0_8px_24px_-8px_hsl(var(--glow)/0.15)]"
                     >
                       <div className="flex items-center gap-4 flex-1 min-w-0">
@@ -366,7 +374,7 @@ export const StudioPage: React.FC = () => {
 
                       <div className="flex items-center gap-2 shrink-0">
                         <button
-                          onClick={(e) => handleDeleteDraftClick(e, draft.id)}
+                          onClick={(e) => handleDeleteDraftClick(e, draft.id, draft.type)}
                           className="opacity-0 group-hover:opacity-100 transition-opacity p-1.5 text-destructive hover:bg-destructive/10 rounded-md shrink-0 outline-none"
                           title={t('studio_page.delete_draft')}
                         >
@@ -412,8 +420,8 @@ export const StudioPage: React.FC = () => {
 
       {/* Delete Draft Modal */}
       <ConfirmModal
-        isOpen={deletingDraftId !== null}
-        onClose={() => setDeletingDraftId(null)}
+        isOpen={deletingDraft !== null}
+        onClose={() => setDeletingDraft(null)}
         onConfirm={confirmDeleteDraft}
         title={t('studio_page.delete_modal.title')}
         confirmText={t('studio_page.delete_modal.confirm')}

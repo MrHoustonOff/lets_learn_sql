@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
-import { ChevronLeft, AlertTriangle, Check } from 'lucide-react';
+import { ChevronLeft, AlertTriangle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import { WizardStepInfo } from './components/WizardStepInfo';
@@ -9,6 +9,7 @@ import { WizardStepRules } from './components/WizardStepRules';
 import { WizardStepPreview } from './components/WizardStepPreview';
 import { PublishSuccessModal } from './components/PublishSuccessModal';
 import { ConfirmModal } from '../../components/ui/ConfirmModal';
+import { Stepper } from '../../components/ui/Stepper';
 
 const getSteps = (t: any) => [
   { id: 1, label: t('wizard.steps.info') },
@@ -285,35 +286,11 @@ export const TaskWizardScreen: React.FC = () => {
         </div>
 
         {/* STEPPER */}
-        <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-2">
-          {STEPS.map((step, idx) => {
-            const isActive = currentStep === step.id;
-            const isPassed = currentStep > step.id;
-            
-            return (
-              <React.Fragment key={step.id}>
-                <div 
-                  className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
-                    isActive 
-                      ? "bg-primary text-primary-foreground shadow-[0_0_12px_rgba(var(--primary),0.4)]" 
-                      : isPassed
-                        ? "bg-primary/10 text-primary cursor-pointer hover:bg-primary/20"
-                        : "bg-glass text-muted-foreground"
-                  }`}
-                  onClick={() => isPassed && setCurrentStep(step.id)}
-                >
-                  <div className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] ${isActive ? 'bg-white/20' : isPassed ? 'bg-primary/20' : 'bg-background'}`}>
-                    {step.id}
-                  </div>
-                  {step.label}
-                </div>
-                {idx < STEPS.length - 1 && (
-                  <div className={`w-6 h-px ${isPassed ? 'bg-primary/50' : 'bg-glass-border'}`} />
-                )}
-              </React.Fragment>
-            );
-          })}
-        </div>
+        <Stepper 
+          steps={STEPS} 
+          currentStep={currentStep} 
+          onStepClick={(id) => setCurrentStep(id)}
+        />
       </header>
 
       {/* MAIN CONTENT AREA */}
@@ -322,13 +299,13 @@ export const TaskWizardScreen: React.FC = () => {
            {currentStep === 1 && (
              <WizardStepInfo 
                data={draftData} 
-               setData={setDraftData} 
+               setData={setDraftData as any} 
                allTags={allTags}
                allCourses={allCourses}
                allDatabases={allDatabases}
              />
            )}
-           {currentStep === 2 && <WizardStepSolution data={draftData} setData={setDraftData} />}
+           {currentStep === 2 && <WizardStepSolution data={draftData} setData={setDraftData as any} />}
            {currentStep === 3 && (
              <WizardStepRules 
                data={draftData as any} 
@@ -338,7 +315,7 @@ export const TaskWizardScreen: React.FC = () => {
                setValidationStatus={setRulesValidationStatus}
              />
            )}
-           {currentStep === 4 && <WizardStepPreview data={draftData} setData={setDraftData} allCourses={allCourses} allDatabases={allDatabases} isEditing={id !== 'new'} />}
+           {currentStep === 4 && <WizardStepPreview data={draftData} setData={setDraftData as any} allCourses={allCourses} allDatabases={allDatabases} isEditing={id !== 'new'} />}
         </div>
 
         {/* FOOTER NAV (FLOATING) */}

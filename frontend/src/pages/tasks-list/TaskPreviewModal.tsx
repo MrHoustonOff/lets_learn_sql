@@ -18,9 +18,10 @@ interface TaskPreviewModalProps {
   onClose: () => void;
   onDeleted: () => void;
   onBookmarkToggle?: (taskId: number, isBookmarked: boolean) => void;
+  isReadOnly?: boolean;
 }
 
-export const TaskPreviewModal: React.FC<TaskPreviewModalProps> = ({ taskId, isOpen, onClose, onDeleted, onBookmarkToggle }) => {
+export const TaskPreviewModal: React.FC<TaskPreviewModalProps> = ({ taskId, isOpen, onClose, onDeleted, onBookmarkToggle, isReadOnly }) => {
   const navigate = useNavigate();
   const { t } = useTranslation('tasks_list');
 
@@ -127,6 +128,7 @@ export const TaskPreviewModal: React.FC<TaskPreviewModalProps> = ({ taskId, isOp
                 onClose();
                 navigate(`/studio/task/${taskId}`, { state: { fromEditTask: true } });
               }}
+              isReadOnly={isReadOnly}
             />
 
             {/* Scrollable Body */}
@@ -184,14 +186,16 @@ export const TaskPreviewModal: React.FC<TaskPreviewModalProps> = ({ taskId, isOp
                   </div>
                 </div>
 
-                <div className="shrink-0 sm:pb-1">
-                  <button
-                    onClick={() => navigate(`/tasks/${task.id}`)}
-                    className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-primary text-primary-foreground font-bold hover:brightness-110 shadow-md transition-all outline-none w-full sm:w-auto justify-center"
-                  >
-                    <PlayCircle size={18} /> {t('preview.solve')}
-                  </button>
-                </div>
+                {!isReadOnly && (
+                  <div className="shrink-0 sm:pb-1">
+                    <button
+                      onClick={() => navigate(`/tasks/${task.id}`)}
+                      className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-primary text-primary-foreground font-bold hover:brightness-110 shadow-md transition-all outline-none w-full sm:w-auto justify-center"
+                    >
+                      <PlayCircle size={18} /> {t('preview.solve')}
+                    </button>
+                  </div>
+                )}
               </div>
 
               {/* Previous Attempts History */}

@@ -187,6 +187,73 @@
       "leave": "Отменить изменения"
     }
   },
+  "wizard_course": {
+    "steps": {
+      "info": "Информация",
+      "content": "Состав курса",
+      "preview": "Превью"
+    },
+    "header": {
+      "create_course": "Создание курса",
+      "edit_course": "Редактирование курса",
+      "saving": "Сохранение...",
+      "saved": "Сохранено",
+      "not_saved": "Не сохранено",
+      "save_changes": "Сохранить",
+      "last_saved": "Последнее сохранение: {{time}}"
+    },
+    "footer": {
+      "back": "Назад",
+      "next": "Далее",
+      "publish": "Опубликовать курс"
+    },
+    "info": {
+      "main": "Основное",
+      "title": "Название курса",
+      "title_placeholder": "Например: Базовый SQL",
+      "description": "Описание курса",
+      "description_placeholder": "О чем этот курс...",
+      "difficulty": "Сложность",
+      "difficulty_desc": "Общий уровень курса",
+      "tags": "Теги",
+      "tags_desc": "Тематика курса",
+      "author": "Автор",
+      "author_name_placeholder": "Имя автора",
+      "author_link_placeholder": "https://... (необязательно)",
+      "cover": "Обложка (необязательно)",
+      "cover_placeholder": "URL картинки",
+      "add_tag": "Добавить"
+    },
+    "content": {
+      "title": "Программа курса",
+      "empty": "В курсе пока нет ни одной секции",
+      "add_section": "Добавить секцию",
+      "section_name_placeholder": "Название секции",
+      "add_subsection": "Добавить подсекцию",
+      "subsection_name_placeholder": "Название подсекции",
+      "add_task": "Добавить задачу",
+      "delete_confirm_title": "Удалить?",
+      "delete_confirm_desc": "Вы уверены, что хотите удалить этот элемент и все его содержимое?"
+    },
+    "preview": {
+      "ready_title": "Всё готово к публикации!",
+      "ready_desc": "Проверь структуру итогового курса перед публикацией.",
+      "total_tasks": "Всего задач: {{count}} шт."
+    },
+    "exitConfirm": {
+      "title": "Отменить создание?",
+      "description": "Все несохраненные данные курса будут потеряны. Вы уверены?",
+      "stay": "Остаться",
+      "leave": "Отменить"
+    },
+    "editExitConfirm": {
+      "title": "Сохранить изменения?",
+      "description": "У вас есть несохраненные изменения. Последний раз курс сохранялся {{time}} назад. Что вы хотите сделать?",
+      "stay": "Остаться",
+      "save_and_leave": "Сохранить и выйти",
+      "leave_without_saving": "Не сохранять и выйти"
+    }
+  },
   "studio_page": {
     "title": "Студия",
     "subtitle": "Место для создания и редактирования ваших материалов",
