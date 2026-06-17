@@ -1,6 +1,23 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { AlignLeft, SplitSquareHorizontal, Eye, Bold, Italic, Strikethrough, Underline, Code } from 'lucide-react';
+import { AlignLeft, SplitSquareHorizontal, Eye, Bold, Italic, Strikethrough, Underline, Code, Palette } from 'lucide-react';
 import { MarkdownText } from './MarkdownText';
+
+const COLORS = [
+  // С насыщенными (программистскими) цветами
+  '#FF0000', // Red
+  '#00FF00', // Green
+  '#0000FF', // Blue
+  '#FFFFFF', // White
+  // Пастельные цвета
+  '#FFB3BA', // Pastel Red
+  '#FFDFBA', // Pastel Orange
+  '#FFFFBA', // Pastel Yellow
+  '#BAFFC9', // Pastel Green
+  '#BAE1FF', // Pastel Blue
+  '#E6B3FF', // Pastel Purple
+  '#F49AC2', // Pastel Pink
+  '#B2CEFE', // Pastel Periwinkle
+];
 
 const MD_SHORTCUTS = [
   { icon: Bold, prefix: "**", suffix: "**", defaultText: "жирный", title: "Жирный" },
@@ -27,6 +44,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
 }) => {
   const [view, setView] = useState<"split" | "edit" | "preview">("split");
   const [isFocused, setIsFocused] = useState(false);
+  const [showColorPicker, setShowColorPicker] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const insertSnippet = (prefix: string, suffix: string, defaultText: string) => {
@@ -78,6 +96,34 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
               <s.icon className="w-3.5 h-3.5" />
             </button>
           ))}
+          
+          <div className="relative">
+            <button 
+              type="button"
+              title="Цвет текста"
+              onClick={() => setShowColorPicker(!showColorPicker)}
+              className={`p-1.5 rounded transition-colors ${showColorPicker ? 'bg-secondary text-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-secondary'}`}
+            >
+              <Palette className="w-3.5 h-3.5" />
+            </button>
+            {showColorPicker && (
+              <div className="absolute top-full left-0 mt-1 p-2 bg-popover border border-border rounded-lg shadow-lg flex gap-1 z-[100] flex-wrap w-[220px]">
+                {COLORS.map(c => (
+                  <button
+                    key={c}
+                    type="button"
+                    onClick={() => {
+                      insertSnippet(`<font color="${c}">`, '</font>', 'текст');
+                      setShowColorPicker(false);
+                    }}
+                    className="w-5 h-5 rounded-full border border-black/10 hover:scale-110 transition-transform flex-shrink-0"
+                    style={{ backgroundColor: c }}
+                    title={c}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
           <div className="ml-auto flex items-center bg-muted rounded-lg p-0.5 gap-0.5">
             {[
               { id: "edit" as const, icon: AlignLeft, label: "Редактор" },

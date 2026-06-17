@@ -6,7 +6,7 @@ import { TextInput } from '../../../components/ui/TextInput';
 import { SelectInput } from '../../../components/ui/SelectInput';
 import { SectionCard } from '../../../components/ui/SectionCard';
 import { DIFFICULTY_TIERS, DIFFICULTY_LEVELS } from '../mocks';
-import { MarkdownText } from '../../../components/ui/MarkdownText';
+import { MarkdownEditor } from '../../../components/ui/MarkdownEditor';
 
 // Types
 export interface TagOut { id: number; name: string; }
@@ -140,68 +140,7 @@ const TagSelector: React.FC<{ selected: string[]; onToggle: (tag: string) => voi
   );
 };
 
-const MarkdownEditor: React.FC<{ value: string; onChange: (v: string) => void; placeholder?: string }> = ({ value, onChange, placeholder }) => {
-  const [tab, setTab] = useState<'write' | 'preview'>('write');
 
-  const insertText = (prefix: string, suffix: string) => {
-    const textarea = document.getElementById('markdown-textarea') as HTMLTextAreaElement;
-    if (!textarea) return;
-    const start = textarea.selectionStart;
-    const end = textarea.selectionEnd;
-    const text = textarea.value;
-    const selected = text.substring(start, end);
-    const newText = text.substring(0, start) + prefix + (selected || 'текст') + suffix + text.substring(end);
-    onChange(newText);
-    setTimeout(() => {
-      textarea.focus();
-      textarea.setSelectionRange(start + prefix.length, start + prefix.length + (selected || 'текст').length);
-    }, 0);
-  };
-
-  return (
-    <div className="border border-border rounded-lg bg-popover overflow-hidden focus-within:ring-2 focus-within:ring-ring/40 focus-within:border-primary transition-all flex flex-col">
-      <div className="flex items-center justify-between border-b border-border bg-secondary/40 px-2">
-        <div className="flex items-center">
-          <button 
-            onClick={() => setTab('write')}
-            className={`px-3 py-2 text-xs font-semibold border-b-2 transition-colors ${tab === 'write' ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
-          >
-            Write
-          </button>
-          <button 
-            onClick={() => setTab('preview')}
-            className={`px-3 py-2 text-xs font-semibold border-b-2 transition-colors ${tab === 'preview' ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
-          >
-            Preview
-          </button>
-        </div>
-        {tab === 'write' && (
-          <div className="flex flex-wrap items-center gap-0.5 pr-2 py-1">
-            <button onClick={() => insertText('**', '**')} title="Жирный" className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-black/10 dark:hover:bg-white/10 rounded transition-colors"><Bold className="w-3.5 h-3.5" /></button>
-            <button onClick={() => insertText('*', '*')} title="Курсив" className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-black/10 dark:hover:bg-white/10 rounded transition-colors"><Italic className="w-3.5 h-3.5" /></button>
-            <button onClick={() => insertText('~~', '~~')} title="Зачеркнутый" className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-black/10 dark:hover:bg-white/10 rounded transition-colors"><Strikethrough className="w-3.5 h-3.5" /></button>
-            <button onClick={() => insertText('<u>', '</u>')} title="Подчеркнутый" className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-black/10 dark:hover:bg-white/10 rounded transition-colors"><Underline className="w-3.5 h-3.5" /></button>
-          </div>
-        )}
-      </div>
-      <div className="min-h-[160px]">
-        {tab === 'write' ? (
-          <textarea
-            id="markdown-textarea"
-            value={value}
-            onChange={(e) => onChange(e.target.value)}
-            placeholder={placeholder}
-            className="w-full h-full min-h-[160px] p-3 text-sm leading-relaxed bg-transparent resize-y focus:outline-none placeholder:text-muted-foreground custom-scrollbar"
-          />
-        ) : (
-          <div className="p-3 min-h-[160px] prose dark:prose-invert max-w-none text-sm">
-            {value ? <MarkdownText text={value} /> : <span className="text-muted-foreground italic">Ничего не написано...</span>}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-};
 
 export const WizardStepInfo: React.FC<WizardStepInfoProps> = ({ data, setData, allTags, allCourses, allDatabases }) => {
   const { t } = useTranslation();

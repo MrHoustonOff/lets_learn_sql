@@ -9,7 +9,7 @@ import { WizardCourseStepInfo } from './components/WizardCourseStepInfo';
 import { WizardCourseStepContent } from './components/WizardCourseStepContent';
 import { WizardCourseStepPreview } from './components/WizardCourseStepPreview';
 import { PublishSuccessModal } from '../task-wizard/components/PublishSuccessModal';
-import { EditExitModal } from './components/EditExitModal';
+import { EditExitModal } from '../../components/ui/EditExitModal';
 
 import { useCourseWizard } from './hooks/useCourseWizard';
 

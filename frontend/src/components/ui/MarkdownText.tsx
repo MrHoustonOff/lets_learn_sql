@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import rehypeRaw from 'rehype-raw';
 
 interface MarkdownTextProps {
   text?: string | null;
@@ -16,6 +17,7 @@ export const MarkdownText: React.FC<MarkdownTextProps> = ({ text, inline = false
       <span className={className}>
         <ReactMarkdown 
           remarkPlugins={[remarkGfm]}
+          rehypePlugins={[rehypeRaw]}
           components={{
             p: React.Fragment
           }}
@@ -29,7 +31,7 @@ export const MarkdownText: React.FC<MarkdownTextProps> = ({ text, inline = false
   // Full block-level markdown rendering
   return (
     <div className={`prose prose-sm dark:prose-invert max-w-none text-foreground/90 ${className}`}>
-      <ReactMarkdown remarkPlugins={[remarkGfm]}>
+      <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]}>
         {text}
       </ReactMarkdown>
     </div>

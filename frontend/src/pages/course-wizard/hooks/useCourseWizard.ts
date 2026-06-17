@@ -61,7 +61,7 @@ export function useCourseWizard(id: string | undefined, isFromEdit: boolean) {
           ? data.authors.map((a: any, i: number) => ({ id: String(i + 1), name: a.name, link: a.link || '' }))
           : [{ id: '1', name: data.author_name || '', link: data.author_url || '' }];
           
-        setCourseData({
+        const newCourseData = {
           title: data.title || '',
           description: data.description || '',
           authors,
@@ -71,10 +71,12 @@ export function useCourseWizard(id: string | undefined, isFromEdit: boolean) {
             description: s.description || '',
             tasks: s.tasks || []
           })) : []
-        });
+        };
+        
+        setCourseData(newCourseData);
         setIsLoaded(true);
         if (isFromEdit) {
-          setInitialCourseDataStr(JSON.stringify(data));
+          setInitialCourseDataStr(JSON.stringify(newCourseData));
         }
       })
       .catch(e => {
