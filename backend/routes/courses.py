@@ -249,6 +249,38 @@ async def get_course_details(id: str):
         status=course["status"],
     )
 
+class CheckDuplicateCourseRequest(BaseModel):
+    title: str
+    description: Optional[str] = None
+    exclude_id: Optional[int] = None
+
+@router.post("/courses/check_duplicate")
+async def check_duplicate_course(payload: CheckDuplicateCourseRequest):
+    sqlite = await get_sqlite_conn()
+    if not sqlite:
+        raise HTTPException(status_code=500, detail="Database connection not available")
+
+    query = """
+        SELECT 
+            COUNT(id) as title_count,
+            SUM(CASE WHEN description = ? THEN 1 ELSE 0 END) as exact_matches
+        FROM courses 
+        WHERE title = ?
+    """
+    params = [payload.description or "", payload.title]
+
+    if payload.exclude_id:
+        query += " AND id != ?"
+        params.append(payload.exclude_id)
+
+    async with sqlite.execute(query, params) as cursor:
+        row = await cursor.fetchone()
+
+    return {
+        "title_matches": row["title_count"] if row else 0,
+        "is_exact_duplicate": (row["exact_matches"] or 0) > 0 if row else False
+    }
+
 
 @router.post("/courses", response_model=CourseWriteResponse, status_code=201)
 async def create_course(payload: CourseCreateRequest):

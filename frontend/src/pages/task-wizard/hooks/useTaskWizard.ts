@@ -42,6 +42,10 @@ export function useTaskWizard(id: string | undefined, isFromEditTask: boolean) {
   const [rulesValidationStatus, setRulesValidationStatus] = useState<'idle' | 'checking' | 'checked'>('idle');
   const [rulesValidationResults, setRulesValidationResults] = useState<Record<string, { passed: boolean, detail: string }>>({});
 
+  const [duplicateTitleCount, setDuplicateTitleCount] = useState(0);
+  const [isDuplicate, setIsDuplicate] = useState(false);
+  const [isCheckingDuplicate, setIsCheckingDuplicate] = useState(false);
+
   // Fetch metadata
   useEffect(() => {
     fetch('/api/tasks?page_size=1')
@@ -141,6 +145,37 @@ export function useTaskWizard(id: string | undefined, isFromEditTask: boolean) {
     rules: draftData.rules || [],
   });
 
+  // Duplicate check (Debounced)
+  useEffect(() => {
+    if (!draftData.title) {
+      setDuplicateTitleCount(0);
+      setIsDuplicate(false);
+      return;
+    }
+    
+    setIsCheckingDuplicate(true);
+    const handler = setTimeout(() => {
+      fetch('/api/tasks/check_duplicate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: draftData.title,
+          description: draftData.description,
+          exclude_id: id !== 'new' ? parseInt(id!) : undefined
+        })
+      })
+      .then(res => res.json())
+      .then(data => {
+        setDuplicateTitleCount(data.title_matches);
+        setIsDuplicate(data.is_exact_duplicate);
+      })
+      .catch(console.error)
+      .finally(() => setIsCheckingDuplicate(false));
+    }, 800);
+
+    return () => clearTimeout(handler);
+  }, [draftData.title, draftData.description, id]);
+
   // Auto-save logic (Debounced)
   useEffect(() => {
     if (!id || id === 'new' || isFromEditTask) return; // Don't auto-save if in Edit mode, wait - Course wizard DOES auto-save in edit mode! Let's follow Course Wizard: wait, course wizard didn't auto save in edit mode? Yes it did: `if (!courseId || !isLoaded || isFromEdit) return;` so it DID NOT auto-save in edit mode. OK.
@@ -234,7 +269,7 @@ export function useTaskWizard(id: string | undefined, isFromEditTask: boolean) {
     let footerNextText = 'wizard.footer.next';
 
     if (currentStep === 1) {
-      canGoNext = !!(draftData.title && draftData.description && draftData.author && draftData.difficulty && draftData.database);
+      canGoNext = !!(draftData.title && draftData.description && draftData.author && draftData.difficulty && draftData.database && !isDuplicate && !isCheckingDuplicate);
     } else if (currentStep === 2) {
       canGoNext = !!draftData.isQueryValid;
     } else if (currentStep === 3) {
@@ -258,7 +293,7 @@ export function useTaskWizard(id: string | undefined, isFromEditTask: boolean) {
     }
 
     return { canGoNext, needsCheckRules, footerNextText };
-  }, [currentStep, draftData, rulesValidationStatus, rulesValidationResults]);
+  }, [currentStep, draftData, rulesValidationStatus, rulesValidationResults, isDuplicate, isCheckingDuplicate]);
 
   const isEmpty =
     !draftData.title.trim() &&
@@ -286,6 +321,9 @@ export function useTaskWizard(id: string | undefined, isFromEditTask: boolean) {
     publishTask,
     checkRules,
     isEmpty,
+    isDuplicate,
+    duplicateTitleCount,
+    isCheckingDuplicate,
     allTags,
     allCourses,
     allDatabases,

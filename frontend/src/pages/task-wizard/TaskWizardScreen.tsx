@@ -51,7 +51,10 @@ export const TaskWizardScreen: React.FC = () => {
     allCourses,
     allDatabases,
     rulesValidationStatus,
-    rulesValidationResults
+    rulesValidationResults,
+    isDuplicate,
+    duplicateTitleCount,
+    isCheckingDuplicate
   } = useTaskWizard(id, isFromEditTask);
 
   const STEPS = useMemo(() => getSteps(t), [t]);
@@ -103,7 +106,7 @@ export const TaskWizardScreen: React.FC = () => {
             onClick={async () => {
               if (id === 'new' && isEmpty) { navigate('/studio'); return; }
               if (isFromEditTask && hasUnsavedChanges) { setShowEditExitModal(true); return; }
-              if (isFromEditTask) { navigate('/studio'); return; }
+              if (isFromEditTask) { navigate('/tasks'); return; }
               
               if (id !== 'new' && isEmpty && !isFromEditTask) {
                 try {
@@ -163,6 +166,9 @@ export const TaskWizardScreen: React.FC = () => {
               allTags={allTags}
               allCourses={allCourses}
               allDatabases={allDatabases}
+              isDuplicate={isDuplicate}
+              duplicateTitleCount={duplicateTitleCount}
+              isCheckingDuplicate={isCheckingDuplicate}
             />
           )}
           {currentStep === 2 && (
@@ -221,12 +227,13 @@ export const TaskWizardScreen: React.FC = () => {
         onSaveAndLeave={handleManualSave}
         canGoNext={!!draftData.title && !!draftData.description}
         lastSaved={lastSaved}
+        returnPath="/tasks"
       />
 
       <PublishSuccessModal 
         isOpen={isPublishedModalOpen} 
         isEditing={isFromEditTask}
-        onBackToStudio={() => navigate('/studio')} 
+        onBackToStudio={() => navigate(isFromEditTask ? '/tasks' : '/studio')} 
       />
     </div>
   );

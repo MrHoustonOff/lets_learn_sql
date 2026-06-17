@@ -412,9 +412,43 @@ class SolutionResponse(BaseModel):
     row_count: int
     duration_ms: float
 
+class CheckDuplicateRequest(BaseModel):
+    title: str
+    description: Optional[str] = None
+    exclude_id: Optional[int] = None
+
 # ---------------------------------------------------------------------------
 # Task Draft System
 # ---------------------------------------------------------------------------
+
+@router.post("/tasks/check_duplicate")
+async def check_duplicate_task(payload: CheckDuplicateRequest):
+    sqlite = await get_sqlite_conn()
+    if not sqlite:
+        raise HTTPException(status_code=500, detail="Database connection not available")
+
+    # We want to check both title count and exact match.
+    # exact match requires both title and description to match.
+    query = """
+        SELECT 
+            COUNT(id) as title_count,
+            SUM(CASE WHEN description = ? THEN 1 ELSE 0 END) as exact_matches
+        FROM tasks 
+        WHERE title = ?
+    """
+    params = [payload.description or "", payload.title]
+
+    if payload.exclude_id:
+        query += " AND id != ?"
+        params.append(payload.exclude_id)
+
+    async with sqlite.execute(query, params) as cursor:
+        row = await cursor.fetchone()
+
+    return {
+        "title_matches": row["title_count"] if row else 0,
+        "is_exact_duplicate": (row["exact_matches"] or 0) > 0 if row else False
+    }
 
 @router.post("/tasks/draft")
 async def create_task_draft(request: Request):

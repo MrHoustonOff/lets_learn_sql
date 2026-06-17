@@ -9,6 +9,7 @@ interface EditExitModalProps {
   onSaveAndLeave: () => Promise<void>;
   canGoNext: boolean;
   lastSaved: Date | null;
+  returnPath: string;
 }
 
 export const EditExitModal: React.FC<EditExitModalProps> = ({
@@ -17,6 +18,7 @@ export const EditExitModal: React.FC<EditExitModalProps> = ({
   onSaveAndLeave,
   canGoNext,
   lastSaved,
+  returnPath,
 }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -52,7 +54,7 @@ export const EditExitModal: React.FC<EditExitModalProps> = ({
             </button>
             <div className="flex gap-3">
               <button
-                onClick={() => navigate('/courses')}
+                onClick={() => navigate(returnPath)}
                 className="flex-1 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all focus:outline-none bg-destructive/10 text-destructive hover:bg-destructive/20 border border-transparent"
               >
                 {t('wizard_course.editExitConfirm.leave_without_saving')}
@@ -60,7 +62,7 @@ export const EditExitModal: React.FC<EditExitModalProps> = ({
               <button
                 onClick={async () => {
                   await onSaveAndLeave();
-                  navigate('/courses');
+                  navigate(returnPath);
                 }}
                 disabled={!canGoNext}
                 className="flex-1 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all focus:outline-none bg-primary/10 text-primary hover:bg-primary/20 border border-transparent disabled:opacity-50 disabled:cursor-not-allowed"

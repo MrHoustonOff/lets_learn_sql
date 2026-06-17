@@ -83,7 +83,11 @@
       "optional": "optional",
       "reference_link": "Reference Link",
       "import_json": "Import from JSON",
-      "import_json_alert": "JSON import is under development"
+      "import_json_alert": "JSON import is under development",
+      "duplicate_title": "Task already exists",
+      "duplicate_desc": "A task with the exact same title and description already exists in the pool. Please modify them to continue.",
+      "duplicate_title_count": "There are already {{count}} task(s) with this title",
+      "duplicate_checking": "Checking..."
     },
     "solution": {
       "empty_placeholder": "Write a query and press \"Execute\".\nYou must successfully execute the query to proceed.",
@@ -220,9 +224,12 @@
       "author": "Author",
       "author_name_placeholder": "Author's name",
       "author_link_placeholder": "https://... (optional)",
-      "cover": "Cover Image (optional)",
+      "cover": "Cover (optional)",
       "cover_placeholder": "Image URL",
-      "add_tag": "Add"
+      "add_tag": "Add",
+      "duplicate_title": "Course already exists",
+      "duplicate_desc": "A course with the exact same title and description already exists in the pool. Please modify them to continue.",
+      "duplicate_title_count": "There are already {{count}} course(s) with this title"
     },
     "content": {
       "title": "Course Curriculum",

@@ -40,6 +40,10 @@ export function useCourseWizard(id: string | undefined, isFromEdit: boolean) {
 
   const [isLoaded, setIsLoaded] = useState(id === 'new');
 
+  const [duplicateTitleCount, setDuplicateTitleCount] = useState(0);
+  const [isDuplicate, setIsDuplicate] = useState(false);
+  const [isCheckingDuplicate, setIsCheckingDuplicate] = useState(false);
+
   const [courseData, setCourseData] = useState({
     title: '',
     description: '',
@@ -96,6 +100,37 @@ export function useCourseWizard(id: string | undefined, isFromEdit: boolean) {
     }
   }, [courseData, isLoaded, isFromEdit, initialCourseDataStr]);
 
+  // Duplicate check (Debounced)
+  useEffect(() => {
+    if (!courseData.title) {
+      setDuplicateTitleCount(0);
+      setIsDuplicate(false);
+      return;
+    }
+    
+    setIsCheckingDuplicate(true);
+    const handler = setTimeout(() => {
+      fetch('/api/courses/check_duplicate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: courseData.title,
+          description: courseData.description,
+          exclude_id: id !== 'new' && courseId ? courseId : undefined
+        })
+      })
+      .then(res => res.json())
+      .then(data => {
+        setDuplicateTitleCount(data.title_matches);
+        setIsDuplicate(data.is_exact_duplicate);
+      })
+      .catch(console.error)
+      .finally(() => setIsCheckingDuplicate(false));
+    }, 800);
+
+    return () => clearTimeout(handler);
+  }, [courseData.title, courseData.description, id, courseId]);
+
   // Step 1: Auto-create draft
   useEffect(() => {
     if (id !== 'new') return; 
@@ -151,13 +186,14 @@ export function useCourseWizard(id: string | undefined, isFromEdit: boolean) {
     return () => clearTimeout(timer);
   }, [courseData, courseId, isLoaded, isFromEdit]);
 
-  const canGoNext = useMemo(() => {
-    let goNext = false;
+  const { canGoNext, nextLabel } = useMemo(() => {
+    let canGoNext = false;
+    let nextLabel = 'wizard.footer.next';
+
     if (currentStep === 1) {
-      goNext =
-        !!courseData.title.trim() &&
-        !!courseData.description.trim() &&
-        courseData.authors.some((a) => !!a.name.trim());
+      const hasContent = !!courseData.title?.trim() && !!courseData.description?.trim();
+      const hasAuthor = courseData.authors.some(a => a.name.trim());
+      canGoNext = hasContent && hasAuthor && !isDuplicate && !isCheckingDuplicate;
     } else if (currentStep === 2) {
       const hasSections = courseData.sections.length > 0;
       const allSectionsValid = courseData.sections.every(
@@ -166,12 +202,12 @@ export function useCourseWizard(id: string | undefined, isFromEdit: boolean) {
           sec.description?.trim().length > 0 &&
           sec.tasks?.length > 0,
       );
-      goNext = hasSections && allSectionsValid;
+      canGoNext = hasSections && allSectionsValid;
     } else if (currentStep === 3) {
-      goNext = true;
+      canGoNext = true;
     }
-    return goNext;
-  }, [currentStep, courseData]);
+    return { canGoNext, nextLabel };
+  }, [currentStep, courseData, isDuplicate, isCheckingDuplicate]);
 
   const handleNext = useCallback(async () => {
     if (currentStep < 3) {
@@ -247,5 +283,8 @@ export function useCourseWizard(id: string | undefined, isFromEdit: boolean) {
     handleNext,
     handleManualSave,
     isEmpty,
+    isDuplicate,
+    duplicateTitleCount,
+    isCheckingDuplicate,
   };
 }

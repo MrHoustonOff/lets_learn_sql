@@ -43,6 +43,9 @@ export const CourseWizardScreen: React.FC = () => {
     handleNext,
     handleManualSave,
     isEmpty,
+    isDuplicate,
+    duplicateTitleCount,
+    isCheckingDuplicate,
   } = useCourseWizard(id, isFromEdit);
 
   const STEPS = useMemo(() => getSteps(t), [t]);
@@ -129,7 +132,15 @@ export const CourseWizardScreen: React.FC = () => {
       {/* MAIN CONTENT AREA */}
       <main className="flex-1 relative overflow-hidden bg-muted/30">
         <div className="absolute inset-0 overflow-y-auto custom-scrollbar p-6 pb-48">
-          {currentStep === 1 && <WizardCourseStepInfo data={courseData} setData={setCourseData} />}
+          {currentStep === 1 && (
+            <WizardCourseStepInfo 
+              data={courseData} 
+              setData={setCourseData} 
+              isDuplicate={isDuplicate}
+              duplicateTitleCount={duplicateTitleCount}
+              isCheckingDuplicate={isCheckingDuplicate}
+            />
+          )}
           {currentStep === 2 && <WizardCourseStepContent data={courseData} setData={setCourseData} />}
           {currentStep === 3 && <WizardCourseStepPreview data={courseData} />}
         </div>
@@ -169,6 +180,7 @@ export const CourseWizardScreen: React.FC = () => {
         onSaveAndLeave={handleManualSave}
         canGoNext={canGoNext}
         lastSaved={lastSaved}
+        returnPath="/courses"
       />
 
       <PublishSuccessModal
