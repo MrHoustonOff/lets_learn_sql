@@ -8,7 +8,8 @@ export const ModalBase: React.FC<{
   children: React.ReactNode; 
   title?: string;
   isMonolith?: boolean;
-}> = ({ isOpen, onClose, children, title, isMonolith = false }) => {
+  disableEsc?: boolean;
+}> = ({ isOpen, onClose, children, title, isMonolith = false, disableEsc = false }) => {
   useEffect(() => {
     if (isOpen) document.body.style.overflow = 'hidden';
     else document.body.style.overflow = '';
@@ -17,11 +18,11 @@ export const ModalBase: React.FC<{
 
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isOpen) onClose();
+      if (e.key === 'Escape' && isOpen && !disableEsc) onClose();
     };
     window.addEventListener('keydown', handleEsc);
     return () => window.removeEventListener('keydown', handleEsc);
-  }, [isOpen, onClose]);
+  }, [isOpen, onClose, disableEsc]);
 
   if (!isOpen) return null;
 

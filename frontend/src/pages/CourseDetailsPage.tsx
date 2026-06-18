@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, CheckCircle2, Circle, Star, ArrowRight, Database, Bookmark } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, Circle, ArrowRight, Database, Bookmark, Pen, Trash2 } from 'lucide-react';
 import { DBViewerModal } from '../components/workspace/DBViewerModal';
+import { MarkdownText } from '../components/ui/MarkdownText';
+import { CourseDeleteModal } from './CourseDeleteModal';
 
 interface TaskDetails {
   id: number;
@@ -41,18 +43,19 @@ export const CourseDetailsPage: React.FC = () => {
   const [courseData, setCourseData] = useState<CourseDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   // Обработка Esc для возврата
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       // Идем назад только если модалка закрыта
-      if (e.key === 'Escape' && !selectedDb) {
+      if (e.key === 'Escape' && !selectedDb && !isDeleteModalOpen) {
         navigate('/courses');
       }
     };
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [navigate, selectedDb]);
+  }, [navigate, selectedDb, isDeleteModalOpen]);
 
   useEffect(() => {
     if (!id) return;
@@ -71,6 +74,24 @@ export const CourseDetailsPage: React.FC = () => {
         setLoading(false);
       });
   }, [id]);
+
+  const handleEditCourse = () => {
+    navigate(`/studio/course/${id}`, { state: { fromEditCourse: true } });
+  };
+
+  const handleDeleteCourse = async (deleteTasksOption: 'none' | 'orphaned') => {
+    try {
+      const res = await fetch(`/api/courses/${id}?delete_tasks=${deleteTasksOption}`, {
+        method: 'DELETE',
+      });
+      if (!res.ok) throw new Error('Failed to delete course');
+      setIsDeleteModalOpen(false);
+      navigate('/courses');
+    } catch (err) {
+      console.error(err);
+      alert('Ошибка при удалении курса');
+    }
+  };
 
   if (loading) {
     return (
@@ -100,7 +121,25 @@ export const CourseDetailsPage: React.FC = () => {
         </button>
 
         <div className="mb-10">
-          <h1 className="text-3xl font-bold mb-4">{courseData.title}</h1>
+          <div className="flex items-center gap-4 mb-4">
+            <h1 className="text-3xl font-bold">{courseData.title}</h1>
+            <div className="flex items-center gap-2 mt-1">
+              <button 
+                onClick={handleEditCourse}
+                className="p-1.5 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors focus:outline-none"
+                title={t('courses_page:edit')}
+              >
+                <Pen size={18} />
+              </button>
+              <button 
+                onClick={() => setIsDeleteModalOpen(true)}
+                className="p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors focus:outline-none"
+                title={t('courses_page:delete')}
+              >
+                <Trash2 size={18} />
+              </button>
+            </div>
+          </div>
           <p className="text-muted-foreground text-sm mb-6 leading-relaxed max-w-3xl">
             {courseData.description}
           </p>
@@ -180,7 +219,7 @@ export const CourseDetailsPage: React.FC = () => {
                         )}
                       </div>
                       <span className={`text-sm ${isDone ? 'text-muted-foreground line-through opacity-70' : isBookmarked ? 'text-warning-text font-bold' : 'text-foreground font-medium'}`}>
-                        {idx + 1}. {task.title}
+                        {idx + 1}. <MarkdownText inline text={task.title} />
                       </span>
                     </div>
 
@@ -200,6 +239,12 @@ export const CourseDetailsPage: React.FC = () => {
         isOpen={!!selectedDb} 
         onClose={() => setSelectedDb(null)} 
         dbName={selectedDb || ''} 
+      />
+
+      <CourseDeleteModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={handleDeleteCourse}
       />
     </div>
   );

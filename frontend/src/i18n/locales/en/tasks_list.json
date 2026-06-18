@@ -1,0 +1,86 @@
+{
+  "page": {
+    "title": "Tasks",
+    "subtitle": "All course tasks in one place",
+    "search_placeholder": "Search tasks...",
+    "create": "Create task",
+    "random_task": "Random task",
+    "loading": "Loading..."
+  },
+  "random_modal": {
+    "title": "Random task",
+    "subtitle": "Adjust filters to find a task",
+    "clear": "Clear",
+    "all": "All",
+    "not_found": "Oops, no matching tasks found!",
+    "solve": "Solve"
+  },
+  "sidebar": {
+    "title": "Filters",
+    "reset": "Reset ({{count}})",
+    "found": "Found:",
+    "from": "of"
+  },
+  "filter": {
+    "status": {
+      "label": "Status",
+      "all": "All",
+      "solved": "Solved",
+      "unsolved": "Unsolved",
+      "flagged": "Flagged"
+    },
+    "difficulty": "Difficulty",
+    "database": "Database",
+    "tags": "Tags",
+    "courses": "Courses"
+  },
+  "difficulty": {
+    "easy": "Easy",
+    "medium": "Medium",
+    "hard": "Hard"
+  },
+  "sort": {
+    "created": "Created date",
+    "solved": "Solved date",
+    "ascending": "Ascending",
+    "descending": "Descending"
+  },
+  "row": {
+    "created": "created",
+    "solved": "solved",
+    "not_solved": "not solved",
+    "solve": "Solve",
+    "edit": "Edit",
+    "flag": "Bookmark",
+    "unflag": "Remove bookmark",
+    "tags": "Tags:",
+    "courses": "Courses:"
+  },
+  "empty": {
+    "title": "Nothing found",
+    "subtitle": "Try changing the filters or your search query",
+    "reset": "Reset all filters"
+  },
+  "preview": {
+    "tags": "Tags",
+    "no_tags": "No tags yet",
+    "courses": "Courses",
+    "no_courses": "No courses yet",
+    "solve": "Solve",
+    "bookmark": "Bookmark",
+    "unbookmark": "Remove bookmark",
+    "flag": "Flag",
+    "edit": "Edit task",
+    "delete": "Delete task",
+    "close": "Close",
+    "solution": "Correct solution",
+    "delete_title": "Delete task?",
+    "delete_confirming": "Deleting...",
+    "delete_confirm": "Delete permanently",
+    "delete_desc1": "The task",
+    "delete_desc2": "will be permanently deleted along with all user solutions."
+  },
+  "pagination": {
+    "per_page": "{{size}} / page"
+  }
+}

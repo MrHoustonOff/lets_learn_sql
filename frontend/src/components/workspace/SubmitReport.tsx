@@ -10,6 +10,8 @@ import { AttemptModal } from './submit/AttemptModal';
 import { ReferenceModal } from './submit/ReferenceModal';
 import { useQueryStore } from '../../store/queryStore';
 
+import { useTaskStore } from '../../store/taskStore';
+
 interface SubmitReportProps {
   taskId: number;
   report?: GradeReport | null;
@@ -25,6 +27,7 @@ export const SubmitReport: React.FC<SubmitReportProps> = (_props) => {
   const [showReference, setShowReference] = useState(false);
 
   const { history, deleteAttempt, deleteAllAttempts } = useQueryStore();
+  const { activeTask } = useTaskStore();
 
   const isPassed = report ? report.verdict : false;
   const duration = report ? report.duration_ms : 0;
@@ -119,7 +122,7 @@ export const SubmitReport: React.FC<SubmitReportProps> = (_props) => {
           className="px-4 py-2 bg-background border border-glass-border hover:bg-hover text-foreground font-medium rounded-md text-xs transition-colors flex items-center gap-2 shadow-sm"
         >
           <KeyRound size={14} className="text-muted-foreground" />
-          {t('show_author_solution', 'Показать решение автора')}
+          {t('show_author_solution', 'Правильное решение')}
         </button>
         <p className="text-2xs text-muted-foreground/60 text-center max-w-[220px]">
           {t('author_solution_hint', 'Подсмотрите оригинальное решение, если застряли или хотите себя проверить.')}
@@ -137,7 +140,11 @@ export const SubmitReport: React.FC<SubmitReportProps> = (_props) => {
           }}
         />
       )}
-      <ReferenceModal isOpen={showReference} onClose={() => setShowReference(false)} />
+      <ReferenceModal 
+        isOpen={showReference} 
+        onClose={() => setShowReference(false)} 
+        sql={activeTask?.reference_sql}
+      />
     </div>
   );
 };

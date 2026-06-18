@@ -49,7 +49,7 @@ export const Stage2Report: React.FC<{ report: any }> = ({ report }) => {
             });
           }
 
-          const ruleDescription = tRules(ruleKey, translatedParams);
+          const ruleDescription = tRules(ruleKey, translatedParams) as string;
 
           // Get translated result message, fallback to backend's detail_msg
           const resultStatus = r.passed ? 'passed' : 'failed';
@@ -58,7 +58,7 @@ export const Stage2Report: React.FC<{ report: any }> = ({ report }) => {
             ...translatedParams,
             actual: r.actual_value,
             defaultValue: r.detail_msg
-          });
+          }) as string;
 
           return (
             <div key={r.rule_id} className="bg-card rounded-xl border border-glass-border p-3.5 sm:px-5">

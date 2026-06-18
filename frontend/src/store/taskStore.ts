@@ -8,6 +8,7 @@ export interface Task {
   dbName: string;
   isBookmarked: boolean;
   isSolved: boolean;
+  reference_sql?: string;
 }
 
 interface TaskState {
@@ -49,7 +50,8 @@ export const useTaskStore = create<TaskState>((set, get) => ({
         hint: data.hint,
         dbName: data.db_name,
         isBookmarked: data.is_bookmarked,
-        isSolved: data.is_solved
+        isSolved: data.is_solved,
+        reference_sql: data.reference_sql
       };
       set({ activeTask: task, isLoading: false });
     } catch (err: any) {

@@ -5,6 +5,7 @@ import { useUIStore, type SlotId } from '../../store/uiStore';
 import { useTaskStore } from '../../store/taskStore';
 import { useQueryStore } from '../../store/queryStore';
 import { Maximize2, Minimize2, Bookmark } from 'lucide-react';
+import { MarkdownText } from '../ui/MarkdownText';
 import { DragHandle } from './DragHandle';
 import { SubmitReport } from './SubmitReport';
 
@@ -32,17 +33,6 @@ export const TaskPane: React.FC<TaskPaneProps> = ({ slotId }) => {
 
 
   const isBookmarked = activeTask.isBookmarked;
-
-  const renderFormattedText = (text: string | null) => {
-    if (!text) return null;
-    const parts = text.split(/(`[^`]+`)/g);
-    return parts.map((part, idx) => {
-      if (part.startsWith('`') && part.endsWith('`')) {
-        return <code key={idx}>{part.slice(1, -1)}</code>;
-      }
-      return part;
-    });
-  };
 
   const content = (
     <div className={`h-full flex flex-col transition-all duration-300 min-h-0 min-w-0 ${isMaximized ? 'fixed inset-4 z-modal bg-background rounded-2xl shadow-2xl border border-glass-border overflow-hidden' : 'bg-transparent overflow-hidden'}`}>
@@ -107,18 +97,20 @@ export const TaskPane: React.FC<TaskPaneProps> = ({ slotId }) => {
       <div className="flex-1 p-5 overflow-y-auto prose dark:prose-invert max-w-none text-sm custom-scrollbar min-h-0">
         {taskPaneTab === 'task' ? (
           <div className="animate-in fade-in duration-300">
-            <h3 className="mt-0 mb-4 text-lg font-bold">{activeTask.title}</h3>
-            <p className="leading-relaxed">
-              {renderFormattedText(activeTask.description)}
-            </p>
+            <h3 className="mt-0 mb-4 text-lg font-bold">
+              <MarkdownText inline text={activeTask.title} />
+            </h3>
+            <div className="leading-relaxed">
+              <MarkdownText text={activeTask.description} />
+            </div>
             
             {activeTask.hint && (
               <div className="mt-6 p-4 bg-info/10 border border-info/20 rounded-xl">
                 <p className="text-info m-0 leading-relaxed">
                   <strong className="block mb-1">{t('task_pane:mock_hint_title')}</strong> 
-                  <span>
-                    {renderFormattedText(activeTask.hint)}
-                  </span>
+                  <div className="text-sm">
+                    <MarkdownText text={activeTask.hint} />
+                  </div>
                 </p>
               </div>
             )}

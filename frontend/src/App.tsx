@@ -6,7 +6,11 @@ import { CoursesListPage } from './pages/CoursesListPage';
 import { CourseDetailsPage } from './pages/CourseDetailsPage';
 import { DatabasesListPage } from './pages/DatabasesListPage';
 import { ProfilePage } from './pages/ProfilePage';
-import { TasksPage, SettingsPage } from './pages/PlaceholderPages';
+import { TasksListPage } from './pages/TasksListPage';
+import { StudioPage } from './pages/StudioPage';
+import { SettingsPage } from './pages/PlaceholderPages';
+import { TaskWizardScreen } from './pages/task-wizard/TaskWizardScreen';
+import { CourseWizardScreen } from './pages/course-wizard/CourseWizardScreen';
 
 const router = createBrowserRouter([
   {
@@ -31,11 +35,15 @@ const router = createBrowserRouter([
       },
       {
         path: 'tasks',
-        element: <TasksPage />,
+        element: <TasksListPage />,
       },
       {
         path: 'tasks/:id',
         element: <TaskScreen />,
+      },
+      {
+        path: 'studio',
+        element: <StudioPage />,
       },
       {
         path: 'settings',
@@ -47,6 +55,14 @@ const router = createBrowserRouter([
       },
     ],
   },
+  {
+    path: '/studio/task/:id',
+    element: <TaskWizardScreen />
+  },
+  {
+    path: '/studio/course/:id',
+    element: <CourseWizardScreen />
+  }
 ]);
 
 function App() {

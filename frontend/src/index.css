@@ -26,7 +26,7 @@
     --accent: 37.5 14.8% 89.4%; /* lBorderLight #e8e5e0 */
     --accent-foreground: 40 6.1% 9.6%; /* lPriText #1a1917 */
 
-    --destructive: 0 72.2% 50.6%; /* lDanger #dc2626 */
+    --destructive: 0 84.2% 50%; /* lDanger strong red */
     --destructive-foreground: 28.7 100% 95.5%; /* o50 #fff3e8 */
 
     --border: 40 9.2% 74.5%; /* lBorderMid #c4c0b8 */
@@ -88,7 +88,7 @@
     --accent: 0 0% 18%; /* dCardHover #2e2e2e */
     --accent-foreground: 40 28.6% 91.8%; /* dPriText #f0ece4 */
 
-    --destructive: 0 78.9% 72.2%; /* dDanger #f08080 */
+    --destructive: 0 84.2% 60.2%; /* dDanger strong red */
     --destructive-foreground: 0 0% 5.9%; /* dPage #0f0f0f */
 
     --border: 0 0% 26.7%; /* dBorder #444444 */
@@ -132,6 +132,11 @@
   }
   body {
     @apply bg-background text-foreground/80 antialiased overflow-hidden select-none;
+  }
+  
+  /* Inline code styling like Obsidian */
+  code:not(pre code) {
+    @apply bg-muted text-foreground px-1.5 py-0.5 rounded-md font-mono text-[0.9em] border border-border/40;
   }
 }
 

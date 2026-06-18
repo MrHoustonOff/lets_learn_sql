@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useUIStore } from '../../store/uiStore';
 import { CheckCircle2, Circle, Star, ChevronRight } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
+import { MarkdownText } from '../ui/MarkdownText';
 
 export const CourseTOC: React.FC = () => {
   const { t } = useTranslation();
@@ -116,6 +117,7 @@ export const CourseTOC: React.FC = () => {
               <ul className="space-y-0.5">
                 {section.tasks.map((task, idx) => {
                   const isActive = false; // TODO: active task check from URL
+                  const isDone = task.status === 'done';
                   return (
                     <li key={task.id}>
                       <NavLink 
@@ -139,8 +141,8 @@ export const CourseTOC: React.FC = () => {
                           )}
                         </div>
                         
-                        <span className="truncate flex-1">
-                          {idx + 1}. {task.title}
+                        <span className={`truncate flex-1 ${isDone ? 'opacity-70' : ''}`}>
+                          {idx + 1}. <MarkdownText inline text={task.title} />
                         </span>
                       </NavLink>
                     </li>
