@@ -267,7 +267,7 @@
     "current_drafts": "Current drafts",
     "create_task": "Create task",
     "create_course": "Create course",
-    "import": "Import JSON!",
+    "import": "Import JSON",
     "filters": {
       "all_types": "All types",
       "tasks": "Tasks",
