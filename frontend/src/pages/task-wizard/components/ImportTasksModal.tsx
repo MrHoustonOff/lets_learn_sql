@@ -148,6 +148,12 @@ export const ImportTasksModal: React.FC<ImportTasksModalProps> = ({
           parsedTasks.push(...parsed);
         } else if (parsed && Array.isArray(parsed.tasks)) {
           parsedTasks.push(...parsed.tasks);
+        } else if (parsed && parsed.task && typeof parsed.task === 'object') {
+          const tObj = parsed.task;
+          if (!tObj.title || !tObj.reference_sql) {
+            throw new Error(t('import_tasks.wrong_format'));
+          }
+          parsedTasks.push(tObj);
         } else if (parsed && typeof parsed === 'object') {
           // Verify it's a valid task object
           if (!parsed.title || !parsed.reference_sql) {
@@ -183,7 +189,7 @@ export const ImportTasksModal: React.FC<ImportTasksModalProps> = ({
       const rawTask = tasksList[i];
       
       // Determine db_name from the task JSON
-      const dbName = rawTask.db_name || rawTask.database_technical_name || 'northwind';
+      const dbName = rawTask.db_name || rawTask.database_technical_name || rawTask.database || 'northwind';
       
       const resultItem: ProcessedTaskResult = {
         taskData: rawTask,
