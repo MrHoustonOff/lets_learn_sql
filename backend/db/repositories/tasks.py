@@ -247,7 +247,24 @@ class TaskRepository:
                 (task_id, rule.category, rule.condition, json.dumps(rule.params), rule.severity, rule.message, i)
             )
 
+        # Recalculate signature
+        async with self.conn.execute("SELECT title, description FROM tasks WHERE id = ?", (task_id,)) as cur:
+            t_row = await cur.fetchone()
+            if t_row:
+                import hashlib
+                t_val = t_row["title"] or ""
+                d_val = t_row["description"] or ""
+                sig_val = hashlib.md5(f"{t_val}||{d_val}".encode("utf-8")).hexdigest()
+                await self.conn.execute("UPDATE tasks SET task_signature = ? WHERE id = ?", (sig_val, task_id))
+
         await self.conn.commit()
+
+    async def get_task_by_signature(self, signature: str) -> Optional[Dict[str, Any]]:
+        async with self.conn.execute("SELECT id, title, status FROM tasks WHERE task_signature = ?", (signature,)) as cursor:
+            row = await cursor.fetchone()
+            if row:
+                return dict(row)
+            return None
 
     async def publish_task(self, task_id: int) -> Optional[aiosqlite.Row]:
         async with self.conn.execute("SELECT * FROM tasks WHERE id = ?", (task_id,)) as cursor:
@@ -341,4 +358,84 @@ class TaskRepository:
         else:
             await self.conn.execute("DELETE FROM attempts WHERE task_id = ? AND user_id = ?", (task_id, user_id))
         await self.conn.commit()
+
+    async def get_database_id_by_name(self, db_name: str) -> Optional[int]:
+        async with self.conn.execute("SELECT id FROM databases WHERE technical_name = ?", (db_name,)) as cursor:
+            row = await cursor.fetchone()
+            if row:
+                return row["id"]
+            return None
+
+    async def import_task(
+        self,
+        title: str,
+        description: str,
+        difficulty: int,
+        database_id: int,
+        author_name: Optional[str],
+        source_url: Optional[str],
+        reference_sql: str,
+        order_matters: bool,
+        tags: List[str],
+        rules: List[Any],
+        signature: str,
+        existing_id: Optional[int] = None
+    ) -> int:
+        if existing_id:
+            task_id = existing_id
+            await self.conn.execute(
+                """
+                UPDATE tasks
+                SET title = ?,
+                    description = ?,
+                    difficulty = ?,
+                    database_id = ?,
+                    author_name = ?,
+                    source_url = ?,
+                    reference_sql = ?,
+                    order_matters = ?,
+                    task_signature = ?,
+                    updated_at = datetime('now')
+                WHERE id = ?
+                """,
+                (title, description, difficulty, database_id, author_name, source_url, reference_sql, order_matters, signature, task_id)
+            )
+        else:
+            async with self.conn.execute(
+                """
+                INSERT INTO tasks (title, description, difficulty, database_id, author_name, source_url, reference_sql, order_matters, status, task_signature)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'published', ?)
+                """,
+                (title, description, difficulty, database_id, author_name, source_url, reference_sql, order_matters, signature)
+            ) as cursor:
+                task_id = cursor.lastrowid
+
+        # Insert tags
+        await self.conn.execute("DELETE FROM task_tags WHERE task_id = ?", (task_id,))
+        for tag_name in tags:
+            await self.conn.execute("INSERT OR IGNORE INTO tags (name) VALUES (?)", (tag_name,))
+            async with self.conn.execute("SELECT id FROM tags WHERE name = ?", (tag_name,)) as cursor:
+                row = await cursor.fetchone()
+                if row:
+                    await self.conn.execute("INSERT OR IGNORE INTO task_tags (task_id, tag_id) VALUES (?, ?)", (task_id, row["id"]))
+
+        # Insert rules
+        await self.conn.execute("DELETE FROM task_rules WHERE task_id = ?", (task_id,))
+        for i, rule in enumerate(rules):
+            category = rule.get("category") if isinstance(rule, dict) else rule.category
+            condition = rule.get("condition") if isinstance(rule, dict) else rule.condition
+            params = rule.get("params") if isinstance(rule, dict) else rule.params
+            severity = rule.get("severity", "blocking") if isinstance(rule, dict) else getattr(rule, "severity", "blocking")
+            message = rule.get("message", "") if isinstance(rule, dict) else getattr(rule, "message", "")
+            await self.conn.execute(
+                """
+                INSERT INTO task_rules (task_id, category, condition, params_json, severity, message, sort_order)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+                """,
+                (task_id, category, condition, json.dumps(params), severity, message, i)
+            )
+
+        await self.conn.commit()
+        return task_id
+
 

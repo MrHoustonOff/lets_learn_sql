@@ -1,10 +1,13 @@
 from fastapi import APIRouter, HTTPException, Query, Request
-from typing import Optional
+from typing import Optional, List
 
 from core.sqlite_db import get_sqlite_conn
 from db.repositories.tasks import TaskRepository
 from services.tasks import TaskService
-from schemas.tasks import TasksListResponse, TaskResponse
+from schemas.tasks import (
+    TasksListResponse, TaskResponse, TaskImportResponse,
+    TaskExportPayload, TaskExportRequest
+)
 
 router = APIRouter()
 
@@ -34,6 +37,33 @@ async def list_tasks(
         search, difficulty, tag_ids, course_ids,
         database_id, status, sort_by, sort_dir, page, page_size, user_id
     )
+
+@router.post("/tasks/export", response_model=TaskExportPayload)
+async def export_tasks(payload: TaskExportRequest, request: Request):
+    sqlite = await get_sqlite_conn()
+    if not sqlite:
+        raise HTTPException(status_code=500, detail="Database connection not available")
+    
+    user_id = getattr(request.state, "user_id", 1)
+    repo = TaskRepository(sqlite)
+    svc = TaskService(repo)
+    
+    exported = await svc.export_tasks(payload.task_ids, user_id)
+    return TaskExportPayload(tasks=exported)
+
+@router.post("/tasks/import", response_model=TaskImportResponse)
+async def import_tasks(payload: TaskExportPayload, request: Request, mode: str = Query("skip")):
+    if mode not in ("skip", "overwrite"):
+        raise HTTPException(status_code=400, detail="Invalid mode. Must be 'skip' or 'overwrite'")
+    
+    sqlite = await get_sqlite_conn()
+    if not sqlite:
+        raise HTTPException(status_code=500, detail="Database connection not available")
+        
+    repo = TaskRepository(sqlite)
+    svc = TaskService(repo)
+    
+    return await svc.import_tasks(payload, mode)
 
 @router.get("/tasks/{id}", response_model=TaskResponse)
 async def get_task_details(id: int, request: Request):

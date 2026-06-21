@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { PenTool, CheckSquare, BookOpen, ChevronRight, Wand2, Copy, CheckCircle2, Trash2, ChevronDown, ChevronLeft, ArrowRight } from 'lucide-react';
+import { PenTool, CheckSquare, BookOpen, ChevronRight, Wand2, Copy, CheckCircle2, Trash2, ChevronDown, ChevronLeft, ArrowRight, Upload } from 'lucide-react';
 import { ConfirmModal } from '../components/ui/ConfirmModal';
 import { DifficultyDots } from './tasks-list/DifficultyDots';
 import { Badge } from '../components/ui/Badge';
+import { ImportTasksModal } from './task-wizard/components/ImportTasksModal';
 
 const MOCK_PROMPTS = [
   { 
@@ -107,6 +108,7 @@ export const StudioPage: React.FC = () => {
   const navigate = useNavigate();
   const [copiedId, setCopiedId] = useState<number | null>(null);
   const [isCreatingTask, setIsCreatingTask] = useState(false);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [drafts, setDrafts] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [deletingDraft, setDeletingDraft] = useState<{id: number, type: string} | null>(null);
@@ -118,7 +120,8 @@ export const StudioPage: React.FC = () => {
   const [pageSize, setPageSize] = useState(10);
   const [pageSizeOpen, setPageSizeOpen] = useState(false);
 
-  React.useEffect(() => {
+  const loadDrafts = () => {
+    setIsLoading(true);
     fetch('/api/studio/drafts')
       .then(r => r.json())
       .then(data => {
@@ -129,6 +132,10 @@ export const StudioPage: React.FC = () => {
         console.error(e);
         setIsLoading(false);
       });
+  };
+
+  React.useEffect(() => {
+    loadDrafts();
   }, []);
 
   // Reset page when filters change
@@ -222,6 +229,12 @@ export const StudioPage: React.FC = () => {
                     className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary text-xs font-bold transition-colors"
                   >
                     <BookOpen size={14} /> {t('studio_page.create_course')}
+                  </button>
+                  <button 
+                    onClick={() => setIsImportModalOpen(true)}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary text-xs font-bold transition-colors"
+                  >
+                    <Upload size={14} /> {t('studio_page.import')}
                   </button>
                 </div>
               </div>
@@ -430,6 +443,12 @@ export const StudioPage: React.FC = () => {
       >
         {t('studio_page.delete_modal.text1')} <span className="text-destructive font-bold">{t('studio_page.delete_modal.text2')}</span>{t('studio_page.delete_modal.text3')}
       </ConfirmModal>
+
+      <ImportTasksModal 
+        isOpen={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
+        onImportFinished={loadDrafts}
+      />
 
       </main>
   );

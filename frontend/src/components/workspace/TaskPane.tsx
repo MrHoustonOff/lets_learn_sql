@@ -106,12 +106,12 @@ export const TaskPane: React.FC<TaskPaneProps> = ({ slotId }) => {
             
             {activeTask.hint && (
               <div className="mt-6 p-4 bg-info/10 border border-info/20 rounded-xl">
-                <p className="text-info m-0 leading-relaxed">
+                <div className="text-info m-0 leading-relaxed">
                   <strong className="block mb-1">{t('task_pane:mock_hint_title')}</strong> 
                   <div className="text-sm">
                     <MarkdownText text={activeTask.hint} />
                   </div>
-                </p>
+                </div>
               </div>
             )}
           </div>
