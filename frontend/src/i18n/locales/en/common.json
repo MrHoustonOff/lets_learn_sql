@@ -44,7 +44,9 @@
       "edit_task": "Edit Task",
       "saving": "Saving...",
       "saved": "Saved",
-      "not_saved": "Not saved"
+      "not_saved": "Not saved",
+      "save_changes": "Save Changes",
+      "last_saved": "Last saved: {{time}}"
     },
     "footer": {
       "back": "Back",
