@@ -294,7 +294,7 @@ export const DBVisualizer: React.FC<DBVisualizerProps> = ({ schema, database = '
             onMouseEnter={handleMouseEnterButton}
             onMouseLeave={handleMouseLeaveButton}
             disabled={isCopying}
-            className={`pointer-events-auto flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium text-base transition-all shadow-sm border ${
+            className={`pointer-events-auto flex items-center justify-center gap-2 w-[215px] whitespace-nowrap px-4 py-2.5 rounded-xl font-medium text-base transition-all shadow-sm border ${
               isCopied
                 ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/50 dark:bg-emerald-400/10 dark:text-emerald-400 dark:border-emerald-400/50'
                 : 'bg-glass backdrop-blur-md border-glass-border hover:bg-hover text-foreground'
