@@ -316,3 +316,29 @@ class TaskRepository:
         except Exception:
             pass
 
+    async def get_task_attempts(self, task_id: int, user_id: int) -> List[aiosqlite.Row]:
+        query = """
+            SELECT id, sql_text, is_correct, report_json, created_at
+            FROM attempts
+            WHERE task_id = ? AND user_id = ?
+            ORDER BY created_at DESC
+        """
+        async with self.conn.execute(query, (task_id, user_id)) as cursor:
+            return await cursor.fetchall()
+
+    async def delete_task_attempt(self, task_id: int, attempt_id: int, user_id: int) -> None:
+        await self.conn.execute(
+            "DELETE FROM attempts WHERE id = ? AND task_id = ? AND user_id = ?",
+            (attempt_id, task_id, user_id)
+        )
+        await self.conn.commit()
+
+    async def delete_all_task_attempts(self, task_id: int, user_id: int, type: str) -> None:
+        if type == "correct":
+            await self.conn.execute("DELETE FROM attempts WHERE task_id = ? AND user_id = ? AND is_correct = 1", (task_id, user_id))
+        elif type == "incorrect":
+            await self.conn.execute("DELETE FROM attempts WHERE task_id = ? AND user_id = ? AND is_correct = 0", (task_id, user_id))
+        else:
+            await self.conn.execute("DELETE FROM attempts WHERE task_id = ? AND user_id = ?", (task_id, user_id))
+        await self.conn.commit()
+

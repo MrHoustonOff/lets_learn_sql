@@ -1,5 +1,5 @@
-from pydantic import BaseModel
-from typing import List, Optional, Literal
+from pydantic import BaseModel, field_validator
+from typing import List, Optional, Literal, Any
 
 # ---------------------------------------------------------------------------
 # Read models
@@ -81,3 +81,11 @@ class CheckDuplicateCourseRequest(BaseModel):
     title: str
     description: Optional[str] = None
     exclude_id: Optional[int] = None
+
+    @field_validator("exclude_id", mode="before")
+    @classmethod
+    def empty_str_to_none(cls, v: Any) -> Any:
+        if v == "":
+            return None
+        return v
+

@@ -1,5 +1,5 @@
-from pydantic import BaseModel
-from typing import Optional, List
+from pydantic import BaseModel, field_validator
+from typing import Optional, List, Any
 
 class TagOut(BaseModel):
     id: int
@@ -72,6 +72,14 @@ class CheckDuplicateRequest(BaseModel):
     title: str
     description: Optional[str] = None
     exclude_id: Optional[int] = None
+
+    @field_validator("exclude_id", mode="before")
+    @classmethod
+    def empty_str_to_none(cls, v: Any) -> Any:
+        if v == "":
+            return None
+        return v
+
 
 class SolutionResponse(BaseModel):
     solution_sql: str

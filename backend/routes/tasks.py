@@ -139,3 +139,63 @@ async def delete_task(id: int):
     repo = TaskRepository(sqlite)
     await repo.delete_task(id)
     return {"status": "ok"}
+
+# -----------------------------------------------------------------------------
+# Attempts History
+# -----------------------------------------------------------------------------
+
+@router.get("/tasks/{id}/attempts")
+async def get_task_attempts(id: int, request: Request):
+    """Fetch history of attempts for a specific task."""
+    sqlite = await get_sqlite_conn()
+    if not sqlite:
+        raise HTTPException(status_code=500, detail="Database connection not available")
+
+    user_id = getattr(request.state, "user_id", 1)
+    repo = TaskRepository(sqlite)
+    rows = await repo.get_task_attempts(id, user_id)
+
+    results = []
+    for row in rows:
+        try:
+            report = json.loads(row["report_json"]) if row["report_json"] else None
+            duration = report.get("duration_ms", 0) if report else 0
+        except Exception:
+            report = {}
+            duration = 0
+
+        created_at_str = str(row["created_at"]).replace(" ", "T")
+        if not created_at_str.endswith("Z"):
+            created_at_str += "Z"
+
+        results.append({
+            "id": row["id"],
+            "attempt_id": str(row["id"]), 
+            "sql": row["sql_text"],
+            "verdict": bool(row["is_correct"]),
+            "created_at": created_at_str,
+            "date": created_at_str,
+            "duration_ms": duration,
+            "report": report
+        })
+
+    return results
+
+@router.delete("/tasks/{id}/attempts/{attempt_id}")
+async def delete_task_attempt(id: int, attempt_id: int, request: Request):
+    """Delete a specific attempt."""
+    sqlite = await get_sqlite_conn()
+    user_id = getattr(request.state, "user_id", 1)
+    repo = TaskRepository(sqlite)
+    await repo.delete_task_attempt(id, attempt_id, user_id)
+    return {"status": "ok"}
+
+@router.delete("/tasks/{id}/attempts")
+async def delete_all_task_attempts(id: int, request: Request, type: str = "all"):
+    """Mass delete attempts: 'all', 'correct', 'incorrect'."""
+    sqlite = await get_sqlite_conn()
+    user_id = getattr(request.state, "user_id", 1)
+    repo = TaskRepository(sqlite)
+    await repo.delete_all_task_attempts(id, user_id, type)
+    return {"status": "ok"}
+
