@@ -6,19 +6,18 @@ POST /api/tasks/{id}/submit
 
 Reference: правила_сравнения (1).md
 """
+import time
 import json
 from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel
-
 from core.sqlite_db import get_sqlite_conn
+from core import database as db_module
 from core.grader import grade_submission
 from core.security import validate_sql
 
+from schemas.execution import SubmitRequest
+
 router = APIRouter()
 
-
-class SubmitRequest(BaseModel):
-    sql: str
 
 
 @router.post("/tasks/{id}/submit")

@@ -1,34 +1,14 @@
 import json
 from fastapi import APIRouter, HTTPException, Request
-from pydantic import BaseModel
 from typing import Optional, List
 from core.sqlite_db import get_sqlite_conn
 
+from schemas.tasks import (
+    RuleInput, DraftUpdateInput, CheckDuplicateRequest
+)
+
 router = APIRouter()
 
-class RuleInput(BaseModel):
-    category: str
-    condition: str
-    params: dict
-    severity: str = "blocking"
-    message: str = ""
-
-class DraftUpdateInput(BaseModel):
-    title: Optional[str] = None
-    description: Optional[str] = None
-    author_name: Optional[str] = None
-    source_url: Optional[str] = None
-    difficulty: Optional[str] = None
-    database_id: Optional[int] = None
-    reference_sql: Optional[str] = None
-    order_matters: Optional[bool] = None
-    tags: List[str] = []
-    rules: List[RuleInput] = []
-
-class CheckDuplicateRequest(BaseModel):
-    title: str
-    description: Optional[str] = None
-    exclude_id: Optional[int] = None
 
 @router.post("/tasks/check_duplicate")
 async def check_duplicate_task(payload: CheckDuplicateRequest):

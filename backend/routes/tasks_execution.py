@@ -1,32 +1,15 @@
 import time
 from fastapi import APIRouter, HTTPException, Request
-from pydantic import BaseModel
 from typing import List
 from core.sqlite_db import get_sqlite_conn
 from core import database as db_module
 from core.config import settings
 
+from schemas.tasks import SolutionResponse, RuleInput, CheckRulesRequest
+from core.exceptions import RollbackTransaction
+
 router = APIRouter()
 
-class SolutionResponse(BaseModel):
-    solution_sql: str
-    columns: List[str]
-    rows: List[List]
-    row_count: int
-    duration_ms: float
-
-class RuleInput(BaseModel):
-    category: str
-    condition: str
-    params: dict
-    severity: str = "blocking"
-    message: str = ""
-
-class CheckRulesRequest(BaseModel):
-    rules: List[RuleInput]
-
-class RollbackTransaction(Exception):
-    pass
 
 @router.post("/tasks/{id}/execute-reference", response_model=SolutionResponse)
 async def execute_reference_sql(id: int, request: Request):

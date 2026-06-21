@@ -1,19 +1,11 @@
 import json
 from fastapi import APIRouter, HTTPException, Request
-from pydantic import BaseModel
-from typing import Optional, List
+from typing import List, Optional
 from core.sqlite_db import get_sqlite_conn
 
-router = APIRouter()
+from schemas.studio import DraftListItem
 
-class DraftListItem(BaseModel):
-    id: int
-    type: str
-    title: str
-    step: str
-    updatedAt: str
-    difficulty: Optional[int] = None
-    tags: Optional[List[dict]] = None
+router = APIRouter()
 
 @router.get("/studio/drafts", response_model=List[DraftListItem])
 async def get_studio_drafts(request: Request):

@@ -1,19 +1,16 @@
 import json
 from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel
+from core.database import user_pool
 import asyncpg
-from core import database
+import json
+import logging
+
+from schemas.execution import ExplainRequest
+from core.exceptions import RollbackTransaction
 from core.security import validate_sql
 from core.explain_parser import parse_plan
 
 router = APIRouter()
-
-class ExplainRequest(BaseModel):
-    sql: str
-    database: str = "northwind"   # TODO: MVP+ — мультибд
-
-class RollbackTransaction(Exception):
-    pass
 
 @router.post("/explain")
 async def explain_query(req: ExplainRequest):
