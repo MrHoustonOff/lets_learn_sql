@@ -106,18 +106,19 @@ class CourseService:
 
     async def create_course(self, payload: CourseCreateRequest) -> int:
         metadata_json = json.dumps({"authors": [a.model_dump() for a in payload.authors]})
+        
+        author_name = payload.authors[0].name if payload.authors else None
+        author_url = payload.authors[0].link if payload.authors else None
+
         course_id = await self.repo.create_course(
             title=payload.title,
             description=payload.description,
+            author_name=author_name,
+            author_url=author_url,
             status=payload.status,
-            metadata_json=metadata_json
+            metadata_json=metadata_json,
+            sections_data=payload.sections
         )
-
-        for i, sec in enumerate(payload.sections):
-            section_id = await self.repo.create_section(course_id, sec.title, sec.description, i)
-            for j, t_id in enumerate(sec.task_ids):
-                await self.repo.add_task_to_section(section_id, t_id, j)
-                
         return course_id
 
     async def update_course(self, course_id: int, payload: CourseUpdateRequest) -> None:
@@ -130,14 +131,21 @@ class CourseService:
         status = payload.status if payload.status is not None else course["status"]
 
         metadata_json = course["metadata_json"]
+        author_name = course["author_name"]
+        author_url = course["author_url"]
+
         if payload.authors is not None:
             metadata_json = json.dumps({"authors": [a.model_dump() for a in payload.authors]})
+            author_name = payload.authors[0].name if payload.authors else None
+            author_url = payload.authors[0].link if payload.authors else None
 
-        await self.repo.update_course(course_id, title, description, status, metadata_json)
-
-        if payload.sections is not None:
-            await self.repo.clear_sections(course_id)
-            for i, sec in enumerate(payload.sections):
-                section_id = await self.repo.create_section(course_id, sec.title, sec.description, i)
-                for j, t_id in enumerate(sec.task_ids):
-                    await self.repo.add_task_to_section(section_id, t_id, j)
+        await self.repo.update_course(
+            course_id=course_id,
+            title=title,
+            description=description,
+            author_name=author_name,
+            author_url=author_url,
+            status=status,
+            metadata_json=metadata_json,
+            sections_data=payload.sections
+        )
