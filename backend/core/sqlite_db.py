@@ -20,38 +20,13 @@ async def init_sqlite():
     sqlite_pool = await aiosqlite.connect(db_path)
     sqlite_pool.row_factory = aiosqlite.Row
     
-    await run_migrations()
+    from db.migrations import MigrationRunner
+    migrations_dir = Path(__file__).parent.parent / "migrations"
+    runner = MigrationRunner(db_path, migrations_dir)
+    await runner.run_all()
+    
     await seed_initial_data()
     await verify_and_sync_databases()
-
-async def run_migrations():
-    # Simple migration runner
-    migrations_dir = Path(__file__).parent.parent / "migrations"
-    if not migrations_dir.exists():
-        return
-
-    # Check applied migrations
-    try:
-        async with sqlite_pool.execute("SELECT version FROM schema_migrations") as cursor:
-            applied = {row["version"] for row in await cursor.fetchall()}
-    except aiosqlite.OperationalError:
-        applied = set()
-
-    # Get available migrations
-    available = sorted([f for f in migrations_dir.iterdir() if f.name.endswith(".sql")])
-
-    for migration_file in available:
-        version = migration_file.name
-        if version not in applied:
-            print(f"Applying migration: {version}", flush=True)
-            with open(migration_file, "r", encoding="utf-8") as f:
-                sql_script = f.read()
-            
-            await sqlite_pool.executescript(sql_script)
-            await sqlite_pool.execute(
-                "INSERT INTO schema_migrations (version) VALUES (?)", (version,)
-            )
-            await sqlite_pool.commit()
 
 async def seed_initial_data():
     # 1. Seed user if empty
