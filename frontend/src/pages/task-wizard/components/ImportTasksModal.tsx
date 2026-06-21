@@ -536,13 +536,13 @@ export const ImportTasksModal: React.FC<ImportTasksModalProps> = ({
                 <div className="flex items-start justify-between gap-4 border-b border-glass-border pb-4">
                   <div>
                     <h3 className="text-sm font-bold mb-1 text-foreground whitespace-pre-wrap">
-                      {previewData?.title || <span className="text-muted-foreground italic">{t('preview.no_title')}</span>}
+                      {previewData?.title || <span className="text-muted-foreground italic">{t('wizard.preview.no_title')}</span>}
                     </h3>
                     <div className="flex items-center gap-3 text-2xs text-muted-foreground font-medium">
-                      <span>{t('preview.author')} {previewData?.author_name || t('preview.unknown')}</span>
+                      <span>{t('wizard.preview.author')} {previewData?.author_name || t('wizard.preview.unknown')}</span>
                       {previewData?.source_url && (
                         <a href={previewData.source_url} target="_blank" rel="noreferrer" className="text-primary hover:underline flex items-center gap-0.5">
-                          {t('preview.source_link')}
+                          {t('wizard.preview.source_link')}
                         </a>
                       )}
                     </div>
@@ -561,13 +561,13 @@ export const ImportTasksModal: React.FC<ImportTasksModalProps> = ({
                   <div className="space-y-3">
                     <div className="flex items-center gap-1.5">
                       <Database className="w-3.5 h-3.5 text-muted-foreground" />
-                      <span className="text-muted-foreground w-16">{t('preview.database')}</span>
+                      <span className="text-muted-foreground w-16">{t('wizard.preview.database')}</span>
                       <span className="font-semibold text-foreground truncate">{db?.display_name || currentResult.dbName}</span>
                     </div>
                     {course && (
                       <div className="flex items-center gap-1.5">
                         <GraduationCap className="w-3.5 h-3.5 text-muted-foreground" />
-                        <span className="text-muted-foreground w-16">{t('preview.course')}</span>
+                        <span className="text-muted-foreground w-16">{t('wizard.preview.course')}</span>
                         <span className="font-semibold text-foreground truncate">{course.title}</span>
                       </div>
                     )}
@@ -575,24 +575,24 @@ export const ImportTasksModal: React.FC<ImportTasksModalProps> = ({
                   <div className="space-y-3">
                     <div className="flex items-center gap-1.5">
                       <CheckCircle2 className="w-3.5 h-3.5 text-muted-foreground" />
-                      <span className="text-muted-foreground w-20">{t('preview.ast_rules')}</span>
-                      <span className="font-semibold text-foreground">{t('preview.count_pcs', { count: previewData?.rules?.length || 0 })}</span>
+                      <span className="text-muted-foreground w-20">{t('wizard.preview.ast_rules')}</span>
+                      <span className="font-semibold text-foreground">{t('wizard.preview.count_pcs', { count: previewData?.rules?.length || 0 })}</span>
                     </div>
                     <div className="flex items-center gap-1.5">
                       <ListOrdered className="w-3.5 h-3.5 text-muted-foreground" />
-                      <span className="text-muted-foreground w-20">{t('preview.order_matters')}</span>
-                      <span className="font-semibold text-foreground">{previewData?.order_matters ? t('preview.important') : t('preview.not_important')}</span>
+                      <span className="text-muted-foreground w-20">{t('wizard.preview.order_matters')}</span>
+                      <span className="font-semibold text-foreground">{previewData?.order_matters ? t('wizard.preview.important') : t('wizard.preview.not_important')}</span>
                     </div>
                   </div>
                 </div>
 
                 <div>
-                  <h4 className="text-2xs font-bold uppercase tracking-wider text-muted-foreground mb-2">{t('preview.description_title')}</h4>
+                  <h4 className="text-2xs font-bold uppercase tracking-wider text-muted-foreground mb-2">{t('wizard.preview.description_title')}</h4>
                   <div className="prose dark:prose-invert max-w-none text-xs bg-muted/10 rounded-xl p-3 border border-border/20">
                     {previewData?.description ? (
                       <MarkdownText text={previewData.description} />
                     ) : (
-                      <span className="text-muted-foreground italic">{t('preview.no_description')}</span>
+                      <span className="text-muted-foreground italic">{t('wizard.preview.no_description')}</span>
                     )}
                   </div>
                   
