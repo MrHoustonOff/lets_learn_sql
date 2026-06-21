@@ -1,6 +1,6 @@
 import json
 from fastapi import APIRouter, HTTPException
-from core.database import user_pool
+from core import database
 import asyncpg
 import json
 import logging
