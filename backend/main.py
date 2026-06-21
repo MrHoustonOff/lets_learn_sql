@@ -1,7 +1,8 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from core import database, sqlite_db
-from routes import query, explain, schema, tasks, tasks_drafts, tasks_execution, databases, profile, courses, submit, studio
+from api import query, explain, schema, tasks, tasks_drafts, tasks_execution, databases, profile, courses, submit, studio
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -18,6 +19,15 @@ app = FastAPI(
     description="Backend for PGym - PostgreSQL practice platform",
     version="0.1.0",
     lifespan=lifespan
+)
+
+# Configure CORS for frontend
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allows all origins for development
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 @app.get("/api/health")
