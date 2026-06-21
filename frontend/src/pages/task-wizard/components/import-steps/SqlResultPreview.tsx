@@ -9,6 +9,7 @@ interface SqlResultPreviewProps {
     duration_ms: number;
     row_count: number;
     columns: string[];
+    rows?: any[][];
   } | null;
 }
 

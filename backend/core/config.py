@@ -15,7 +15,7 @@ class Settings(BaseSettings):
 
     # Лимиты
     QUERY_TIMEOUT_MS: int = 5000     # 5 секунд макс на запрос
-    QUERY_ROWS_LIMIT: int = 200      # макс строк в ответе
+    QUERY_ROWS_LIMIT: int = 100      # макс строк в ответе
     MAX_SQL_LENGTH: int = 10000      # макс длина SQL строки
 
     # Окружение
