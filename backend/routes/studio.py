@@ -3,6 +3,7 @@ from fastapi import APIRouter, HTTPException, Request
 from typing import List, Optional
 from core.sqlite_db import get_sqlite_conn
 
+from db.repositories.studio import StudioRepository
 from schemas.studio import DraftListItem
 
 router = APIRouter()
@@ -13,25 +14,12 @@ async def get_studio_drafts(request: Request):
     if not sqlite:
         raise HTTPException(status_code=500, detail="Database connection not available")
 
+    repo = StudioRepository(sqlite)
+    
     # ---- Task drafts ----
-    task_query = """
-        SELECT t.id, t.title, t.created_at, t.updated_at, t.reference_sql, t.database_id, t.metadata_json,
-               (SELECT COUNT(*) FROM task_rules r WHERE r.task_id = t.id) as rules_count,
-               (
-                   SELECT json_group_array(json_object('id', tags.id, 'name', tags.name))
-                   FROM task_tags
-                   JOIN tags ON task_tags.tag_id = tags.id
-                   WHERE task_tags.task_id = t.id
-               ) as tags_json
-        FROM tasks t
-        WHERE t.status = 'draft'
-        ORDER BY t.updated_at DESC
-    """
-
-    async with sqlite.execute(task_query) as cursor:
-        task_rows = await cursor.fetchall()
-
+    task_rows = await repo.get_task_drafts()
     drafts = []
+    
     for row in task_rows:
         title = row["title"] if row["title"] else "Без названия"
 
@@ -46,40 +34,33 @@ async def get_studio_drafts(request: Request):
 
         meta = json.loads(row["metadata_json"]) if row["metadata_json"] else {}
         difficulty = meta.get("difficulty", None)
+        
+        # In case difficulty is a string in DB but model expects int, or vice-versa.
+        # The schema uses Optional[int] initially but DB might have 'junior'.
+        # We'll map it directly based on original logic.
+        try:
+            difficulty_int = int(difficulty) if difficulty is not None else None
+        except ValueError:
+            difficulty_int = None
 
         tags = []
         if row["tags_json"]:
             parsed_tags = json.loads(row["tags_json"])
             tags = [t for t in parsed_tags if t and t.get('id')]
 
-        drafts.append({
-            "id": row["id"],
-            "type": "task",
-            "title": title,
-            "step": step,
-            "updatedAt": row["updated_at"] or row["created_at"],
-            "difficulty": difficulty,
-            "tags": tags,
-        })
+        drafts.append(DraftListItem(
+            id=row["id"],
+            type="task",
+            title=title,
+            step=step,
+            updatedAt=row["updated_at"] or row["created_at"] or "",
+            difficulty=difficulty_int,
+            tags=tags,
+        ))
 
     # ---- Course drafts ----
-    course_query = """
-        SELECT c.id, c.title, c.updated_at,
-               (SELECT COUNT(*) FROM sections s WHERE s.course_id = c.id) as sections_count,
-               (
-                   SELECT COUNT(DISTINCT st.task_id)
-                   FROM section_tasks st
-                   JOIN sections s ON st.section_id = s.id
-                   WHERE s.course_id = c.id
-               ) as tasks_count
-        FROM courses c
-        WHERE c.status = 'draft'
-        ORDER BY c.updated_at DESC
-    """
-
-    async with sqlite.execute(course_query) as cursor:
-        course_rows = await cursor.fetchall()
-
+    course_rows = await repo.get_course_drafts()
+    
     for row in course_rows:
         title = row["title"] if row["title"] else "Без названия"
         sections_count = row["sections_count"] or 0
@@ -92,17 +73,15 @@ async def get_studio_drafts(request: Request):
         else:
             step = f"Шаг 3 из 3 ({sections_count} разд., {tasks_count} задач)"
 
-        drafts.append({
-            "id": row["id"],
-            "type": "course",
-            "title": title,
-            "step": step,
-            "updatedAt": row["updated_at"],
-            "difficulty": None,
-            "tags": [],
-        })
+        drafts.append(DraftListItem(
+            id=row["id"],
+            type="course",
+            title=title,
+            step=step,
+            updatedAt=row["updated_at"] or "",
+            difficulty=None,
+            tags=[]
+        ))
 
-    # Sort all drafts by updatedAt desc
-    drafts.sort(key=lambda x: x["updatedAt"] or "", reverse=True)
-
+    drafts.sort(key=lambda x: x.updatedAt, reverse=True)
     return drafts

@@ -8,6 +8,7 @@ from schemas.courses import (
     SectionInput, AuthorInput, CourseCreateRequest, CourseUpdateRequest,
     CourseWriteResponse, CheckDuplicateCourseRequest
 )
+from db.repositories.courses import CourseRepository
 
 router = APIRouter()
 
@@ -28,33 +29,8 @@ async def list_courses(status: Optional[str] = "published"):
     if not sqlite:
         raise HTTPException(status_code=500, detail="Database connection not available")
 
-    query = """
-        SELECT
-            c.id, c.title, c.description, c.author_name, c.author_url,
-            c.status, c.metadata_json,
-            (SELECT COUNT(DISTINCT s.id) FROM sections s WHERE s.course_id = c.id) as sections_count,
-            (SELECT COUNT(DISTINCT st.task_id) FROM section_tasks st JOIN sections s ON st.section_id = s.id WHERE s.course_id = c.id) as tasks_count,
-            (
-                SELECT GROUP_CONCAT(DISTINCT d.display_name)
-                FROM section_tasks st
-                JOIN sections s ON st.section_id = s.id
-                JOIN tasks t ON st.task_id = t.id
-                JOIN databases d ON t.database_id = d.id
-                WHERE s.course_id = c.id
-            ) as db_names_str,
-            (
-                SELECT COUNT(DISTINCT st.task_id)
-                FROM section_tasks st
-                JOIN sections s ON st.section_id = s.id
-                JOIN attempts a ON st.task_id = a.task_id
-                WHERE s.course_id = c.id AND a.is_correct = 1
-            ) as completed_tasks_count
-        FROM courses c
-        WHERE c.status = ?
-    """
-
-    async with sqlite.execute(query, (status,)) as cursor:
-        rows = await cursor.fetchall()
+    repo = CourseRepository(sqlite)
+    rows = await repo.get_courses_by_status(status)
 
     result = []
     for row in rows:
@@ -90,45 +66,21 @@ async def get_course_details(id: str):
     if not sqlite:
         raise HTTPException(status_code=500, detail="Database connection not available")
 
-    async with sqlite.execute("SELECT * FROM courses WHERE id = ?", (course_id,)) as cursor:
-        course = await cursor.fetchone()
-        if not course:
-            raise HTTPException(status_code=404, detail="Course not found")
+    repo = CourseRepository(sqlite)
+    course = await repo.get_course_by_id(course_id)
+    if not course:
+        raise HTTPException(status_code=404, detail="Course not found")
 
-    db_query = """
-        SELECT DISTINCT d.display_name
-        FROM section_tasks st
-        JOIN sections s ON st.section_id = s.id
-        JOIN tasks t ON st.task_id = t.id
-        JOIN databases d ON t.database_id = d.id
-        WHERE s.course_id = ?
-    """
-    async with sqlite.execute(db_query, (course_id,)) as cursor:
-        db_rows = await cursor.fetchall()
-        db_names = [r["display_name"] for r in db_rows]
-
-    sections_query = "SELECT * FROM sections WHERE course_id = ? ORDER BY sort_order"
-    async with sqlite.execute(sections_query, (course_id,)) as cursor:
-        section_rows = await cursor.fetchall()
+    db_names = await repo.get_course_databases(course_id)
+    section_rows = await repo.get_course_sections(course_id)
 
     sections_details = []
     total_tasks = 0
     completed_tasks = 0
 
     for sec in section_rows:
-        tasks_query = """
-            SELECT
-                t.id, t.title,
-                EXISTS(SELECT 1 FROM attempts a WHERE a.task_id = t.id AND a.is_correct = 1) as is_solved,
-                EXISTS(SELECT 1 FROM task_flags tf WHERE tf.task_id = t.id) as is_bookmarked
-            FROM section_tasks st
-            JOIN tasks t ON st.task_id = t.id
-            WHERE st.section_id = ?
-            ORDER BY st.sort_order
-        """
-        async with sqlite.execute(tasks_query, (sec["id"],)) as cursor:
-            task_rows = await cursor.fetchall()
-
+        task_rows = await repo.get_section_tasks(sec["id"])
+        
         tasks = []
         sec_completed = 0
         sec_total = len(task_rows)
@@ -183,26 +135,8 @@ async def check_duplicate_course(payload: CheckDuplicateCourseRequest):
     if not sqlite:
         raise HTTPException(status_code=500, detail="Database connection not available")
 
-    query = """
-        SELECT 
-            COUNT(id) as title_count,
-            SUM(CASE WHEN description = ? THEN 1 ELSE 0 END) as exact_matches
-        FROM courses 
-        WHERE title = ?
-    """
-    params = [payload.description or "", payload.title]
-
-    if payload.exclude_id:
-        query += " AND id != ?"
-        params.append(payload.exclude_id)
-
-    async with sqlite.execute(query, params) as cursor:
-        row = await cursor.fetchone()
-
-    return {
-        "title_matches": row["title_count"] if row else 0,
-        "is_exact_duplicate": (row["exact_matches"] or 0) > 0 if row else False
-    }
+    repo = CourseRepository(sqlite)
+    return await repo.check_duplicate(payload.title, payload.description, payload.exclude_id)
 
 
 @router.post("/courses", response_model=CourseWriteResponse, status_code=201)
@@ -215,6 +149,8 @@ async def create_course(payload: CourseCreateRequest):
     if not sqlite:
         raise HTTPException(status_code=500, detail="Database connection not available")
 
+    repo = CourseRepository(sqlite)
+    
     # Serialize authors into metadata_json
     authors_data = [a.model_dump() for a in payload.authors]
     metadata = json.dumps({"authors": authors_data})
@@ -224,36 +160,11 @@ async def create_course(payload: CourseCreateRequest):
     author_name = first_author.name if first_author else None
     author_url = first_author.link if first_author else None
 
-    async with sqlite.execute(
-        """
-        INSERT INTO courses (title, description, author_name, author_url, status, metadata_json)
-        VALUES (?, ?, ?, ?, ?, ?)
-        """,
-        (payload.title, payload.description, author_name, author_url, payload.status, metadata),
-    ) as cursor:
-        course_id = cursor.lastrowid
+    course_id = await repo.create_course(
+        payload.title, payload.description, author_name, author_url, 
+        payload.status, metadata, payload.sections
+    )
 
-    # Create sections and bind tasks
-    for sort_idx, section in enumerate(payload.sections):
-        async with sqlite.execute(
-            """
-            INSERT INTO sections (course_id, title, description, sort_order)
-            VALUES (?, ?, ?, ?)
-            """,
-            (course_id, section.title, section.description, sort_idx),
-        ) as cursor:
-            section_id = cursor.lastrowid
-
-        for task_idx, task_id in enumerate(section.task_ids):
-            await sqlite.execute(
-                """
-                INSERT OR IGNORE INTO section_tasks (section_id, task_id, sort_order)
-                VALUES (?, ?, ?)
-                """,
-                (section_id, task_id, task_idx),
-            )
-
-    await sqlite.commit()
     return CourseWriteResponse(id=course_id, status=payload.status)
 
 
@@ -271,8 +182,8 @@ async def update_course(id: str, payload: CourseUpdateRequest):
     if not sqlite:
         raise HTTPException(status_code=500, detail="Database connection not available")
 
-    async with sqlite.execute("SELECT * FROM courses WHERE id = ?", (course_id,)) as cursor:
-        existing = await cursor.fetchone()
+    repo = CourseRepository(sqlite)
+    existing = await repo.get_course_by_id(course_id)
     if not existing:
         raise HTTPException(status_code=404, detail="Course not found")
 
@@ -294,41 +205,11 @@ async def update_course(id: str, payload: CourseUpdateRequest):
     author_name = first_author.name if first_author and hasattr(first_author, "name") else (first_author_dict.get("name") if "first_author_dict" in dir() else None)
     author_url = first_author.link if first_author and hasattr(first_author, "link") else None
 
-    await sqlite.execute(
-        """
-        UPDATE courses
-        SET title = ?, description = ?, author_name = ?, author_url = ?,
-            status = ?, metadata_json = ?, updated_at = datetime('now')
-        WHERE id = ?
-        """,
-        (title, description, author_name, author_url, status, metadata, course_id),
+    await repo.update_course(
+        course_id, title, description, author_name, author_url,
+        status, metadata, payload.sections
     )
 
-    # Replace sections if provided
-    if payload.sections is not None:
-        # CASCADE delete handles section_tasks automatically
-        await sqlite.execute("DELETE FROM sections WHERE course_id = ?", (course_id,))
-
-        for sort_idx, section in enumerate(payload.sections):
-            async with sqlite.execute(
-                """
-                INSERT INTO sections (course_id, title, description, sort_order)
-                VALUES (?, ?, ?, ?)
-                """,
-                (course_id, section.title, section.description, sort_idx),
-            ) as cursor:
-                section_id = cursor.lastrowid
-
-            for task_idx, task_id in enumerate(section.task_ids):
-                await sqlite.execute(
-                    """
-                    INSERT OR IGNORE INTO section_tasks (section_id, task_id, sort_order)
-                    VALUES (?, ?, ?)
-                    """,
-                    (section_id, task_id, task_idx),
-                )
-
-    await sqlite.commit()
     return CourseWriteResponse(id=course_id, status=status)
 
 
@@ -347,41 +228,21 @@ async def delete_course(id: str, delete_tasks: str = Query("none")):
     if not sqlite:
         raise HTTPException(status_code=500, detail="Database connection not available")
 
-    async with sqlite.execute("SELECT id FROM courses WHERE id = ?", (course_id,)) as cursor:
-        if not await cursor.fetchone():
-            raise HTTPException(status_code=404, detail="Course not found")
+    repo = CourseRepository(sqlite)
+    existing = await repo.get_course_by_id(course_id)
+    if not existing:
+        raise HTTPException(status_code=404, detail="Course not found")
 
     if delete_tasks == "orphaned":
-        # Find all tasks in this course
-        tasks_query = """
-            SELECT DISTINCT task_id 
-            FROM section_tasks st 
-            JOIN sections s ON st.section_id = s.id 
-            WHERE s.course_id = ?
-        """
-        async with sqlite.execute(tasks_query, (course_id,)) as cursor:
-            course_tasks = [r["task_id"] for r in await cursor.fetchall()]
+        course_tasks = await repo.get_course_tasks(course_id)
         
-        # For each task, check if it's used in any OTHER course
         tasks_to_delete = []
         for tid in course_tasks:
-            usage_query = """
-                SELECT COUNT(DISTINCT s.course_id) as c_count
-                FROM section_tasks st
-                JOIN sections s ON st.section_id = s.id
-                WHERE st.task_id = ?
-            """
-            async with sqlite.execute(usage_query, (tid,)) as cursor:
-                usage_row = await cursor.fetchone()
-                if usage_row and usage_row["c_count"] <= 1:
-                    tasks_to_delete.append(tid)
+            usage_count = await repo.get_task_usage_count(tid)
+            if usage_count <= 1:
+                tasks_to_delete.append(tid)
         
-        # Delete orphaned tasks
         if tasks_to_delete:
-            placeholders = ",".join(["?"] * len(tasks_to_delete))
-            await sqlite.execute(f"DELETE FROM tasks WHERE id IN ({placeholders})", tasks_to_delete)
+            await repo.delete_tasks(tasks_to_delete)
 
-    # Delete course itself (CASCADE removes sections and section_tasks)
-    await sqlite.execute("DELETE FROM courses WHERE id = ?", (course_id,))
-    await sqlite.commit()
-
+    await repo.delete_course(course_id)
