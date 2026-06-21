@@ -220,7 +220,16 @@ export const ImportTasksModal: React.FC<ImportTasksModalProps> = ({
         
         // 2. Create task draft
         const draftRes = await fetch('/api/tasks/draft', { method: 'POST' });
-        if (!draftRes.ok) throw new Error(t('import_tasks.errors.draft_create_failed'));
+        if (!draftRes.ok) {
+          let errorDetail = '';
+          try {
+            const errJson = await draftRes.json();
+            errorDetail = ': ' + (typeof errJson.detail === 'object' ? JSON.stringify(errJson.detail) : errJson.detail);
+          } catch (e) {
+            errorDetail = ` (${draftRes.status} ${draftRes.statusText})`;
+          }
+          throw new Error(t('import_tasks.errors.draft_create_failed') + errorDetail);
+        }
         const draftDataJson = await draftRes.json();
         const draftId = draftDataJson.id;
         resultItem.draftId = draftId;
@@ -252,7 +261,7 @@ export const ImportTasksModal: React.FC<ImportTasksModalProps> = ({
           description: rawTask.description || '',
           author_name: rawTask.author_name || 'ImportedUser',
           source_url: rawTask.source_url || rawTask.author_url || null,
-          difficulty: parsedDifficulty,
+          difficulty: String(parsedDifficulty), // FIXED: Must be string to match FastAPI schema
           database_id: foundDb.id,
           reference_sql: rawTask.reference_sql || '',
           order_matters: rawTask.order_matters || false,
@@ -265,7 +274,16 @@ export const ImportTasksModal: React.FC<ImportTasksModalProps> = ({
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(updatePayload)
         });
-        if (!updateRes.ok) throw new Error(t('import_tasks.errors.draft_update_failed'));
+        if (!updateRes.ok) {
+          let errorDetail = '';
+          try {
+            const errJson = await updateRes.json();
+            errorDetail = ': ' + (typeof errJson.detail === 'object' ? JSON.stringify(errJson.detail) : errJson.detail);
+          } catch (e) {
+            errorDetail = ` (${updateRes.status} ${updateRes.statusText})`;
+          }
+          throw new Error(t('import_tasks.errors.draft_update_failed') + errorDetail);
+        }
         
         // Update local data view with resolved structure
         resultItem.taskData = {
@@ -278,9 +296,15 @@ export const ImportTasksModal: React.FC<ImportTasksModalProps> = ({
         // 4. Test reference SQL execution
         const solutionRes = await fetch(`/api/tasks/${draftId}/solution`, { method: 'POST' });
         if (!solutionRes.ok) {
-          const errData = await solutionRes.json();
+          let errMsg = 'SQL syntax or execution error';
+          try {
+            const errData = await solutionRes.json();
+            errMsg = typeof errData.detail === 'string' ? errData.detail : JSON.stringify(errData.detail || errData);
+          } catch (e) {
+            errMsg = `${solutionRes.status} ${solutionRes.statusText}`;
+          }
           resultItem.sqlSuccess = false;
-          resultItem.sqlError = errData.detail || 'SQL syntax or execution error';
+          resultItem.sqlError = errMsg;
         } else {
           const solData = await solutionRes.json();
           resultItem.sqlSuccess = true;
@@ -295,8 +319,14 @@ export const ImportTasksModal: React.FC<ImportTasksModalProps> = ({
         });
         
         if (!rulesCheckRes.ok) {
-          const errData = await rulesCheckRes.json();
-          throw new Error(errData.detail || 'Rules check failed');
+          let errMsg = 'Rules check failed';
+          try {
+            const errData = await rulesCheckRes.json();
+            errMsg = typeof errData.detail === 'string' ? errData.detail : JSON.stringify(errData.detail || errData);
+          } catch (e) {
+            errMsg = `${rulesCheckRes.status} ${rulesCheckRes.statusText}`;
+          }
+          throw new Error(errMsg);
         }
         
         const rulesCheckData = await rulesCheckRes.json();
