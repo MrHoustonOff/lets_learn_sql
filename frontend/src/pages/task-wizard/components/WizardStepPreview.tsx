@@ -6,13 +6,18 @@ import { DIFFICULTY_TIERS, DIFFICULTY_LEVELS } from '../mocks';
 
 interface WizardStepPreviewProps {
   data: any;
-  setData: React.Dispatch<React.SetStateAction<any>>;
-  allCourses: any[];
-  allDatabases: any[];
+  setData?: React.Dispatch<React.SetStateAction<any>>;
+  allCourses?: any[];
+  allDatabases?: any[];
   isEditing?: boolean;
 }
 
-export const WizardStepPreview: React.FC<WizardStepPreviewProps> = ({ data, allCourses, allDatabases, isEditing }) => {
+export const WizardStepPreview: React.FC<WizardStepPreviewProps> = ({ 
+  data, 
+  allCourses = [], 
+  allDatabases = [], 
+  isEditing 
+}) => {
   const { t } = useTranslation();
 
   const author = data.author || t('wizard.preview.unknown');
@@ -20,8 +25,8 @@ export const WizardStepPreview: React.FC<WizardStepPreviewProps> = ({ data, allC
   const diffLevel = data.difficulty ? DIFFICULTY_LEVELS[data.difficulty]?.level : null;
   
   const rulesCount = (data.rules || []).length;
-  const db = allDatabases.find(d => d.id.toString() === data.database?.toString());
-  const course = allCourses.find(c => c.id.toString() === data.course?.toString());
+  const db = (allDatabases || []).find(d => d?.id?.toString() === data.database?.toString());
+  const course = (allCourses || []).find(c => c?.id?.toString() === data.course?.toString());
 
   return (
     <div className="flex flex-col gap-8 max-w-4xl mx-auto w-full animate-in fade-in zoom-in-95 duration-200">
@@ -47,7 +52,7 @@ export const WizardStepPreview: React.FC<WizardStepPreviewProps> = ({ data, allC
           <div>
             <h3 className="text-xl font-bold mb-1.5 text-foreground whitespace-pre-wrap">{data.title || <span className="text-muted-foreground italic">{t('wizard.preview.no_title')}</span>}</h3>
             <div className="flex items-center gap-3 text-xs text-muted-foreground font-medium">
-              <span>{t('wizard.preview.author')} {data.author || t('wizard.preview.unknown')}</span>
+              <span>{t('wizard.preview.author')} {author}</span>
               {data.referenceLink && (
                 <a href={data.referenceLink} target="_blank" rel="noreferrer" className="text-primary hover:underline flex items-center gap-1">
                   {t('wizard.preview.source_link')}
@@ -55,7 +60,7 @@ export const WizardStepPreview: React.FC<WizardStepPreviewProps> = ({ data, allC
               )}
             </div>
           </div>
-          {diffTier && (
+          {diffTier && diffLevel !== null && (
             <div className="flex items-center gap-1 shrink-0 p-2 rounded-lg bg-secondary/50 border border-border/50" title={`${t(`wizard.info.difficulty_tiers.${diffTier.key}`)} ${diffLevel}/3`}>
               {[1, 2, 3].map((i) => (
                 <span key={i} className={`w-2 h-2 rounded-full shadow-sm ${i <= diffLevel ? diffTier.color : "bg-muted"}`} />
@@ -83,7 +88,7 @@ export const WizardStepPreview: React.FC<WizardStepPreviewProps> = ({ data, allC
             <div className="flex items-center gap-2">
               <CheckCircle2 className="w-4 h-4 text-muted-foreground" />
               <span className="text-muted-foreground w-24">{t('wizard.preview.ast_rules')}</span>
-              <span className="font-medium text-foreground">{t('wizard.preview.count_pcs', { count: data.rules?.length || 0 })}</span>
+              <span className="font-medium text-foreground">{t('wizard.preview.count_pcs', { count: rulesCount })}</span>
             </div>
             <div className="flex items-center gap-2">
               <ListOrdered className="w-4 h-4 text-muted-foreground" />

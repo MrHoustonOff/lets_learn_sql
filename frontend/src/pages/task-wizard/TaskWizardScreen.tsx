@@ -188,6 +188,9 @@ export const TaskWizardScreen: React.FC = () => {
           {currentStep === 4 && (
             <WizardStepPreview 
               data={draftData} 
+              allCourses={allCourses}
+              allDatabases={allDatabases}
+              isEditing={isFromEditTask}
             />
           )}
         </div>
