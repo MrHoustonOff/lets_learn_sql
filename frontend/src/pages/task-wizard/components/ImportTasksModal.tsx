@@ -4,9 +4,13 @@ import { useTranslation } from 'react-i18next';
 import { 
   Upload, Database, CheckCircle2, ListOrdered, 
   GraduationCap, X, ChevronLeft, AlertTriangle, 
-  FileJson, Loader2, FileSpreadsheet
+  FileJson, Loader2, FileSpreadsheet, Copy, Check
 } from 'lucide-react';
 import { MarkdownText } from '../../../components/ui/MarkdownText';
+import { InfoTooltip } from '../../../components/ui/InfoTooltip';
+import { CollapsibleSection } from '../../../components/ui/CollapsibleSection';
+import { RuleResultItem } from './import-steps/RuleResultItem';
+import { SqlResultPreview } from './import-steps/SqlResultPreview';
 import { DIFFICULTY_TIERS, DIFFICULTY_LEVELS } from '../mocks';
 
 interface ImportTasksModalProps {
@@ -58,6 +62,7 @@ export const ImportTasksModal: React.FC<ImportTasksModalProps> = ({
   // Review state
   const [currentTaskIndex, setCurrentTaskIndex] = useState(0);
   const [isPublishing, setIsPublishing] = useState(false);
+  const [isCopied, setIsCopied] = useState(false);
   
   // Fetch databases and courses for mapping names to IDs & Reset state on open
   useEffect(() => {
@@ -194,6 +199,7 @@ export const ImportTasksModal: React.FC<ImportTasksModalProps> = ({
     setProcessingCurrent(0);
     
     const results: ProcessedTaskResult[] = [];
+    const seenSignatures = new Set<string>();
     
     for (let i = 0; i < tasksList.length; i++) {
       setProcessingCurrent(i + 1);
@@ -217,6 +223,36 @@ export const ImportTasksModal: React.FC<ImportTasksModalProps> = ({
       };
       
       try {
+        // 0. Check for duplicates
+        const taskTitle = (rawTask.title || '').trim();
+        const taskDesc = (rawTask.description || '').trim();
+        const signature = `${taskTitle.toLowerCase()}|${taskDesc.toLowerCase()}`;
+        
+        if (seenSignatures.has(signature)) {
+          throw new Error(t('import_tasks.errors.duplicate_task'));
+        }
+        seenSignatures.add(signature);
+
+        if (taskTitle) {
+          const checkRes = await fetch(`/api/tasks?search=${encodeURIComponent(taskTitle)}&page_size=100`);
+          if (checkRes.ok) {
+            const checkData = await checkRes.json();
+            const matchingTasks = checkData.tasks.filter((t: any) => 
+              (t.title || '').trim().toLowerCase() === taskTitle.toLowerCase()
+            );
+            
+            for (const match of matchingTasks) {
+              const detailRes = await fetch(`/api/tasks/${match.id}`);
+              if (detailRes.ok) {
+                const detailData = await detailRes.json();
+                if ((detailData.description || '').trim().toLowerCase() === taskDesc.toLowerCase()) {
+                  throw new Error(t('import_tasks.errors.duplicate_task'));
+                }
+              }
+            }
+          }
+        }
+
         // 1. Resolve DB Name to DB ID
         const dbNameLower = dbName.toLowerCase();
         const foundDb = allDatabases.find((d: any) => 
@@ -235,7 +271,11 @@ export const ImportTasksModal: React.FC<ImportTasksModalProps> = ({
           let errorDetail = '';
           try {
             const errJson = await draftRes.json();
-            errorDetail = ': ' + (typeof errJson.detail === 'object' ? JSON.stringify(errJson.detail) : errJson.detail);
+            if (Array.isArray(errJson.detail)) {
+              errorDetail = ':\n' + errJson.detail.map((e: any) => `- ${e.loc?.join('.')} : ${e.msg}`).join('\n');
+            } else {
+              errorDetail = ': ' + (typeof errJson.detail === 'object' ? JSON.stringify(errJson.detail) : errJson.detail);
+            }
           } catch (e) {
             errorDetail = ` (${draftRes.status} ${draftRes.statusText})`;
           }
@@ -289,7 +329,11 @@ export const ImportTasksModal: React.FC<ImportTasksModalProps> = ({
           let errorDetail = '';
           try {
             const errJson = await updateRes.json();
-            errorDetail = ': ' + (typeof errJson.detail === 'object' ? JSON.stringify(errJson.detail) : errJson.detail);
+            if (Array.isArray(errJson.detail)) {
+              errorDetail = ':\n' + errJson.detail.map((e: any) => `- ${e.loc?.join('.')} : ${e.msg}`).join('\n');
+            } else {
+              errorDetail = ': ' + (typeof errJson.detail === 'object' ? JSON.stringify(errJson.detail) : errJson.detail);
+            }
           } catch (e) {
             errorDetail = ` (${updateRes.status} ${updateRes.statusText})`;
           }
@@ -392,7 +436,7 @@ export const ImportTasksModal: React.FC<ImportTasksModalProps> = ({
       }
     } catch (e) {
       console.error(e);
-      alert('Ошибка при публикации задачи');
+      alert(t('import_tasks.errors.draft_publish_failed'));
     } finally {
       setIsPublishing(false);
     }
@@ -421,6 +465,47 @@ export const ImportTasksModal: React.FC<ImportTasksModalProps> = ({
   // Preview properties
   const currentResult = processedResults[currentTaskIndex];
   const previewData = currentResult?.taskData;
+
+  const handleCopyResults = () => {
+    if (!currentResult) return;
+
+    let text = `Task: ${currentResult.taskData?.title || 'Unknown'}\n`;
+    text += `Status: ${currentResult.isValid ? 'Valid (Ready for import)' : 'Invalid (Cannot be imported)'}\n\n`;
+
+    text += `--- Test Results ---\n`;
+    text += `SQL Execution: ${currentResult.sqlSuccess ? 'Passed' : 'Failed'}\n`;
+    
+    const passedRules = currentResult.rulesResults.filter((r: any) => r.passed).length;
+    const totalRules = currentResult.rulesResults.length;
+    if (totalRules > 0) {
+      text += `Rules Check: ${passedRules} out of ${totalRules} passed\n`;
+    } else {
+      text += `Rules Check: No rules defined\n`;
+    }
+
+    if (!currentResult.isValid) {
+      text += `\n--- Errors ---\n`;
+      if (currentResult.processingError) {
+        text += `Processing Error:\n${currentResult.processingError}\n\n`;
+      }
+      if (!currentResult.sqlSuccess && currentResult.sqlError) {
+        text += `SQL Error:\n${currentResult.sqlError}\n\n`;
+      }
+      const failedRules = currentResult.rulesResults.filter((r: any) => !r.passed);
+      if (failedRules.length > 0) {
+        text += `Failed Rules:\n`;
+        failedRules.forEach((r: any) => {
+          text += `- [${r.severity === 'blocking' ? 'BLOCKING' : 'WARNING'}] ${r.message || `${r.category}.${r.condition}`}\n`;
+          if (r.detail) text += `  Detail: ${r.detail}\n`;
+          if (r.hint) text += `  Hint: ${r.hint}\n`;
+        });
+      }
+    }
+
+    navigator.clipboard.writeText(text);
+    setIsCopied(true);
+    setTimeout(() => setIsCopied(false), 2000);
+  };
   
   const diffTier = previewData?.difficulty !== undefined && previewData?.difficulty !== null 
     ? DIFFICULTY_TIERS.find(t => t.key === DIFFICULTY_LEVELS[previewData.difficulty]?.tier) 
@@ -439,23 +524,34 @@ export const ImportTasksModal: React.FC<ImportTasksModalProps> = ({
     >
       <div className="bg-card shadow-2xl border border-glass-border w-full max-w-4xl rounded-2xl flex flex-col animate-in zoom-in-95 duration-200 overflow-hidden relative max-h-[90vh]">
         {/* Header */}
-        <div className="px-6 py-4 border-b border-glass-border flex items-center justify-between shrink-0">
-          <div className="flex items-center gap-2">
-            <FileJson size={18} className="text-primary" />
-            <h3 className="text-base font-bold text-foreground">
-              {step === 'select_type' && t('import_tasks.modal_title')}
-              {step === 'upload' && t('import_tasks.title')}
-              {step === 'processing' && t('import_tasks.processing')}
-              {step === 'review' && `${t('import_tasks.title')} (${currentTaskIndex + 1} / ${processedResults.length})`}
-              {step === 'success' && t('import_tasks.success_title')}
-            </h3>
+        <div className="flex items-center justify-between px-6 py-4 border-b border-primary/20 bg-primary/5 shrink-0">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-primary/20 text-primary rounded-lg">
+              <FileJson size={20} />
+            </div>
+            <div>
+              <h2 className="text-xl font-bold text-foreground leading-tight">
+                {step === 'select_type' && t('import_tasks.modal_title')}
+                {step === 'upload' && t('import_tasks.title')}
+                {step === 'processing' && t('import_tasks.processing')}
+                {step === 'review' && t('import_tasks.title')}
+                {step === 'success' && t('import_tasks.success_title')}
+              </h2>
+              {step === 'review' && (
+                <p className="text-sm text-muted-foreground mt-0.5 leading-none">
+                  {t('import_tasks.processing_task', { current: currentTaskIndex + 1, total: processedResults.length })}
+                </p>
+              )}
+            </div>
           </div>
-          <button 
-            onClick={handleCancel}
-            className="text-muted-foreground/60 hover:text-foreground p-1.5 rounded-lg hover:bg-hover transition-colors focus:outline-none"
-          >
-            <X size={18} />
-          </button>
+          <div className="flex items-center gap-2">
+            <button 
+              onClick={handleCancel}
+              className="p-2 rounded-xl hover:bg-hover text-muted-foreground hover:text-foreground transition-colors focus:outline-none"
+            >
+              <X size={20} />
+            </button>
+          </div>
         </div>
 
         {/* Content body */}
@@ -474,7 +570,7 @@ export const ImportTasksModal: React.FC<ImportTasksModalProps> = ({
                   </div>
                   <div>
                     <h4 className="text-sm font-bold text-foreground mb-1">{t('import_tasks.tasks')}</h4>
-                    <p className="text-2xs text-muted-foreground">Импортируйте задачи из одного или нескольких файлов JSON</p>
+                    <p className="text-2xs text-muted-foreground">{t('import_tasks.tasks_desc')}</p>
                   </div>
                 </button>
 
@@ -501,7 +597,7 @@ export const ImportTasksModal: React.FC<ImportTasksModalProps> = ({
                 onClick={() => setStep('select_type')}
                 className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground self-start font-medium focus:outline-none transition-colors"
               >
-                <ChevronLeft size={14} /> Назад
+                <ChevronLeft size={14} /> {t('import_tasks.back')}
               </button>
 
               <div 
@@ -562,7 +658,7 @@ export const ImportTasksModal: React.FC<ImportTasksModalProps> = ({
               </div>
               {tasksToProcess[processingCurrent - 1] && (
                 <p className="text-2xs font-mono text-muted-foreground truncate max-w-xs">
-                  Текущая задача: {tasksToProcess[processingCurrent - 1].title || 'Untitled'}
+                  {t('import_tasks.current_task')}: {tasksToProcess[processingCurrent - 1].title || t('wizard.preview.no_title')}
                 </p>
               )}
             </div>
@@ -648,118 +744,56 @@ export const ImportTasksModal: React.FC<ImportTasksModalProps> = ({
               </div>
 
               {/* Right Column: Execution & Validation test results */}
-              <div className="border border-glass-border bg-glass/5 rounded-2xl p-6 flex flex-col gap-4 overflow-y-auto custom-scrollbar max-h-[55vh]">
-                <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground border-b border-glass-border pb-2 shrink-0">
-                  {t('import_tasks.test_results')}
-                </h4>
+              <div className={`rounded-2xl p-6 flex flex-col gap-4 overflow-y-auto custom-scrollbar max-h-[55vh] border transition-colors ${currentResult.isValid ? 'bg-success/5 border-success/30' : 'bg-destructive/5 border-destructive/30'}`}>
+                <div className="flex items-center justify-between border-b border-glass-border pb-2 shrink-0">
+                  <div className="flex items-center gap-2">
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                      {t('import_tasks.test_results')}
+                    </h4>
+                    <InfoTooltip text={t('import_tasks.test_results_info')} />
+                  </div>
+                  <button
+                    onClick={handleCopyResults}
+                    title={t('import_tasks.copy_results')}
+                    className="p-1.5 rounded-lg hover:bg-hover text-muted-foreground hover:text-foreground transition-colors flex items-center justify-center focus:outline-none"
+                  >
+                    {isCopied ? <Check size={16} className="text-success" /> : <Copy size={16} />}
+                  </button>
+                </div>
                 
                 {/* Database missing / resolution errors */}
                 {currentResult.processingError ? (
                   <div className="flex-1 flex flex-col items-center justify-center text-center p-6 bg-destructive/5 border border-destructive/15 rounded-xl gap-2">
                     <AlertTriangle size={32} className="text-destructive animate-bounce" />
-                    <p className="text-xs font-bold text-destructive">Ошибка обработки задачи</p>
+                    <p className="text-xs font-bold text-destructive">{t('import_tasks.errors.processing_failed')}</p>
                     <p className="text-2xs text-muted-foreground max-w-[280px]">{currentResult.processingError}</p>
                   </div>
                 ) : (
                   <div className="space-y-4 flex-1">
                     
                     {/* 1. SQL Execution Check */}
-                    <div className="space-y-2">
-                      <h5 className="text-2xs font-bold text-muted-foreground tracking-wide uppercase">{t('import_tasks.sql_check')}</h5>
-                      {currentResult.sqlSuccess ? (
-                        <div className="p-3 bg-success/5 border border-success/15 rounded-xl space-y-2">
-                          <div className="flex items-center gap-2 text-xs font-semibold text-success">
-                            <CheckCircle2 size={14} />
-                            <span>{t('import_tasks.sql_passed')}</span>
-                          </div>
-                          {currentResult.sqlResult && (
-                            <div className="grid grid-cols-3 gap-2 text-2xs text-muted-foreground pt-1 border-t border-success/10 font-mono">
-                              <div>
-                                <span>{t('import_tasks.duration')} </span>
-                                <span className="font-semibold text-foreground">{currentResult.sqlResult.duration_ms.toFixed(1)}ms</span>
-                              </div>
-                              <div>
-                                <span>{t('import_tasks.row_count')} </span>
-                                <span className="font-semibold text-foreground">{currentResult.sqlResult.row_count}</span>
-                              </div>
-                              <div className="truncate" title={currentResult.sqlResult.columns.join(', ')}>
-                                <span>{t('import_tasks.columns')} </span>
-                                <span className="font-semibold text-foreground">{currentResult.sqlResult.columns.length}</span>
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      ) : (
-                        <div className="p-3 bg-destructive/5 border border-destructive/15 rounded-xl space-y-2">
-                          <div className="flex items-start gap-2 text-xs font-semibold text-destructive">
-                            <AlertTriangle size={14} className="shrink-0 mt-0.5" />
-                            <span>{t('import_tasks.sql_failed')}</span>
-                          </div>
-                          <div className="p-2.5 rounded-lg bg-black/40 text-2xs font-mono text-destructive-text border border-destructive/10 overflow-x-auto whitespace-pre-wrap break-all max-h-[120px] custom-scrollbar">
-                            {currentResult.sqlError || 'Unknown SQL error'}
-                          </div>
-                        </div>
-                      )}
-                    </div>
+                    <CollapsibleSection title={t('import_tasks.sql_check')} infoText={t('import_tasks.sql_check_info')} defaultOpen={true}>
+                      <SqlResultPreview 
+                        sqlSuccess={currentResult.sqlSuccess} 
+                        sqlError={currentResult.sqlError} 
+                        sqlResult={currentResult.sqlResult} 
+                      />
+                    </CollapsibleSection>
 
                     {/* 2. AST Rules Check */}
-                    <div className="space-y-2">
-                      <h5 className="text-2xs font-bold text-muted-foreground tracking-wide uppercase">{t('import_tasks.rules_check')}</h5>
+                    <CollapsibleSection title={t('import_tasks.rules_check')} infoText={t('import_tasks.rules_check_info')} defaultOpen={true}>
                       {currentResult.rulesResults.length === 0 ? (
                         <div className="p-3 bg-muted/10 rounded-xl text-2xs text-muted-foreground italic">
-                          Правила AST не заданы для этой задачи
+                          {t('import_tasks.no_rules')}
                         </div>
                       ) : (
-                        <div className="space-y-2 max-h-[200px] overflow-y-auto custom-scrollbar pr-1">
+                        <div className="flex flex-col gap-2">
                           {currentResult.rulesResults.map((r: any, idx: number) => (
-                            <div 
-                              key={idx} 
-                              className={`flex items-start justify-between gap-3 p-3 rounded-xl border transition-all ${
-                                r.passed 
-                                  ? 'bg-success/5 border-success/10' 
-                                  : r.severity === 'blocking'
-                                    ? 'bg-destructive/5 border-destructive/10'
-                                    : 'bg-warning/5 border-warning/10'
-                              }`}
-                            >
-                              <div className="flex-1 min-w-0">
-                                <p className="text-2xs font-semibold text-foreground leading-tight">
-                                  {r.message || `${r.category}.${r.condition}`}
-                                </p>
-                                {!r.passed && r.detail && (
-                                  <p className="text-3xs text-muted-foreground/80 mt-1 font-mono leading-none truncate" title={r.detail}>
-                                    {r.detail}
-                                  </p>
-                                )}
-                              </div>
-                              <div className={`shrink-0 flex items-center gap-1 text-2xs font-bold ${
-                                r.passed 
-                                  ? 'text-success' 
-                                  : r.severity === 'blocking' 
-                                    ? 'text-destructive' 
-                                    : 'text-warning-text'
-                              }`}>
-                                {r.passed ? (
-                                  <CheckCircle2 size={12} />
-                                ) : r.severity === 'blocking' ? (
-                                  <X size={12} />
-                                ) : (
-                                  <AlertTriangle size={12} />
-                                )}
-                                <span>
-                                  {r.passed 
-                                    ? t('import_tasks.rule_passed') 
-                                    : r.severity === 'blocking' 
-                                      ? t('import_tasks.blocking_rule_failed') 
-                                      : t('import_tasks.rule_failed')
-                                  }
-                                </span>
-                              </div>
-                            </div>
+                            <RuleResultItem key={idx} rule={r} />
                           ))}
                         </div>
                       )}
-                    </div>
+                    </CollapsibleSection>
                   </div>
                 )}
               </div>
@@ -783,12 +817,12 @@ export const ImportTasksModal: React.FC<ImportTasksModalProps> = ({
         </div>
 
         {/* Footer controls */}
-        <div className="px-6 py-4 border-t border-glass-border flex items-center justify-between shrink-0 bg-glass/10">
+        <div className="flex items-center justify-between px-6 py-4 border-t border-glass-border bg-glass/10 shrink-0">
           <div>
             {step === 'review' && (
               <button 
                 onClick={handleCancel}
-                className="px-4 py-2 text-xs font-bold text-muted-foreground hover:text-foreground rounded-xl hover:bg-hover transition-colors focus:outline-none"
+                className="px-5 py-2 text-xs font-bold bg-secondary border border-border text-foreground hover:bg-hover rounded-xl transition-colors focus:outline-none"
               >
                 {t('import_tasks.cancel')}
               </button>
@@ -796,7 +830,7 @@ export const ImportTasksModal: React.FC<ImportTasksModalProps> = ({
             {step === 'upload' && (
               <button 
                 onClick={handleCancel}
-                className="px-4 py-2 text-xs font-bold text-muted-foreground hover:text-foreground rounded-xl hover:bg-hover transition-colors focus:outline-none"
+                className="px-5 py-2 text-xs font-bold bg-secondary border border-border text-foreground hover:bg-hover rounded-xl transition-colors focus:outline-none"
               >
                 {t('import_tasks.cancel')}
               </button>
@@ -809,7 +843,7 @@ export const ImportTasksModal: React.FC<ImportTasksModalProps> = ({
                 {/* Skip button for invalid or skipped tasks */}
                 <button
                   onClick={handleSkipTask}
-                  className="px-4 py-2 text-xs font-bold text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-xl transition-all focus:outline-none"
+                  className="px-5 py-2 text-xs font-bold bg-secondary border border-border text-foreground hover:bg-destructive/10 hover:text-destructive hover:border-destructive/30 rounded-xl transition-all focus:outline-none"
                 >
                   {t('import_tasks.skip')}
                 </button>
