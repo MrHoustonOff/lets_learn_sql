@@ -59,6 +59,7 @@ export const WizardStepSolution: React.FC<WizardStepSolutionProps> = ({ data, se
       setResult({
         columns: executionResult.columns,
         rows: executionResult.rows,
+        rowCount: executionResult.row_count,
         executionTimeMs: executionResult.duration_ms,
         error: null
       });
@@ -67,6 +68,7 @@ export const WizardStepSolution: React.FC<WizardStepSolutionProps> = ({ data, se
       setResult({
         columns: [],
         rows: [],
+        rowCount: 0,
         executionTimeMs: 0,
         error: err.message
       });
@@ -185,7 +187,14 @@ export const WizardStepSolution: React.FC<WizardStepSolutionProps> = ({ data, se
                     <div className="flex items-center gap-4 text-muted-foreground text-xs font-medium">
                       <div className="flex items-center gap-1.5">
                         <Database className="w-3.5 h-3.5 text-primary" />
-                        <span>{t('wizard.solution.rows_shown', { count: result.rows.length })}</span>
+                        <span>
+                          {t('wizard.solution.rows_shown', { count: result.rows.length })}
+                          {result.rowCount > result.rows.length && (
+                            <span className="text-warning-text ml-1 opacity-100 font-semibold">
+                              {t('wizard.solution.limit_exceeded', { shown: result.rows.length, total: result.rowCount })}
+                            </span>
+                          )}
+                        </span>
                       </div>
                       <div className="flex items-center gap-1.5">
                         <Clock className="w-3.5 h-3.5 text-primary" />

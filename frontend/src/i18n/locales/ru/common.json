@@ -100,7 +100,8 @@
       "execution_result": "Результат выполнения",
       "executing": "Выполнение запроса...",
       "execution_error": "Ошибка выполнения:",
-      "rows_shown": "Показано строк: {{count}}",
+      "rows_shown": "Показано в таблице: {{count}}",
+      "limit_exceeded": "(Лимит превышен: сервер отдал первые {{shown}} из {{total}} строк)",
       "execution_time": "Время: {{ms}} мс"
     },
     "rules": {
