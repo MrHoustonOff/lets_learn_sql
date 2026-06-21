@@ -3,8 +3,10 @@ from typing import List, Optional
 from db.repositories.tasks import TaskRepository
 from schemas.tasks import (
     TasksListResponse, TaskResponse, TaskListItem,
-    TagOut, CourseOut
+    TagOut, CourseOut, TaskImportItem, TaskExportPayload,
+    TaskImportResult, TaskImportResponse, RuleInput
 )
+
 
 class TaskService:
     def __init__(self, repo: TaskRepository):
@@ -133,3 +135,113 @@ class TaskService:
             })
 
         return results
+
+    async def export_tasks(self, task_ids: List[int], user_id: int) -> List[TaskImportItem]:
+        exported = []
+        for tid in task_ids:
+            try:
+                details = await self.get_task_details(tid, user_id)
+            except LookupError:
+                continue
+
+            exported.append(TaskImportItem(
+                title=details.title or "",
+                description=details.description or "",
+                difficulty=details.difficulty or 1,
+                db_name=details.db_name or "northwind",
+                author_name=details.author_name,
+                source_url=details.source_url,
+                reference_sql=details.reference_sql or "",
+                order_matters=details.order_matters,
+                tags=details.tags,
+                rules=[RuleInput(**r) for r in details.rules]
+            ))
+        return exported
+
+    async def import_tasks(self, payload: TaskExportPayload, mode: str) -> TaskImportResponse:
+        import hashlib
+        imported_count = 0
+        skipped_count = 0
+        overwritten_count = 0
+        results = []
+
+        for task in payload.tasks:
+            db_id = await self.repo.get_database_id_by_name(task.db_name)
+            if not db_id:
+                results.append(TaskImportResult(
+                    title=task.title,
+                    status="skipped",
+                    error=f"Database '{task.db_name}' not found"
+                ))
+                skipped_count += 1
+                continue
+
+            sig = hashlib.md5(f"{task.title}||{task.description or ''}".encode("utf-8")).hexdigest()
+            existing = await self.repo.get_task_by_signature(sig)
+
+            try:
+                if existing:
+                    if mode == "skip":
+                        results.append(TaskImportResult(
+                            title=task.title,
+                            status="skipped",
+                            task_id=existing["id"],
+                            error="Task already exists (signature match)"
+                        ))
+                        skipped_count += 1
+                        continue
+                    elif mode == "overwrite":
+                        tid = await self.repo.import_task(
+                            title=task.title,
+                            description=task.description or "",
+                            difficulty=task.difficulty or 1,
+                            database_id=db_id,
+                            author_name=task.author_name,
+                            source_url=task.source_url,
+                            reference_sql=task.reference_sql,
+                            order_matters=task.order_matters,
+                            tags=task.tags,
+                            rules=task.rules,
+                            signature=sig,
+                            existing_id=existing["id"]
+                        )
+                        results.append(TaskImportResult(
+                            title=task.title,
+                            status="overwritten",
+                            task_id=tid
+                        ))
+                        overwritten_count += 1
+                else:
+                    tid = await self.repo.import_task(
+                        title=task.title,
+                        description=task.description or "",
+                        difficulty=task.difficulty or 1,
+                        database_id=db_id,
+                        author_name=task.author_name,
+                        source_url=task.source_url,
+                        reference_sql=task.reference_sql,
+                        order_matters=task.order_matters,
+                        tags=task.tags,
+                        rules=task.rules,
+                        signature=sig
+                    )
+                    results.append(TaskImportResult(
+                        title=task.title,
+                        status="imported",
+                        task_id=tid
+                    ))
+                    imported_count += 1
+            except Exception as e:
+                results.append(TaskImportResult(
+                    title=task.title,
+                    status="skipped",
+                    error=str(e)
+                ))
+                skipped_count += 1
+
+        return TaskImportResponse(
+            imported_count=imported_count,
+            skipped_count=skipped_count,
+            overwritten_count=overwritten_count,
+            results=results
+        )
