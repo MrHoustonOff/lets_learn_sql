@@ -548,6 +548,7 @@ export const ImportTasksModal: React.FC<ImportTasksModalProps> = ({
         </div>
 
         {/* Content body */}
+        <div className="p-6 overflow-y-auto custom-scrollbar flex-1 min-h-0">
           {/* STEP 1: Select type */}
           {step === 'select_type' && <SelectTypeStep setStep={setStep} />}
 
