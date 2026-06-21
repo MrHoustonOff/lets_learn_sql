@@ -1,26 +1,15 @@
 from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel
 import asyncpg
 from core import database
 from core.security import validate_sql
 from core.config import settings
 import time
+from typing import List
 
-class RollbackTransaction(Exception):
-    pass
+from schemas.execution import QueryRequest, QueryResponse
+from core.exceptions import RollbackTransaction
 
 router = APIRouter()
-
-class QueryRequest(BaseModel):
-    sql: str
-    database: str = "northwind"   # TODO: MVP+ — мультибд
-
-class QueryResponse(BaseModel):
-    columns: list[str]
-    rows: list[list]
-    row_count: int
-    duration_ms: float
-    truncated: bool               # обрезан ли результат
 
 @router.post("/query")
 async def run_query(req: QueryRequest) -> QueryResponse:
