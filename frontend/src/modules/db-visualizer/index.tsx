@@ -1,7 +1,8 @@
 import React, { useState, useCallback, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import type { DatabaseSchema, TableSchema } from './types';
 import { useSchema } from './hooks/useSchema';
-import { Filter, Maximize2, Minimize2, X } from 'lucide-react';
+import { Filter, Maximize2, Minimize2, X, Check, Sparkles } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { ReactFlow, Background, BackgroundVariant, Controls, useNodesState, useEdgesState } from '@xyflow/react';
 import type { Node, Edge } from '@xyflow/react';
@@ -54,8 +55,74 @@ export const DBVisualizer: React.FC<DBVisualizerProps> = ({ schema, database = '
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
 
+  const [isCopied, setIsCopied] = useState(false);
+  const [isCopying, setIsCopying] = useState(false);
+
+  const [showTooltip, setShowTooltip] = useState(false);
+  const [tooltipStyle, setTooltipStyle] = useState<React.CSSProperties>({});
+  const tooltipTimeoutRef = useRef<any>(null);
+
   const { schema: fetchedSchema, loading, error } = useSchema(database);
   const activeSchema = schema || fetchedSchema;
+
+  const handleCopyForAI = useCallback(async () => {
+    if (isCopying) return;
+    try {
+      setIsCopying(true);
+      const response = await fetch(`/api/schema/copy-ai?database=${encodeURIComponent(database)}`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json();
+      if (data && data.raw_text) {
+        await navigator.clipboard.writeText(data.raw_text);
+        setIsCopied(true);
+        setTimeout(() => setIsCopied(false), 2000);
+      }
+    } catch (err) {
+      console.error("Failed to copy schema for AI:", err);
+      alert(t('db_visualizer:copy_for_ai_error'));
+    } finally {
+      setIsCopying(false);
+    }
+  }, [database, isCopying, t]);
+
+  const handleMouseEnterButton = useCallback((e: React.MouseEvent<HTMLButtonElement>) => {
+    if (tooltipTimeoutRef.current) {
+      clearTimeout(tooltipTimeoutRef.current);
+    }
+    const rect = e.currentTarget.getBoundingClientRect();
+    tooltipTimeoutRef.current = setTimeout(() => {
+      const tooltipWidth = 288;
+      const spaceAbove = rect.top;
+      const isDown = spaceAbove < 200;
+      let left = rect.left + rect.width / 2 - tooltipWidth / 2;
+      left = Math.max(10, Math.min(left, window.innerWidth - tooltipWidth - 10));
+
+      if (isDown) {
+        setTooltipStyle({
+          top: `${rect.bottom + 8}px`,
+          left: `${left}px`,
+          transformOrigin: 'top center'
+        });
+      } else {
+        setTooltipStyle({
+          bottom: `${window.innerHeight - rect.top + 8}px`,
+          left: `${left}px`,
+          transformOrigin: 'bottom center'
+        });
+      }
+      setShowTooltip(true);
+    }, 500);
+  }, []);
+
+  const handleMouseLeaveButton = useCallback(() => {
+    if (tooltipTimeoutRef.current) {
+      clearTimeout(tooltipTimeoutRef.current);
+      tooltipTimeoutRef.current = null;
+    }
+    setShowTooltip(false);
+  }, []);
 
   // Загрузка сохраненного базового расположения
   const loadSavedLayout = useCallback((layoutedNodes: Node[]) => {
@@ -218,6 +285,24 @@ export const DBVisualizer: React.FC<DBVisualizerProps> = ({ schema, database = '
             onResetLayout={handleResetLayout}
             onClearLayout={handleClearLayout}
           />
+
+          <button
+            onClick={() => {
+              handleMouseLeaveButton();
+              handleCopyForAI();
+            }}
+            onMouseEnter={handleMouseEnterButton}
+            onMouseLeave={handleMouseLeaveButton}
+            disabled={isCopying}
+            className={`pointer-events-auto flex items-center justify-center gap-2 w-[215px] whitespace-nowrap px-4 py-2.5 rounded-xl font-medium text-base transition-all shadow-sm border ${
+              isCopied
+                ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/50 dark:bg-emerald-400/10 dark:text-emerald-400 dark:border-emerald-400/50'
+                : 'bg-glass backdrop-blur-md border-glass-border hover:bg-hover text-foreground'
+            } ${isCopying ? 'opacity-50 cursor-not-allowed' : ''}`}
+          >
+            {isCopied ? <Check size={16} /> : <Sparkles size={16} className="text-amber-500 animate-pulse" />}
+            <span>{isCopied ? t('db_visualizer:copied_for_ai') : t('db_visualizer:copy_for_ai')}</span>
+          </button>
           
           {onToggleMaximize && (
             <button 
@@ -291,6 +376,16 @@ export const DBVisualizer: React.FC<DBVisualizerProps> = ({ schema, database = '
           table={selectedTable} 
           onClose={() => setSelectedTable(null)} 
         />
+      )}
+
+      {showTooltip && createPortal(
+        <div 
+          className="fixed z-tooltip w-72 p-3 bg-popover text-popover-foreground text-xs rounded-md shadow-2xl border border-glass-border pointer-events-none whitespace-pre-wrap font-sans font-normal normal-case leading-relaxed animate-in fade-in zoom-in-0 duration-200"
+          style={tooltipStyle}
+        >
+          {t('db_visualizer:copy_for_ai_infotip')}
+        </div>,
+        document.body
       )}
     </div>
   );

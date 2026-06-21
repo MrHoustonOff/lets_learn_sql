@@ -156,6 +156,7 @@ export const DatabaseDetailsModal: React.FC<DatabaseDetailsModalProps> = ({ isOp
                 {activeTab === 'schema' && (
                   <div className={maximizedPane === 'schema' ? 'absolute inset-0 z-modal bg-background' : 'h-full w-full'}>
                     <DBVisualizer 
+                      database={database.technicalName}
                       isMaximized={maximizedPane === 'schema'} 
                       onToggleMaximize={() => setMaximizedPane(maximizedPane === 'schema' ? null : 'schema')}
                     />
