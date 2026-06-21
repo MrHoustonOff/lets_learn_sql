@@ -829,7 +829,7 @@ export const ImportTasksModal: React.FC<ImportTasksModalProps> = ({
                 }}
                 className="px-5 py-2 bg-primary text-primary-foreground hover:brightness-110 active:scale-95 rounded-xl text-xs font-bold shadow-[0_0_15px_rgba(var(--primary),0.3)] focus:outline-none transition-all"
               >
-                {t('common.close') || 'Закрыть'}
+                {t('close')}
               </button>
             )}
           </div>
