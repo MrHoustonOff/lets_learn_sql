@@ -9,6 +9,7 @@ interface SqlResultPreviewProps {
     duration_ms: number;
     row_count: number;
     columns: string[];
+    rows?: any[][];
   } | null;
 }
 
@@ -30,7 +31,14 @@ export const SqlResultPreview: React.FC<SqlResultPreviewProps> = ({ sqlSuccess, 
             </div>
             <div>
               <span>{t('import_tasks.row_count')} </span>
-              <span className="font-semibold text-foreground">{sqlResult.row_count}</span>
+              <span className="font-semibold text-foreground">
+                {sqlResult.rows ? sqlResult.rows.length : sqlResult.row_count}
+                {sqlResult.rows && sqlResult.row_count > sqlResult.rows.length && (
+                  <span className="text-warning-text ml-1 opacity-100 font-semibold text-2xs">
+                    ({sqlResult.row_count})
+                  </span>
+                )}
+              </span>
             </div>
             <div className="truncate" title={sqlResult.columns.join(', ')}>
               <span>{t('import_tasks.columns')} </span>

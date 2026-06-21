@@ -1,4 +1,5 @@
 import React from 'react';
+import { createPortal } from 'react-dom';
 import { X, Network } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { UniversalPlanTree } from './explain/UniversalPlanTree';
@@ -13,7 +14,7 @@ export const ExplainModal: React.FC<ExplainModalProps> = ({ isOpen, onClose }) =
 
   if (!isOpen) return null;
 
-  return (
+  return createPortal(
     <div id="explain-modal" className="fixed inset-0 z-modal-top bg-background/60 backdrop-blur-sm flex items-center justify-center p-6 animate-in fade-in duration-200">
       <div className="bg-glass backdrop-blur-3xl w-full h-full max-w-7xl max-h-[90vh] rounded-xl border border-glass-border shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
         {/* Header */}
@@ -35,6 +36,7 @@ export const ExplainModal: React.FC<ExplainModalProps> = ({ isOpen, onClose }) =
           <UniversalPlanTree onClose={onClose} />
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };

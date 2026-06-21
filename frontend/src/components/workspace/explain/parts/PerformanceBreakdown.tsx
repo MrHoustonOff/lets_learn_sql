@@ -93,7 +93,7 @@ export const PerformanceBreakdown: React.FC<PerformanceBreakdownProps> = ({ setS
       {isCostBreakdownOpen && (
         <div className="bg-hover shadow-inner border border-glass-border rounded-lg overflow-hidden">
         <table className="w-full text-sm">
-          <thead className="bg-black/10 dark:bg-white/10 border-b border-glass-border">
+          <thead className="bg-muted border-b border-glass-border">
             <tr>
               <th className="px-3 py-2 text-left text-xs font-medium text-muted-foreground">
                 {t('explain_ui:col_operation')}

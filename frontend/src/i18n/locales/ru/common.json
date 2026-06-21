@@ -44,7 +44,9 @@
       "edit_task": "Редактирование задачи",
       "saving": "Сохранение...",
       "saved": "Сохранено",
-      "not_saved": "Не сохранено"
+      "not_saved": "Не сохранено",
+      "save_changes": "Сохранить",
+      "last_saved": "Последнее сохранение: {{time}}"
     },
     "footer": {
       "back": "Назад",
@@ -98,7 +100,8 @@
       "execution_result": "Результат выполнения",
       "executing": "Выполнение запроса...",
       "execution_error": "Ошибка выполнения:",
-      "rows_shown": "Показано строк: {{count}}",
+      "rows_shown": "Показано в таблице: {{count}}",
+      "limit_exceeded": "(Лимит превышен: сервер отдал первые {{shown}} из {{total}} строк)",
       "execution_time": "Время: {{ms}} мс"
     },
     "rules": {

@@ -123,7 +123,15 @@ class TaskExecutionService:
             return SolutionResponse(solution_sql=solution_sql, columns=[], rows=[], row_count=0, duration_ms=duration_ms)
             
         columns = list(records[0].keys())
-        rows_data = [list(r.values()) for r in records]
+        rows_data = []
+        for record in records[:settings.QUERY_ROWS_LIMIT]:
+            row = []
+            for v in record.values():
+                if isinstance(v, (str, int, float, bool, type(None))):
+                    row.append(v)
+                else:
+                    row.append(str(v))
+            rows_data.append(row)
         
         return SolutionResponse(
             solution_sql=solution_sql,

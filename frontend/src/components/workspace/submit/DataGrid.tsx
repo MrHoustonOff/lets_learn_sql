@@ -9,7 +9,7 @@ export const DataGrid: React.FC<{ sample: RowSample | { total: number, rows: str
   if (!sample || !sample.rows || sample.rows.length === 0) return null;
   return (
     <div className="rounded-md border border-glass-border overflow-hidden mt-3 bg-hover shadow-inner">
-      <div className="px-3 py-1.5 text-xs font-semibold bg-black/10 dark:bg-white/10 flex items-center justify-between border-b border-glass-border">
+      <div className="px-3 py-1.5 text-xs font-semibold bg-muted flex items-center justify-between border-b border-glass-border">
         <span className="flex items-center gap-1.5">
           <Table2 size={12} className="opacity-70" />
           <span className="leading-none translate-y-[1px]">{title}</span>

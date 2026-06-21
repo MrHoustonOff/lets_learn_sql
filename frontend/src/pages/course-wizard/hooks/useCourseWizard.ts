@@ -116,7 +116,7 @@ export function useCourseWizard(id: string | undefined, isFromEdit: boolean) {
         body: JSON.stringify({
           title: courseData.title,
           description: courseData.description,
-          exclude_id: id !== 'new' && courseId ? courseId : undefined
+          exclude_id: id && id !== 'new' ? parseInt(id) : undefined
         })
       })
       .then(res => res.json())
