@@ -59,9 +59,20 @@ export const ImportTasksModal: React.FC<ImportTasksModalProps> = ({
   const [currentTaskIndex, setCurrentTaskIndex] = useState(0);
   const [isPublishing, setIsPublishing] = useState(false);
   
-  // Fetch databases and courses for mapping names to IDs
+  // Fetch databases and courses for mapping names to IDs & Reset state on open
   useEffect(() => {
     if (!isOpen) return;
+    
+    // Reset state variables to defaults
+    setStep('select_type');
+    setDragActive(false);
+    setUploadError(null);
+    setTasksToProcess([]);
+    setProcessingCurrent(0);
+    setProcessingTotal(0);
+    setProcessedResults([]);
+    setCurrentTaskIndex(0);
+    setIsPublishing(false);
     
     fetch('/api/tasks?page_size=1')
       .then(res => res.json())

@@ -267,7 +267,7 @@
     "current_drafts": "Current drafts",
     "create_task": "Create task",
     "create_course": "Create course",
-    "import": "Import",
+    "import": "Import JSON!",
     "filters": {
       "all_types": "All types",
       "tasks": "Tasks",
@@ -306,8 +306,8 @@
   "import_tasks": {
     "modal_title": "Import",
     "select_type": "Select what exactly you want to import:",
-    "tasks": "Tasks (JSON)",
-    "course": "Course (JSON)",
+    "tasks": "Tasks",
+    "course": "Course",
     "course_todo": "Course import is under development",
     "title": "Import Tasks",
     "drop_zone": "Drag and drop JSON file or multiple task files here",
