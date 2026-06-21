@@ -337,7 +337,7 @@ export const DataTable: React.FC<DataTableProps> = ({ columns, rows, className =
             className={`text-left whitespace-nowrap ${isResized ? 'table-fixed' : 'w-full'}`} 
             style={isResized ? { width: `${totalTableWidth}px` } : {}}
           >
-            <thead className="bg-black/10 dark:bg-white/10 border-b-2 border-primary/20 text-foreground font-semibold uppercase tracking-wider sticky top-0 z-layout shadow-sm">
+            <thead className="bg-muted border-b-2 border-primary/20 text-foreground font-semibold uppercase tracking-wider sticky top-0 z-layout shadow-sm">
               <tr className="divide-x divide-glass-border">
                 {columns.map((col, i) => (
                   <th 
