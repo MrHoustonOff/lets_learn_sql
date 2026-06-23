@@ -1,4 +1,4 @@
-import json
+﻿import json
 from fastapi import APIRouter, HTTPException, Request
 
 from core.sqlite_db import get_sqlite_conn
@@ -118,7 +118,6 @@ async def validate_bulk_tasks(payload: BulkValidateRequest, request: Request):
             # Mapped rules
             rawRules = rawTask.get('rules') or []
             mappedRulesModels = []
-            mappedRulesDicts = []
             for r in rawRules:
                 rd = {
                     "category": r.get('category'),
@@ -127,7 +126,6 @@ async def validate_bulk_tasks(payload: BulkValidateRequest, request: Request):
                     "severity": r.get('severity') or 'blocking',
                     "message": r.get('message') or ''
                 }
-                mappedRulesDicts.append(rd)
                 mappedRulesModels.append(RuleInput(**rd))
                 
             # Create draft
@@ -146,7 +144,7 @@ async def validate_bulk_tasks(payload: BulkValidateRequest, request: Request):
                 reference_sql=rawTask.get('reference_sql') or '',
                 order_matters=bool(rawTask.get('order_matters')),
                 tags=rawTask.get('tags') or [],
-                rules=mappedRulesDicts
+                rules=mappedRulesModels
             )
             
             # Execute SQL
