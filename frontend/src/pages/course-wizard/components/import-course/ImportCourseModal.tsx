@@ -9,12 +9,14 @@ interface ImportCourseModalProps {
   isOpen: boolean;
   onClose: () => void;
   onImportFinished: () => void;
+  onBack?: () => void;
 }
 
 export const ImportCourseModal: React.FC<ImportCourseModalProps> = ({ 
   isOpen, 
   onClose, 
-  onImportFinished 
+  onImportFinished,
+  onBack
 }) => {
   const { t } = useTranslation();
   
@@ -141,6 +143,7 @@ export const ImportCourseModal: React.FC<ImportCourseModalProps> = ({
               dropZoneText={t('import_courses.drop_zone')}
               selectFileText={t('import_courses.select_file')}
               isMultiple={false}
+              onBack={onBack}
             />
           )}
 

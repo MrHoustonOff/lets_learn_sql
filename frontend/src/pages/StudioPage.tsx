@@ -460,6 +460,10 @@ export const StudioPage: React.FC = () => {
         isOpen={isImportCourseModalOpen}
         onClose={() => setIsImportCourseModalOpen(false)}
         onImportFinished={loadDrafts}
+        onBack={() => {
+          setIsImportCourseModalOpen(false);
+          setIsImportModalOpen(true);
+        }}
       />
 
       </main>
