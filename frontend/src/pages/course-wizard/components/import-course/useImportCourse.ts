@@ -116,7 +116,7 @@ export const useImportCourse = (isOpen: boolean, onClose: () => void, onImportFi
         throw new Error(t('import_courses.errors.duplicate_check_failed', { defaultValue: 'Failed to check duplicates' }));
       }
       const dupData = await dupRes.json();
-      if (dupData.title_matches > 0) {
+      if (dupData.is_exact_duplicate) {
         throw new Error(t('import_courses.errors.duplicate_course'));
       }
 
@@ -142,7 +142,6 @@ export const useImportCourse = (isOpen: boolean, onClose: () => void, onImportFi
 
       startProcessing(flatTasks);
     } catch (err: any) {
-      alert(err.message || "Unknown error");
       setUploadError(err.message || "Unknown error");
     }
   };
@@ -194,7 +193,7 @@ export const useImportCourse = (isOpen: boolean, onClose: () => void, onImportFi
       }
       
       const dupData = await dupRes.json();
-      if (dupData.title_matches > 0) {
+      if (dupData.is_exact_duplicate) {
         throw new Error(t('import_courses.errors.duplicate_course'));
       }
 
