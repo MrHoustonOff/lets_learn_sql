@@ -6,6 +6,7 @@ import { ConfirmModal } from '../components/ui/ConfirmModal';
 import { DifficultyDots } from './tasks-list/DifficultyDots';
 import { Badge } from '../components/ui/Badge';
 import { ImportTasksModal } from './task-wizard/components/ImportTasksModal';
+import { ImportCourseModal } from './course-wizard/components/import-course/ImportCourseModal';
 
 const MOCK_PROMPTS = [
   { 
@@ -109,6 +110,7 @@ export const StudioPage: React.FC = () => {
   const [copiedId, setCopiedId] = useState<number | null>(null);
   const [isCreatingTask, setIsCreatingTask] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const [isImportCourseModalOpen, setIsImportCourseModalOpen] = useState(false);
   const [drafts, setDrafts] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [deletingDraft, setDeletingDraft] = useState<{id: number, type: string} | null>(null);
@@ -447,6 +449,16 @@ export const StudioPage: React.FC = () => {
       <ImportTasksModal 
         isOpen={isImportModalOpen}
         onClose={() => setIsImportModalOpen(false)}
+        onImportFinished={loadDrafts}
+        onSelectCourse={() => {
+          setIsImportModalOpen(false);
+          setIsImportCourseModalOpen(true);
+        }}
+      />
+
+      <ImportCourseModal 
+        isOpen={isImportCourseModalOpen}
+        onClose={() => setIsImportCourseModalOpen(false)}
         onImportFinished={loadDrafts}
       />
 
