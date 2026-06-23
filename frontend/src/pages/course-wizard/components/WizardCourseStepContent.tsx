@@ -124,7 +124,7 @@ function TaskList({ tasks, onTasksChange, allSelectedIds, sectionLabel }: any) {
       <div className="space-y-1.5">
         {tasks.length === 0 ? (
           <div className="text-center py-4 text-[11px] text-muted-foreground border border-dashed border-border rounded-lg">
-            Задач пока нет — добавь через кнопку ниже
+            {t('wizard_course.content.no_tasks_yet')}
           </div>
         ) : tasks.map((task: any, i: number) => (
           <TaskItem
@@ -144,7 +144,7 @@ function TaskList({ tasks, onTasksChange, allSelectedIds, sectionLabel }: any) {
           className="w-full mt-1 border border-dashed border-border rounded-lg py-2 flex items-center justify-center gap-1.5 text-muted-foreground hover:border-primary/40 hover:text-primary hover:bg-secondary/30 transition-all text-xs font-medium"
         >
           <ListPlus className="w-3.5 h-3.5" />
-          Добавить задачу в «{sectionLabel}»
+          {t('wizard_course.content.add_task_to_section', { section: sectionLabel })}
         </button>
       </div>
       {pickerOpen && (
@@ -162,6 +162,7 @@ function TaskList({ tasks, onTasksChange, allSelectedIds, sectionLabel }: any) {
 // SECTION COMPONENT
 // ----------------------------------------------------------------------
 function Section({ section, onChange, onRemove, onMoveUp, onMoveDown, isFirst, isLast, allSelectedIds, sectionIndex }: any) {
+  const { t } = useTranslation();
   const [collapsed, setCollapsed] = useState(false);
 
   const sectionTaskCount = section.tasks?.length || 0;
@@ -178,17 +179,17 @@ function Section({ section, onChange, onRemove, onMoveUp, onMoveDown, isFirst, i
           <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${collapsed ? "-rotate-90" : ""}`} />
         </button>
         <span className="text-[11px] text-primary font-semibold uppercase tracking-wide shrink-0">
-          Раздел {sectionIndex + 1}
+          {t('wizard_course.content.section_title', { index: sectionIndex + 1 })}
         </span>
         <input
           type="text"
           value={section.title}
           onChange={e => onChange({ ...section, title: e.target.value })}
-          placeholder="Название раздела..."
+          placeholder={t('wizard_course.content.section_name_placeholder')}
           className="flex-1 bg-transparent text-sm font-semibold focus:outline-none placeholder:text-muted-foreground"
         />
         <span className="text-[11px] text-muted-foreground shrink-0 hidden sm:block">
-          {sectionTaskCount} зад.
+          {t('wizard_course.content.task_count', { count: sectionTaskCount })}
         </span>
         <div className="flex items-center gap-0.5 shrink-0">
           <button type="button" onClick={onMoveUp} disabled={isFirst} className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors disabled:opacity-20 disabled:cursor-not-allowed">
@@ -207,11 +208,11 @@ function Section({ section, onChange, onRemove, onMoveUp, onMoveDown, isFirst, i
         <div className="p-5 space-y-4">
           {/* Section description */}
           <div>
-            <label className="text-[11px] text-muted-foreground mb-1 block">Описание раздела <span className="text-destructive">*</span></label>
+            <label className="text-[11px] text-muted-foreground mb-1 block">{t('wizard_course.content.section_description')} <span className="text-destructive">*</span></label>
             <MarkdownEditor
               value={section.description || ''}
               onChange={val => onChange({ ...section, description: val })}
-              placeholder="Краткое описание раздела (поддерживается Markdown)..."
+              placeholder={t('wizard_course.content.section_desc_placeholder')}
               minHeight={100}
               autoPreviewOnBlur={true}
             />
@@ -222,7 +223,7 @@ function Section({ section, onChange, onRemove, onMoveUp, onMoveDown, isFirst, i
             tasks={section.tasks || []}
             onTasksChange={(tasks: any) => onChange({ ...section, tasks })}
             allSelectedIds={allSelectedIds}
-            sectionLabel={section.title || `Раздел ${sectionIndex + 1}`}
+            sectionLabel={section.title || t('wizard_course.content.section_title', { index: sectionIndex + 1 })}
           />
         </div>
       )}
@@ -269,7 +270,7 @@ export const WizardCourseStepContent: React.FC<{ data: any; setData: any }> = ({
             {t('wizard_course.content.title')}
           </h2>
           <p className="text-[11px] text-muted-foreground mt-1">
-            {sections.length} {sections.length === 1 ? "раздел" : "разд."} · {totalTaskCount} задач всего
+            {t('wizard_course.content.section_count', { count: sections.length })} · {t('wizard_course.content.task_count', { count: totalTaskCount })}
           </p>
         </div>
         <button
@@ -277,7 +278,7 @@ export const WizardCourseStepContent: React.FC<{ data: any; setData: any }> = ({
           className="flex items-center gap-1.5 px-4 py-2 bg-primary text-primary-foreground hover:brightness-110 rounded-lg text-sm font-semibold transition-all active:scale-95"
         >
           <Plus size={16} />
-          Новый раздел
+          {t('wizard_course.content.new_section')}
         </button>
       </div>
 
@@ -287,8 +288,8 @@ export const WizardCourseStepContent: React.FC<{ data: any; setData: any }> = ({
           className="border-2 border-dashed border-border/80 rounded-xl py-16 flex flex-col items-center gap-2 text-muted-foreground cursor-pointer hover:border-primary/40 hover:text-primary hover:bg-secondary/20 transition-all bg-card/50"
         >
           <FolderPlus className="w-8 h-8 opacity-50" />
-          <p className="text-sm font-semibold mt-2">Добавь первый раздел курса</p>
-          <p className="text-[11px]">Нажми или кликни сюда</p>
+          <p className="text-sm font-semibold mt-2">{t('wizard_course.content.add_first_section')}</p>
+          <p className="text-[11px]">{t('wizard_course.content.click_here')}</p>
         </div>
       ) : (
         <div className="space-y-4">

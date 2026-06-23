@@ -212,7 +212,9 @@
     "footer": {
       "back": "Back",
       "next": "Next",
-      "publish": "Publish Course"
+      "publish": "Publish Course",
+      "publishing": "Publishing...",
+      "error_retry": "Error — retry"
     },
     "info": {
       "main": "Basic Info",
@@ -232,7 +234,10 @@
       "add_tag": "Add",
       "duplicate_title": "Course already exists",
       "duplicate_desc": "A course with the exact same title and description already exists in the pool. Please modify them to continue.",
-      "duplicate_title_count": "There are already {{count}} course(s) with this title"
+      "duplicate_title_count": "There are already {{count}} course(s) with this title",
+      "author_hint": "One or more — link is optional",
+      "add_author": "Add author",
+      "supports_markdown": "supports Markdown"
     },
     "content": {
       "title": "Course Curriculum",
@@ -243,7 +248,17 @@
       "subsection_name_placeholder": "Subsection Name",
       "add_task": "Add Task",
       "delete_confirm_title": "Delete?",
-      "delete_confirm_desc": "Are you sure you want to delete this element and all its contents?"
+      "delete_confirm_desc": "Are you sure you want to delete this element and all its contents?",
+      "section_count": "{{count}} sec.",
+      "task_count": "{{count}} tsk.",
+      "new_section": "New section",
+      "add_first_section": "Add first section",
+      "section_title": "Section {{index}}",
+      "add_task_to_section": "Add task to «{{section}}»",
+      "no_tasks_yet": "No tasks yet — add via button below",
+      "section_description": "Section Description",
+      "section_desc_placeholder": "Short section description (Markdown supported)...",
+      "click_here": "Click or tap here"
     },
     "preview": {
       "ready_title": "Ready for Publication!",

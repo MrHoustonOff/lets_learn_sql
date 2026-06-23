@@ -212,7 +212,9 @@
     "footer": {
       "back": "Назад",
       "next": "Далее",
-      "publish": "Опубликовать курс"
+      "publish": "Опубликовать курс",
+      "publishing": "Публикация...",
+      "error_retry": "Ошибка — повторить"
     },
     "info": {
       "main": "Основное",
@@ -232,7 +234,10 @@
       "add_tag": "Добавить",
       "duplicate_title": "Курс уже существует",
       "duplicate_desc": "В пуле уже есть курс с точно таким же названием и описанием. Пожалуйста, измените их, чтобы продолжить.",
-      "duplicate_title_count": "Уже есть {{count}} курс(а/ов) с таким названием"
+      "duplicate_title_count": "Уже есть {{count}} курс(а/ов) с таким названием",
+      "author_hint": "Один или несколько — ссылка необязательна",
+      "add_author": "Добавить автора",
+      "supports_markdown": "поддерживает Markdown"
     },
     "content": {
       "title": "Программа курса",
@@ -243,7 +248,17 @@
       "subsection_name_placeholder": "Название подсекции",
       "add_task": "Добавить задачу",
       "delete_confirm_title": "Удалить?",
-      "delete_confirm_desc": "Вы уверены, что хотите удалить этот элемент и все его содержимое?"
+      "delete_confirm_desc": "Вы уверены, что хотите удалить этот элемент и все его содержимое?",
+      "section_count": "{{count}} разд.",
+      "task_count": "{{count}} зад.",
+      "new_section": "Новый раздел",
+      "add_first_section": "Добавить первый раздел",
+      "section_title": "Раздел {{index}}",
+      "add_task_to_section": "Добавить задачу в «{{section}}»",
+      "no_tasks_yet": "Задач пока нет — добавь через кнопку ниже",
+      "section_description": "Описание раздела",
+      "section_desc_placeholder": "Краткое описание раздела (поддерживается Markdown)...",
+      "click_here": "Нажми или кликни сюда"
     },
     "preview": {
       "ready_title": "Всё готово к публикации!",
