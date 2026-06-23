@@ -105,6 +105,21 @@ export const useImportCourse = (isOpen: boolean, onClose: () => void, onImportFi
       }
 
       const courseObj = parsed.course;
+      
+      // Check for duplicates before processing tasks
+      const dupRes = await fetch('/api/courses/check_duplicate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: courseObj.title, description: courseObj.description || '' })
+      });
+      if (!dupRes.ok) {
+        throw new Error(t('import_courses.errors.duplicate_check_failed', { defaultValue: 'Failed to check duplicates' }));
+      }
+      const dupData = await dupRes.json();
+      if (dupData.title_matches > 0) {
+        throw new Error(t('import_courses.errors.duplicate_course'));
+      }
+
       setParsedCourse(courseObj);
       setCourseTitle(courseObj.title || '');
       setCourseDesc(courseObj.description || '');
