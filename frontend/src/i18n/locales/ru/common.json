@@ -212,7 +212,9 @@
     "footer": {
       "back": "Назад",
       "next": "Далее",
-      "publish": "Опубликовать курс"
+      "publish": "Опубликовать курс",
+      "publishing": "Публикация...",
+      "error_retry": "Ошибка — повторить"
     },
     "info": {
       "main": "Основное",
@@ -232,7 +234,10 @@
       "add_tag": "Добавить",
       "duplicate_title": "Курс уже существует",
       "duplicate_desc": "В пуле уже есть курс с точно таким же названием и описанием. Пожалуйста, измените их, чтобы продолжить.",
-      "duplicate_title_count": "Уже есть {{count}} курс(а/ов) с таким названием"
+      "duplicate_title_count": "Уже есть {{count}} курс(а/ов) с таким названием",
+      "author_hint": "Один или несколько — ссылка необязательна",
+      "add_author": "Добавить автора",
+      "supports_markdown": "поддерживает Markdown"
     },
     "content": {
       "title": "Программа курса",
@@ -243,12 +248,30 @@
       "subsection_name_placeholder": "Название подсекции",
       "add_task": "Добавить задачу",
       "delete_confirm_title": "Удалить?",
-      "delete_confirm_desc": "Вы уверены, что хотите удалить этот элемент и все его содержимое?"
+      "delete_confirm_desc": "Вы уверены, что хотите удалить этот элемент и все его содержимое?",
+      "section_count": "{{count}} разд.",
+      "task_count": "{{count}} зад.",
+      "new_section": "Новый раздел",
+      "add_first_section": "Добавить первый раздел",
+      "section_title": "Раздел {{index}}",
+      "add_task_to_section": "Добавить задачу в «{{section}}»",
+      "no_tasks_yet": "Задач пока нет — добавь через кнопку ниже",
+      "section_description": "Описание раздела",
+      "section_desc_placeholder": "Краткое описание раздела (поддерживается Markdown)...",
+      "click_here": "Нажми или кликни сюда"
     },
     "preview": {
       "ready_title": "Всё готово к публикации!",
       "ready_desc": "Проверь структуру итогового курса перед публикацией.",
-      "total_tasks": "Всего задач: {{count}} шт."
+      "total_tasks": "Всего задач: {{count}} шт.",
+      "untitled": "Без названия",
+      "tasks_label": "задач",
+      "sections_label": "разделов",
+      "readiness_title": "Готовность к публикации",
+      "req_title": "Название курса",
+      "req_author": "Хотя бы один автор",
+      "req_section": "Хотя бы один раздел",
+      "req_tasks": "Задачи добавлены"
     },
     "exitConfirm": {
       "title": "Отменить создание?",
@@ -262,6 +285,24 @@
       "stay": "Остаться",
       "save_and_leave": "Сохранить и выйти",
       "leave_without_saving": "Не сохранять и выйти"
+    },
+    "picker": {
+      "select_tasks": "Выберите задачи из базы",
+      "selected_count": "Выбрано: {{count}}",
+      "search_placeholder": "Поиск по названию...",
+      "all_difficulties": "Все сложности",
+      "diff_easy": "Легкие (1)",
+      "diff_medium": "Средние (2)",
+      "diff_hard": "Сложные (3)",
+      "all_tags": "Все теги",
+      "all_databases": "Все базы данных",
+      "loading_tasks": "Загрузка задач...",
+      "nothing_found": "Ничего не найдено",
+      "already_in_course": "(Уже в курсе)",
+      "preview": "Просмотреть",
+      "page_info": "Стр. {{page}} (Всего: {{total}})",
+      "cancel": "Отмена",
+      "add": "Добавить"
     }
   },
   "studio_page": {
@@ -327,6 +368,8 @@
     "sql_check": "Запуск SQL",
     "sql_check_info": "Запрос должен успешно исполняться",
     "sql_passed": "Эталонный SQL-запрос успешно выполнен",
+    "sql_passed_zero_rows": "SQL-запрос выполнен, но вернул 0 строк",
+    "zero_rows_warning": "Внимание: вывод пуст. Возможно, БД не соответствует эталону. Не рекомендуется добавлять такие задачи.",
     "sql_failed": "Ошибка выполнения эталонного SQL-запроса",
     "rules_check": "Проверка правил",
     "rules_check_info": "Запрос должен соблюдать заданные правила",
@@ -353,5 +396,48 @@
       "processing_failed": "Ошибка обработки задачи",
       "unknown_sql_error": "Неизвестная ошибка SQL"
     }
+  },
+  "import_courses": {
+    "title": "Импорт курса",
+    "description": "Импортируйте курс со всеми модулями и задачами из JSON-файла",
+    "drop_zone": "Перетащите сюда JSON файл курса",
+    "select_file": "или выберите файл",
+    "parsing_error": "Ошибка при чтении JSON: {{error}}",
+    "processing": "Обработка...",
+    "processing_desc": "Проверяем задачи и базы данных...",
+    "processing_task": "Проверка задачи {{current}} из {{total}}",
+    "review": "Превью импорта",
+    "course_title": "Название курса",
+    "course_title_placeholder": "Название курса...",
+    "course_desc": "Описание курса",
+    "course_desc_placeholder": "Описание курса...",
+    "course_structure": "Структура курса",
+    "validation_error": "Ошибка проверки",
+    "validation_results": "Результаты проверки",
+    "missing_dbs_list": "Отсутствующие БД:",
+    "stats": "Статистика по задачам",
+    "stat_success": "Успешно",
+    "stat_success_desc": "Задачи успешно прошли все проверки и будут добавлены в курс.",
+    "stat_existing": "Уже существуют",
+    "stat_existing_desc": "Задачи уже есть в базе. Они будут привязаны к курсу.",
+    "stat_missing_db": "БД не найдена",
+    "stat_missing_db_desc": "Базы данных для этих задач не установлены. ЭТИ ЗАДАЧИ НЕ БУДУТ ИМПОРТИРОВАНЫ.",
+    "stat_zero_rows": "Нулевой вывод",
+    "stat_zero_rows_desc": "Запросы возвращают 0 строк. ЭТИ ЗАДАЧИ НЕ БУДУТ ИМПОРТИРОВАНЫ.",
+    "stat_failed": "Ошибки импорта",
+    "stat_failed_desc": "Задачи с ошибками в запросах или правилах. ЭТИ ЗАДАЧИ НЕ БУДУТ ИМПОРТИРОВАНЫ.",
+    "download_log": "Скачать лог ошибок",
+    "cancel": "Отмена",
+    "publish": "Опубликовать",
+    "success_title": "Курс опубликован!",
+    "success_desc": "Курс «{{title}}» успешно импортирован.",
+    "errors": {
+      "no_tasks": "В курсе не найдено ни одной валидной задачи для импорта.",
+      "invalid_schema": "Файл не соответствует схеме курса (отсутствует schema_version или course.title)",
+      "duplicate_course": "Курс с таким названием и описанием уже существует. Убедитесь, что вы не пытаетесь загрузить дубликат."
+    }
+  },
+  "markdown_editor": {
+    "preview_placeholder": "Превью появится здесь..."
   }
 }

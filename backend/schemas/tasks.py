@@ -61,7 +61,7 @@ class DraftUpdateInput(BaseModel):
     description: Optional[str] = None
     author_name: Optional[str] = None
     source_url: Optional[str] = None
-    difficulty: Optional[str] = None
+    difficulty: Optional[int] = None
     database_id: Optional[int] = None
     reference_sql: Optional[str] = None
     order_matters: Optional[bool] = None
@@ -126,4 +126,16 @@ class TaskImportResponse(BaseModel):
 class TaskExportRequest(BaseModel):
     task_ids: List[int]
 
+class BulkValidateTaskResult(BaseModel):
+    taskData: dict
+    status: str
+    taskId: Optional[int] = None
+    dbName: str
+    errorMessage: Optional[str] = None
+    sqlResult: Optional[dict] = None
 
+class BulkValidateResponse(BaseModel):
+    results: List[BulkValidateTaskResult]
+
+class BulkValidateRequest(BaseModel):
+    tasks: List[dict]

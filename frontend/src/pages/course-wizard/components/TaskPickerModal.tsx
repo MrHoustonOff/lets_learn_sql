@@ -82,7 +82,7 @@ export function TaskPickerModal({ alreadySelected, onConfirm, onClose }: any) {
           <div>
             <h3 className="text-base font-bold">{t('wizard_course.content.add_task')}</h3>
             <p className="text-[11px] text-muted-foreground mt-0.5">
-              {chosen.length > 0 ? `Выбрано: ${chosen.length}` : "Выберите задачи из базы"}
+              {chosen.length > 0 ? t('wizard_course.picker.selected_count', { count: chosen.length }) : t('wizard_course.picker.select_tasks')}
             </p>
           </div>
           <button onClick={onClose} className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors">
@@ -98,7 +98,7 @@ export function TaskPickerModal({ alreadySelected, onConfirm, onClose }: any) {
               <input
                 value={filters.search}
                 onChange={e => updateFilter('search', e.target.value)}
-                placeholder="Поиск по названию..."
+                placeholder={t('wizard_course.picker.search_placeholder')}
                 className="w-full bg-background border border-glass-border rounded-lg pl-9 pr-3 py-2 text-sm focus:outline-none focus:border-primary transition-all placeholder:text-muted-foreground"
               />
             </div>
@@ -107,10 +107,10 @@ export function TaskPickerModal({ alreadySelected, onConfirm, onClose }: any) {
                 value={filters.selectedDifficulties[0]?.toString() || ""}
                 onChange={v => updateFilter('selectedDifficulties', v ? [Number(v)] : [])}
                 options={[
-                  { value: "", label: "Все сложности" },
-                  { value: "1", label: "Легкие (1)" },
-                  { value: "2", label: "Средние (2)" },
-                  { value: "3", label: "Сложные (3)" },
+                  { value: "", label: t('wizard_course.picker.all_difficulties') },
+                  { value: "1", label: t('wizard_course.picker.diff_easy') },
+                  { value: "2", label: t('wizard_course.picker.diff_medium') },
+                  { value: "3", label: t('wizard_course.picker.diff_hard') },
                 ]}
               />
             </div>
@@ -119,7 +119,7 @@ export function TaskPickerModal({ alreadySelected, onConfirm, onClose }: any) {
                 value={filters.selectedTagIds[0]?.toString() || ""}
                 onChange={v => updateFilter('selectedTagIds', v ? [Number(v)] : [])}
                 options={[
-                  { value: "", label: "Все теги" },
+                  { value: "", label: t('wizard_course.picker.all_tags') },
                   ...tags.map(t => ({ value: t.id.toString(), label: t.name }))
                 ]}
               />
@@ -129,7 +129,7 @@ export function TaskPickerModal({ alreadySelected, onConfirm, onClose }: any) {
                 value={filters.selectedDatabaseId?.toString() || ""}
                 onChange={v => updateFilter('selectedDatabaseId', v ? Number(v) : null)}
                 options={[
-                  { value: "", label: "Все базы данных" },
+                  { value: "", label: t('wizard_course.picker.all_databases') },
                   ...databases.map(db => ({ value: db.id.toString(), label: db.display_name }))
                 ]}
               />
@@ -140,9 +140,9 @@ export function TaskPickerModal({ alreadySelected, onConfirm, onClose }: any) {
         {/* TASK LIST */}
         <div className="flex-1 overflow-y-auto custom-scrollbar px-5 py-3 space-y-2">
           {isLoading ? (
-            <div className="text-center py-10 text-muted-foreground text-sm">Загрузка задач...</div>
+            <div className="text-center py-10 text-muted-foreground text-sm">{t('wizard_course.picker.loading_tasks')}</div>
           ) : tasks.length === 0 ? (
-            <div className="text-center py-10 text-muted-foreground text-sm">Ничего не найдено</div>
+            <div className="text-center py-10 text-muted-foreground text-sm">{t('wizard_course.picker.nothing_found')}</div>
           ) : tasks.map(task => {
             const alreadyInCourse = alreadySelected.includes(task.id);
             const sel = chosen.some(c => c.id === task.id) || alreadyInCourse;
@@ -170,7 +170,7 @@ export function TaskPickerModal({ alreadySelected, onConfirm, onClose }: any) {
                   <div className="flex flex-col gap-1 w-[60%] shrink-0 min-w-0">
                     <span className="text-xs truncate transition-colors font-medium text-foreground">
                       {task.title}
-                      {alreadyInCourse && <span className="ml-2 text-[10px] text-muted-foreground">(Уже в курсе)</span>}
+                      {alreadyInCourse && <span className="ml-2 text-[10px] text-muted-foreground">{t('wizard_course.picker.already_in_course')}</span>}
                     </span>
                     <div className="flex items-center gap-3 text-micro text-muted-foreground">
                       {task.tags && task.tags.length > 0 && (
@@ -196,7 +196,7 @@ export function TaskPickerModal({ alreadySelected, onConfirm, onClose }: any) {
                     className="flex items-center gap-1 text-xs font-medium bg-primary/10 text-primary hover:bg-primary/20 px-3 py-1.5 rounded-lg shrink-0 outline-none"
                   >
                     <Eye className="w-3.5 h-3.5" />
-                    Просмотреть
+                    {t('wizard_course.picker.preview')}
                   </button>
                 </div>
               </li>
@@ -215,7 +215,7 @@ export function TaskPickerModal({ alreadySelected, onConfirm, onClose }: any) {
               <ChevronLeft className="w-4 h-4 text-muted-foreground" />
             </button>
             <span className="text-xs font-medium text-muted-foreground">
-              Стр. {filters.page} (Всего: {total})
+              {t('wizard_course.picker.page_info', { page: filters.page, total })}
             </span>
             <button 
               onClick={() => updateFilter('page', filters.page + 1)}
@@ -228,14 +228,14 @@ export function TaskPickerModal({ alreadySelected, onConfirm, onClose }: any) {
           
           <div className="flex items-center gap-2">
             <button onClick={onClose} className="px-4 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:bg-secondary transition-colors">
-              Отмена
+              {t('wizard_course.picker.cancel')}
             </button>
             <button
               onClick={handleConfirm}
               disabled={chosen.length === 0}
               className="px-4 py-2 rounded-lg text-sm font-semibold bg-primary text-primary-foreground hover:brightness-105 transition-all disabled:opacity-50"
             >
-              Добавить {chosen.length > 0 ? `(${chosen.length})` : ""}
+              {t('wizard_course.picker.add')} {chosen.length > 0 ? `(${chosen.length})` : ""}
             </button>
           </div>
         </div>

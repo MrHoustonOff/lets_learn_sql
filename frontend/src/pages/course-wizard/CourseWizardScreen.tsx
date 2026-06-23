@@ -54,12 +54,12 @@ export const CourseWizardScreen: React.FC = () => {
   const saveStatusLabel = () => {
     if (isSaving) return (
       <span className="flex items-center gap-1 text-muted-foreground">
-        <Loader2 size={10} className="animate-spin" /> Сохранение...
+        <Loader2 size={10} className="animate-spin" /> {t('wizard_course.header.saving')}
       </span>
     );
     if (lastSaved) return (
       <span className="flex items-center gap-1 text-success">
-        <CheckCircle2 size={10} /> Сохранено
+        <CheckCircle2 size={10} /> {t('wizard_course.header.saved')}
       </span>
     );
     return (
@@ -71,8 +71,8 @@ export const CourseWizardScreen: React.FC = () => {
 
   const nextLabel = () => {
     if (currentStep !== 3) return t('wizard_course.footer.next');
-    if (publishState === 'saving') return <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Публикация...</>;
-    if (publishState === 'error') return 'Ошибка — повторить';
+    if (publishState === 'saving') return <><Loader2 className="w-3.5 h-3.5 animate-spin" /> {t('wizard_course.footer.publishing')}</>;
+    if (publishState === 'error') return t('wizard_course.footer.error_retry');
     return t('wizard_course.footer.publish');
   };
 

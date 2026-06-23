@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { AlignLeft, SplitSquareHorizontal, Eye, Bold, Italic, Strikethrough, Underline, Code, Palette } from 'lucide-react';
 import { MarkdownText } from './MarkdownText';
 
@@ -42,6 +43,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
   minHeight = 220,
   autoPreviewOnBlur = false
 }) => {
+  const { t } = useTranslation();
   const [view, setView] = useState<"split" | "edit" | "preview">("split");
   const [isFocused, setIsFocused] = useState(false);
   const [showColorPicker, setShowColorPicker] = useState(false);
@@ -166,7 +168,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
              {value ? (
                <MarkdownText text={value} />
              ) : (
-               <p className="text-sm text-muted-foreground italic">Превью появится здесь...</p>
+               <p className="text-sm text-muted-foreground italic">{t('markdown_editor.preview_placeholder')}</p>
              )}
           </div>
         )}

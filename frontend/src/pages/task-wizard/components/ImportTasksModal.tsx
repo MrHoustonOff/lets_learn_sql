@@ -13,12 +13,14 @@ interface ImportTasksModalProps {
   isOpen: boolean;
   onClose: () => void;
   onImportFinished: () => void;
+  onSelectCourse?: () => void;
 }
 
 export const ImportTasksModal: React.FC<ImportTasksModalProps> = ({ 
   isOpen, 
   onClose, 
-  onImportFinished 
+  onImportFinished,
+  onSelectCourse
 }) => {
   const { t } = useTranslation();
   
@@ -93,16 +95,21 @@ export const ImportTasksModal: React.FC<ImportTasksModalProps> = ({
 
         {/* Content body */}
         <div className="p-6 overflow-y-auto custom-scrollbar flex-1 min-h-0">
-          {step === 'select_type' && <SelectTypeStep setStep={setStep} />}
+          {step === 'select_type' && (
+            <SelectTypeStep 
+              setStep={setStep} 
+              onSelectCourse={onSelectCourse}
+            />
+          )}
 
           {step === 'upload' && (
             <UploadStep 
-              setStep={setStep} 
               dragActive={dragActive} 
               handleDrag={handleDrag} 
               handleDrop={handleDrop} 
               handleFileChange={handleFileChange} 
               uploadError={uploadError} 
+              onBack={() => setStep('select_type')}
             />
           )}
 

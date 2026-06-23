@@ -4,9 +4,10 @@ import { FileSpreadsheet, GraduationCap } from 'lucide-react';
 
 interface SelectTypeStepProps {
   setStep: (step: any) => void;
+  onSelectCourse?: () => void;
 }
 
-export const SelectTypeStep: React.FC<SelectTypeStepProps> = ({ setStep }) => {
+export const SelectTypeStep: React.FC<SelectTypeStepProps> = ({ setStep, onSelectCourse }) => {
   const { t } = useTranslation();
 
   return (
@@ -27,15 +28,17 @@ export const SelectTypeStep: React.FC<SelectTypeStepProps> = ({ setStep }) => {
         </button>
 
         <button
-          disabled
-          className="flex flex-col items-center justify-center gap-4 p-8 rounded-2xl border border-glass-border bg-muted/5 opacity-50 text-center cursor-not-allowed transition-all duration-200 relative group focus:outline-none"
+          onClick={() => {
+            if (onSelectCourse) onSelectCourse();
+          }}
+          className="flex flex-col items-center justify-center gap-4 p-8 rounded-2xl border border-glass-border bg-glass/20 hover:bg-glass-hover hover:border-primary/50 text-center transition-all duration-200 group focus:outline-none"
         >
-          <div className="w-12 h-12 rounded-xl bg-muted/10 border border-muted/20 flex items-center justify-center text-muted-foreground">
+          <div className="w-12 h-12 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary group-hover:scale-105 transition-transform duration-200">
             <GraduationCap size={24} />
           </div>
           <div>
-            <h4 className="text-sm font-bold text-muted-foreground mb-1">{t('import_tasks.course')}</h4>
-            <p className="text-2xs text-muted-foreground/60">{t('import_tasks.course_todo')}</p>
+            <h4 className="text-sm font-bold text-foreground mb-1">{t('import_tasks.course')}</h4>
+            <p className="text-2xs text-muted-foreground">{t('import_courses.description')}</p>
           </div>
         </button>
       </div>

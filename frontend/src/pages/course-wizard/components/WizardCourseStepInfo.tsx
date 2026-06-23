@@ -103,7 +103,7 @@ export const WizardCourseStepInfo: React.FC<{
           <div>
             <label className="flex items-center gap-1.5 text-sm font-medium text-foreground mb-1.5">
               {t('wizard_course.info.description')} <span className="text-destructive">*</span>
-              <span className="text-[11px] text-muted-foreground font-normal">поддерживает Markdown</span>
+              <span className="text-[11px] text-muted-foreground font-normal">{t('wizard_course.info.supports_markdown')}</span>
             </label>
             <MarkdownEditor
               value={data.description}
@@ -120,7 +120,7 @@ export const WizardCourseStepInfo: React.FC<{
         <div className="flex items-center justify-between mb-3">
           <div>
             <h3 className="text-sm font-semibold">{t('wizard_course.info.author')} <span className="text-destructive">*</span></h3>
-            <p className="text-[11px] text-muted-foreground mt-0.5">Один или несколько — ссылка необязательна</p>
+            <p className="text-[11px] text-muted-foreground mt-0.5">{t('wizard_course.info.author_hint')}</p>
           </div>
           <button
             type="button"
@@ -128,7 +128,7 @@ export const WizardCourseStepInfo: React.FC<{
             className="px-3 py-1.5 rounded-lg text-xs font-medium bg-secondary hover:bg-accent text-foreground transition-colors flex items-center gap-1.5"
           >
             <Plus className="w-3.5 h-3.5" />
-            Добавить автора
+            {t('wizard_course.info.add_author')}
           </button>
         </div>
         <div className="space-y-2.5">
