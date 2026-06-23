@@ -327,6 +327,8 @@
     "sql_check": "SQL Execution",
     "sql_check_info": "The query must execute successfully",
     "sql_passed": "Reference SQL query executed successfully",
+    "sql_passed_zero_rows": "SQL query executed, but returned 0 rows",
+    "zero_rows_warning": "Warning: Output is empty. The DB might not match the reference. Adding such tasks is discouraged.",
     "sql_failed": "Reference SQL query execution failed",
     "rules_check": "Rules Verification",
     "rules_check_info": "The query must follow its own rules",
