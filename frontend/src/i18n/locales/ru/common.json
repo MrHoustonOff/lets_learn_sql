@@ -395,5 +395,8 @@
       "invalid_schema": "Файл не соответствует схеме курса (отсутствует schema_version или course.title)",
       "duplicate_course": "Курс с таким названием уже существует. Пожалуйста, переименуйте его."
     }
+  },
+  "markdown_editor": {
+    "preview_placeholder": "Превью появится здесь..."
   }
 }

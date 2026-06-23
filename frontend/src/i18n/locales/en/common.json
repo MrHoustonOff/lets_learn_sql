@@ -395,5 +395,8 @@
       "invalid_schema": "The file does not match the course schema (missing schema_version or course.title)",
       "duplicate_course": "A course with this title already exists. Please rename it."
     }
+  },
+  "markdown_editor": {
+    "preview_placeholder": "Preview will appear here..."
   }
 }
