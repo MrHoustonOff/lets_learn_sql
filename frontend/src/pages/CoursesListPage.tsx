@@ -2,6 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Database, Import, Plus } from 'lucide-react';
+import { ImportCourseModal } from './course-wizard/components/import-course/ImportCourseModal';
 
 interface CourseListItem {
   id: number;
@@ -18,9 +19,11 @@ export const CoursesListPage: React.FC = () => {
   const { t } = useTranslation();
   const [courses, setCourses] = React.useState<CourseListItem[]>([]);
   const [loading, setLoading] = React.useState(true);
+  const [isImportOpen, setIsImportOpen] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
 
-  React.useEffect(() => {
+  const fetchCourses = () => {
+    setLoading(true);
     fetch('/api/courses')
       .then(res => {
         if (!res.ok) throw new Error('Failed to fetch courses');
@@ -34,6 +37,10 @@ export const CoursesListPage: React.FC = () => {
         setError(err.message);
         setLoading(false);
       });
+  };
+
+  React.useEffect(() => {
+    fetchCourses();
   }, []);
 
   const getButtonConfig = (progress: number) => {
@@ -121,7 +128,10 @@ export const CoursesListPage: React.FC = () => {
       </div>
 
       <div className="flex items-center gap-4 border-t border-glass-border pt-8">
-        <button className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-glass backdrop-blur-md border border-glass-border hover:bg-hover transition-colors text-sm font-medium">
+        <button 
+          onClick={() => setIsImportOpen(true)}
+          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-glass backdrop-blur-md border border-glass-border hover:bg-hover transition-colors text-sm font-medium"
+        >
           <Import size={16} />
           {t('courses_page:import')}
         </button>
@@ -140,6 +150,12 @@ export const CoursesListPage: React.FC = () => {
           </div>
         </div>
       </div>
+      
+      <ImportCourseModal 
+        isOpen={isImportOpen} 
+        onClose={() => setIsImportOpen(false)} 
+        onImportFinished={() => fetchCourses()} 
+      />
     </div>
   );
 };

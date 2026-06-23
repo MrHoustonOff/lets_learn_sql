@@ -355,5 +355,39 @@
       "processing_failed": "Task processing error",
       "unknown_sql_error": "Unknown SQL error"
     }
+  },
+  "import_courses": {
+    "title": "Import Course",
+    "description": "Import a course with all its modules and tasks from a JSON file",
+    "drop_zone": "Drop course JSON file here",
+    "select_file": "or select file",
+    "parsing_error": "Error parsing JSON: {{error}}",
+    "processing": "Processing...",
+    "processing_desc": "Checking tasks and databases...",
+    "processing_task": "Validating task {{current}} of {{total}}",
+    "review": "Import Preview",
+    "course_title": "Course Title",
+    "course_desc": "Course Description",
+    "stats": "Tasks Statistics",
+    "stat_success": "Success",
+    "stat_success_desc": "Tasks successfully passed all tests and will be added to the course.",
+    "stat_existing": "Existing",
+    "stat_existing_desc": "Tasks already exist in the database. They will be linked to the course.",
+    "stat_missing_db": "DB Not Found",
+    "stat_missing_db_desc": "Databases for these tasks are not installed. THESE TASKS WILL NOT BE IMPORTED.",
+    "stat_zero_rows": "Zero Rows",
+    "stat_zero_rows_desc": "Queries return 0 rows. THESE TASKS WILL NOT BE IMPORTED.",
+    "stat_failed": "Import Errors",
+    "stat_failed_desc": "Tasks with SQL or rules errors. THESE TASKS WILL NOT BE IMPORTED.",
+    "download_log": "Download Error Log",
+    "cancel": "Cancel",
+    "publish": "Publish",
+    "success_title": "Course Published!",
+    "success_desc": "Course «{{title}}» has been successfully imported.",
+    "errors": {
+      "no_tasks": "No valid tasks found in the course for import.",
+      "invalid_schema": "The file does not match the course schema (missing schema_version or course.title)",
+      "duplicate_course": "A course with this title already exists. Please rename it."
+    }
   }
 }
