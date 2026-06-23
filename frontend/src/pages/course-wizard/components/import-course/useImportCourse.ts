@@ -251,7 +251,8 @@ export const useImportCourse = (isOpen: boolean, onClose: () => void, onImportFi
             throw new Error("Rules check failed");
           }
           const rulesData = await rulesRes.json();
-          const hasBlockingError = rulesData.some((r: any) => !r.passed && r.rule.severity === 'blocking');
+          const rulesArray = rulesData.rules || [];
+          const hasBlockingError = rulesArray.some((r: any) => !r.passed && r.severity === 'blocking');
           if (hasBlockingError) {
             throw new Error("Failed one or more blocking rules.");
           }
