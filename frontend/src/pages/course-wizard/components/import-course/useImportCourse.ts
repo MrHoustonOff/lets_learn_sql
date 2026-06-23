@@ -171,13 +171,15 @@ export const useImportCourse = (isOpen: boolean, onClose: () => void, onImportFi
       const dupRes = await fetch('/api/courses/check_duplicate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title: courseTitle, description: courseDesc, exclude_id: "" })
+        body: JSON.stringify({ title: courseTitle, description: courseDesc })
       });
-      if (dupRes.ok) {
-        const dupData = await dupRes.json();
-        if (dupData.title_matches > 0) {
-          throw new Error(t('import_courses.errors.duplicate_course'));
-        }
+      if (!dupRes.ok) {
+        throw new Error(t('import_courses.errors.duplicate_check_failed', { defaultValue: 'Failed to check duplicates' }));
+      }
+      
+      const dupData = await dupRes.json();
+      if (dupData.title_matches > 0) {
+        throw new Error(t('import_courses.errors.duplicate_course'));
       }
 
       // 1. Publish all successful drafts
