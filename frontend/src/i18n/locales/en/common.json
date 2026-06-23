@@ -434,7 +434,7 @@
     "errors": {
       "no_tasks": "No valid tasks found in the course for import.",
       "invalid_schema": "The file does not match the course schema (missing schema_version or course.title)",
-      "duplicate_course": "A course with this title already exists. Please rename it."
+      "duplicate_course": "A course with this title and description already exists. Make sure you are not uploading a duplicate."
     }
   },
   "markdown_editor": {
