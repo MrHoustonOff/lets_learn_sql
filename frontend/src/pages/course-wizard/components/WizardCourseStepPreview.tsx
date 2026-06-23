@@ -52,7 +52,7 @@ export const WizardCourseStepPreview: React.FC<{ data: any }> = ({ data }) => {
         <div className="relative flex items-start justify-between gap-4">
           <div className="flex-1">
             <h1 className="text-xl font-bold mb-1">
-              {data.title || <span className="text-muted-foreground italic">Без названия</span>}
+              {data.title || <span className="text-muted-foreground italic">{t('wizard_course.preview.untitled')}</span>}
             </h1>
             <div className="flex flex-wrap items-center gap-3 text-[11px] text-muted-foreground">
               {data.authors.filter((a: any) => a.name).map((a: any, i: number) => (
@@ -68,11 +68,11 @@ export const WizardCourseStepPreview: React.FC<{ data: any }> = ({ data }) => {
           <div className="flex gap-3 text-center shrink-0">
             <div className="bg-primary/10 border border-primary/20 rounded-xl px-4 py-2.5 shadow-[0_2px_12px_-4px_hsl(var(--primary)/0.2)]">
               <div className="text-xl font-bold text-primary">{totalTasks}</div>
-              <div className="text-[10px] text-primary/70 font-medium uppercase tracking-wider mt-0.5">задач</div>
+              <div className="text-[10px] text-primary/70 font-medium uppercase tracking-wider mt-0.5">{t('wizard_course.preview.tasks_label')}</div>
             </div>
             <div className="bg-secondary/50 border border-glass-border rounded-xl px-4 py-2.5 backdrop-blur-sm">
               <div className="text-xl font-bold">{sectionCount}</div>
-              <div className="text-[10px] text-muted-foreground uppercase tracking-wider mt-0.5">разделов</div>
+              <div className="text-[10px] text-muted-foreground uppercase tracking-wider mt-0.5">{t('wizard_course.preview.sections_label')}</div>
             </div>
           </div>
         </div>
@@ -98,8 +98,8 @@ export const WizardCourseStepPreview: React.FC<{ data: any }> = ({ data }) => {
                 <div key={sec.id} className="relative group">
                   <div className="flex items-baseline gap-3 py-2 border-b border-glass-border/40 group-hover:border-primary/20 transition-colors">
                     <span className="text-xs font-mono text-primary shrink-0 w-5">{si + 1}.</span>
-                    <span className="flex-1 text-sm font-bold">{sec.title || <span className="text-muted-foreground italic">Без названия</span>}</span>
-                    <span className="text-[11px] text-muted-foreground shrink-0">{secTotal} задач</span>
+                    <span className="flex-1 text-sm font-bold">{sec.title || <span className="text-muted-foreground italic">{t('wizard_course.preview.untitled')}</span>}</span>
+                    <span className="text-[11px] text-muted-foreground shrink-0">{t('wizard_course.content.task_count', { count: secTotal })}</span>
                   </div>
 
                   {sec.description && (
@@ -128,13 +128,13 @@ export const WizardCourseStepPreview: React.FC<{ data: any }> = ({ data }) => {
 
       <div className="bg-glass border border-glass-border rounded-xl p-6 shadow-sm relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-t from-background/40 to-transparent pointer-events-none" />
-        <h3 className="relative text-sm font-bold mb-3">Готовность к публикации</h3>
+        <h3 className="relative text-sm font-bold mb-3">{t('wizard_course.preview.readiness_title')}</h3>
         <div className="relative space-y-2">
           {[
-            { label: "Название курса", ok: !!data.title.trim() },
-            { label: "Хотя бы один автор", ok: data.authors.some((a: any) => a.name.trim()) },
-            { label: "Хотя бы один раздел", ok: data.sections.length > 0 },
-            { label: "Задачи добавлены", ok: totalTasks > 0 },
+            { label: t('wizard_course.preview.req_title'), ok: !!data.title.trim() },
+            { label: t('wizard_course.preview.req_author'), ok: data.authors.some((a: any) => a.name.trim()) },
+            { label: t('wizard_course.preview.req_section'), ok: data.sections.length > 0 },
+            { label: t('wizard_course.preview.req_tasks'), ok: totalTasks > 0 },
           ].map(item => (
             <div key={item.label} className="flex items-center justify-between text-xs">
               <span className="text-muted-foreground">{item.label}</span>

@@ -263,7 +263,15 @@
     "preview": {
       "ready_title": "Всё готово к публикации!",
       "ready_desc": "Проверь структуру итогового курса перед публикацией.",
-      "total_tasks": "Всего задач: {{count}} шт."
+      "total_tasks": "Всего задач: {{count}} шт.",
+      "untitled": "Без названия",
+      "tasks_label": "задач",
+      "sections_label": "разделов",
+      "readiness_title": "Готовность к публикации",
+      "req_title": "Название курса",
+      "req_author": "Хотя бы один автор",
+      "req_section": "Хотя бы один раздел",
+      "req_tasks": "Задачи добавлены"
     },
     "exitConfirm": {
       "title": "Отменить создание?",

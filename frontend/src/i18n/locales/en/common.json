@@ -263,7 +263,15 @@
     "preview": {
       "ready_title": "Ready for Publication!",
       "ready_desc": "Check the final course structure before publishing.",
-      "total_tasks": "Total tasks: {{count}}"
+      "total_tasks": "Total tasks: {{count}}",
+      "untitled": "Untitled",
+      "tasks_label": "tasks",
+      "sections_label": "sections",
+      "readiness_title": "Readiness for publishing",
+      "req_title": "Course title",
+      "req_author": "At least one author",
+      "req_section": "At least one section",
+      "req_tasks": "Tasks added"
     },
     "exitConfirm": {
       "title": "Cancel Creation?",
