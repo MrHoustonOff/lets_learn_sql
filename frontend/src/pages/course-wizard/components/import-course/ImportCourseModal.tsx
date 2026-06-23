@@ -1,8 +1,9 @@
 import React, { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
-import { BookOpen, X, Loader2, UploadCloud, CheckCircle2, AlertTriangle, AlertCircle, Database, Download } from 'lucide-react';
+import { BookOpen, X, Loader2, CheckCircle2, AlertTriangle, AlertCircle, Database, Download } from 'lucide-react';
 import { useImportCourse } from './useImportCourse';
+import { UploadStep } from '../../../task-wizard/components/import-steps/UploadStep';
 
 interface ImportCourseModalProps {
   isOpen: boolean;
@@ -131,48 +132,16 @@ export const ImportCourseModal: React.FC<ImportCourseModalProps> = ({
         <div className="p-6 overflow-y-auto custom-scrollbar flex-1 min-h-0">
           
           {step === 'upload' && (
-            <div className="py-10 max-w-lg mx-auto">
-              <p className="text-center text-muted-foreground mb-8">
-                {t('import_courses.description')}
-              </p>
-
-              <form 
-                onDragEnter={handleDrag}
-                onDragOver={handleDrag}
-                onDragLeave={handleDrag}
-                onDrop={handleDrop}
-                className={`relative flex flex-col items-center justify-center p-12 border-2 border-dashed rounded-2xl transition-all duration-200 ${
-                  dragActive 
-                    ? 'border-primary bg-primary/10 scale-[1.02]' 
-                    : uploadError 
-                      ? 'border-destructive/50 bg-destructive/5' 
-                      : 'border-border bg-muted/20 hover:bg-muted/40 hover:border-primary/50'
-                }`}
-              >
-                <input
-                  type="file"
-                  accept=".json"
-                  onChange={handleFileChange}
-                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                />
-                <div className={`p-4 rounded-full mb-4 ${dragActive ? 'bg-primary/20 text-primary' : 'bg-muted text-muted-foreground'}`}>
-                  <UploadCloud size={32} />
-                </div>
-                <h3 className="text-lg font-bold text-foreground mb-2 text-center">
-                  {t('import_courses.drop_zone')}
-                </h3>
-                <p className="text-sm text-muted-foreground">
-                  {t('import_courses.select_file')}
-                </p>
-              </form>
-
-              {uploadError && (
-                <div className="mt-6 p-4 bg-destructive/10 border border-destructive/20 rounded-xl flex items-start gap-3">
-                  <AlertCircle size={18} className="text-destructive shrink-0 mt-0.5" />
-                  <p className="text-sm text-destructive-text font-medium">{uploadError}</p>
-                </div>
-              )}
-            </div>
+            <UploadStep 
+              dragActive={dragActive}
+              handleDrag={handleDrag}
+              handleDrop={handleDrop}
+              handleFileChange={handleFileChange}
+              uploadError={uploadError}
+              dropZoneText={t('import_courses.drop_zone')}
+              selectFileText={t('import_courses.select_file')}
+              isMultiple={false}
+            />
           )}
 
           {step === 'processing' && (
@@ -251,59 +220,69 @@ export const ImportCourseModal: React.FC<ImportCourseModalProps> = ({
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {/* Success */}
-                  <div className="p-4 rounded-xl border border-success/20 bg-success/5 flex flex-col gap-2">
-                    <div className="flex items-center gap-2 text-success font-bold text-lg">
-                      <CheckCircle2 size={20} />
-                      {successTasks.length} {t('import_courses.stat_success')}
+                  {successTasks.length > 0 && (
+                    <div className="p-4 rounded-xl border border-success/20 bg-success/5 flex flex-col gap-2">
+                      <div className="flex items-center gap-2 text-success font-bold text-lg">
+                        <CheckCircle2 size={20} />
+                        {successTasks.length} {t('import_courses.stat_success')}
+                      </div>
+                      <p className="text-xs text-muted-foreground leading-relaxed">
+                        {t('import_courses.stat_success_desc')}
+                      </p>
                     </div>
-                    <p className="text-xs text-muted-foreground leading-relaxed">
-                      {t('import_courses.stat_success_desc')}
-                    </p>
-                  </div>
+                  )}
 
                   {/* Existing */}
-                  <div className="p-4 rounded-xl border border-primary/20 bg-primary/5 flex flex-col gap-2">
-                    <div className="flex items-center gap-2 text-primary font-bold text-lg">
-                      <BookOpen size={20} />
-                      {existingTasks.length} {t('import_courses.stat_existing')}
+                  {existingTasks.length > 0 && (
+                    <div className="p-4 rounded-xl border border-primary/20 bg-primary/5 flex flex-col gap-2">
+                      <div className="flex items-center gap-2 text-primary font-bold text-lg">
+                        <BookOpen size={20} />
+                        {existingTasks.length} {t('import_courses.stat_existing')}
+                      </div>
+                      <p className="text-xs text-muted-foreground leading-relaxed">
+                        {t('import_courses.stat_existing_desc')}
+                      </p>
                     </div>
-                    <p className="text-xs text-muted-foreground leading-relaxed">
-                      {t('import_courses.stat_existing_desc')}
-                    </p>
-                  </div>
+                  )}
 
                   {/* Missing DB */}
-                  <div className="p-4 rounded-xl border border-destructive/20 bg-destructive/5 flex flex-col gap-2">
-                    <div className="flex items-center gap-2 text-destructive font-bold text-lg">
-                      <Database size={20} />
-                      {missingDbTasks.length} {t('import_courses.stat_missing_db')}
+                  {missingDbTasks.length > 0 && (
+                    <div className="p-4 rounded-xl border border-destructive/20 bg-destructive/5 flex flex-col gap-2">
+                      <div className="flex items-center gap-2 text-destructive font-bold text-lg">
+                        <Database size={20} />
+                        {missingDbTasks.length} {t('import_courses.stat_missing_db')}
+                      </div>
+                      <p className="text-xs text-destructive-text/80 leading-relaxed font-medium">
+                        {t('import_courses.stat_missing_db_desc')}
+                      </p>
                     </div>
-                    <p className="text-xs text-destructive-text/80 leading-relaxed font-medium">
-                      {t('import_courses.stat_missing_db_desc')}
-                    </p>
-                  </div>
+                  )}
 
                   {/* Zero Rows */}
-                  <div className="p-4 rounded-xl border border-warning/30 bg-warning/10 flex flex-col gap-2">
-                    <div className="flex items-center gap-2 text-warning-text font-bold text-lg">
-                      <AlertTriangle size={20} />
-                      {zeroRowsTasks.length} {t('import_courses.stat_zero_rows')}
+                  {zeroRowsTasks.length > 0 && (
+                    <div className="p-4 rounded-xl border border-warning/30 bg-warning/10 flex flex-col gap-2">
+                      <div className="flex items-center gap-2 text-warning-text font-bold text-lg">
+                        <AlertTriangle size={20} />
+                        {zeroRowsTasks.length} {t('import_courses.stat_zero_rows')}
+                      </div>
+                      <p className="text-xs text-warning-text/80 leading-relaxed font-medium">
+                        {t('import_courses.stat_zero_rows_desc')}
+                      </p>
                     </div>
-                    <p className="text-xs text-warning-text/80 leading-relaxed font-medium">
-                      {t('import_courses.stat_zero_rows_desc')}
-                    </p>
-                  </div>
+                  )}
 
                   {/* Failed */}
-                  <div className="p-4 rounded-xl border border-destructive/20 bg-destructive/5 flex flex-col gap-2 sm:col-span-2">
-                    <div className="flex items-center gap-2 text-destructive font-bold text-lg">
-                      <AlertCircle size={20} />
-                      {failedTasks.length} {t('import_courses.stat_failed')}
+                  {failedTasks.length > 0 && (
+                    <div className="p-4 rounded-xl border border-destructive/20 bg-destructive/5 flex flex-col gap-2 sm:col-span-2">
+                      <div className="flex items-center gap-2 text-destructive font-bold text-lg">
+                        <AlertCircle size={20} />
+                        {failedTasks.length} {t('import_courses.stat_failed')}
+                      </div>
+                      <p className="text-xs text-destructive-text/80 leading-relaxed font-medium">
+                        {t('import_courses.stat_failed_desc')}
+                      </p>
                     </div>
-                    <p className="text-xs text-destructive-text/80 leading-relaxed font-medium">
-                      {t('import_courses.stat_failed_desc')}
-                    </p>
-                  </div>
+                  )}
                 </div>
               </div>
             </div>

@@ -104,12 +104,12 @@ export const ImportTasksModal: React.FC<ImportTasksModalProps> = ({
 
           {step === 'upload' && (
             <UploadStep 
-              setStep={setStep} 
               dragActive={dragActive} 
               handleDrag={handleDrag} 
               handleDrop={handleDrop} 
               handleFileChange={handleFileChange} 
               uploadError={uploadError} 
+              onBack={() => setStep('select_type')}
             />
           )}
 
