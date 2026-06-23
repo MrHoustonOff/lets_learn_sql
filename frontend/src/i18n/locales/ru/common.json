@@ -277,6 +277,24 @@
       "stay": "Остаться",
       "save_and_leave": "Сохранить и выйти",
       "leave_without_saving": "Не сохранять и выйти"
+    },
+    "picker": {
+      "select_tasks": "Выберите задачи из базы",
+      "selected_count": "Выбрано: {{count}}",
+      "search_placeholder": "Поиск по названию...",
+      "all_difficulties": "Все сложности",
+      "diff_easy": "Легкие (1)",
+      "diff_medium": "Средние (2)",
+      "diff_hard": "Сложные (3)",
+      "all_tags": "Все теги",
+      "all_databases": "Все базы данных",
+      "loading_tasks": "Загрузка задач...",
+      "nothing_found": "Ничего не найдено",
+      "already_in_course": "(Уже в курсе)",
+      "preview": "Просмотреть",
+      "page_info": "Стр. {{page}} (Всего: {{total}})",
+      "cancel": "Отмена",
+      "add": "Добавить"
     }
   },
   "studio_page": {

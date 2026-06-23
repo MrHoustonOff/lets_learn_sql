@@ -277,6 +277,24 @@
       "stay": "Stay",
       "save_and_leave": "Save and exit",
       "leave_without_saving": "Exit without saving"
+    },
+    "picker": {
+      "select_tasks": "Select tasks from the pool",
+      "selected_count": "Selected: {{count}}",
+      "search_placeholder": "Search by title...",
+      "all_difficulties": "All difficulties",
+      "diff_easy": "Easy (1)",
+      "diff_medium": "Medium (2)",
+      "diff_hard": "Hard (3)",
+      "all_tags": "All tags",
+      "all_databases": "All databases",
+      "loading_tasks": "Loading tasks...",
+      "nothing_found": "Nothing found",
+      "already_in_course": "(Already in course)",
+      "preview": "Preview",
+      "page_info": "Page {{page}} (Total: {{total}})",
+      "cancel": "Cancel",
+      "add": "Add"
     }
   },
   "studio_page": {
