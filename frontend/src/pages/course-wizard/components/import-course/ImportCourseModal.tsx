@@ -24,7 +24,7 @@ export const ImportCourseModal: React.FC<ImportCourseModalProps> = ({
   const {
     step,
     dragActive, uploadError,
-    courseTitle, setCourseTitle, courseDesc, setCourseDesc,
+    parsedCourse, courseTitle, setCourseTitle, courseDesc, setCourseDesc,
     processingTotal, processingCurrent, processedResults,
     isPublishing,
     handleCancel, handleDrag, handleDrop, handleFileChange,
@@ -102,7 +102,7 @@ export const ImportCourseModal: React.FC<ImportCourseModalProps> = ({
       className="fixed inset-0 z-modal-backdrop bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200"
       onClick={(e) => { if (e.target === e.currentTarget && !isPublishing) handleCancel(); }}
     >
-      <div className="bg-card shadow-2xl border border-glass-border w-full max-w-4xl rounded-2xl flex flex-col animate-in zoom-in-95 duration-200 overflow-hidden relative max-h-[90vh]">
+      <div className="bg-card shadow-2xl border border-glass-border w-full max-w-6xl rounded-2xl flex flex-col animate-in zoom-in-95 duration-200 overflow-hidden relative max-h-[90vh]">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-primary/20 bg-primary/5 shrink-0">
           <div className="flex items-center gap-3">
@@ -175,45 +175,105 @@ export const ImportCourseModal: React.FC<ImportCourseModalProps> = ({
           )}
 
           {step === 'review' && (
-            <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-              {/* Course details */}
-              <div className="space-y-4 bg-muted/20 p-5 rounded-2xl border border-glass-border">
-                <div>
-                  <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
-                    {t('import_courses.course_title')}
-                  </label>
-                  <input
-                    type="text"
-                    value={courseTitle}
-                    onChange={(e) => setCourseTitle(e.target.value)}
-                    className="w-full bg-background border border-input rounded-xl px-4 py-2.5 text-sm font-medium focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none"
-                    placeholder="Название курса..."
-                  />
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 h-full min-h-[500px] animate-in fade-in slide-in-from-bottom-4 duration-500">
+              
+              {/* Left Column: Course Preview & Details */}
+              <div className="flex flex-col gap-6 lg:border-r lg:border-glass-border lg:pr-6 overflow-y-auto custom-scrollbar">
+                <div className="flex items-center gap-2 mb-2">
+                  <BookOpen size={20} className="text-primary" />
+                  <h3 className="text-lg font-bold text-foreground">
+                    {t('import_courses.review')}
+                  </h3>
                 </div>
+
+                <div className="space-y-4 bg-muted/10 p-5 rounded-2xl border border-glass-border/50">
+                  <div>
+                    <label className="block text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">
+                      {t('import_courses.course_title')}
+                    </label>
+                    <input
+                      type="text"
+                      value={courseTitle}
+                      onChange={(e) => setCourseTitle(e.target.value)}
+                      className="w-full bg-background border border-input rounded-xl px-4 py-2.5 text-sm font-medium focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none shadow-sm"
+                      placeholder="Название курса..."
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">
+                      {t('import_courses.course_desc')}
+                    </label>
+                    <textarea
+                      value={courseDesc}
+                      onChange={(e) => setCourseDesc(e.target.value)}
+                      className="w-full bg-background border border-input rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none min-h-[100px] resize-y custom-scrollbar shadow-sm"
+                      placeholder="Описание курса..."
+                    />
+                  </div>
+                </div>
+
+                {/* Course TOC Preview */}
                 <div>
-                  <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
-                    {t('import_courses.course_desc')}
-                  </label>
-                  <textarea
-                    value={courseDesc}
-                    onChange={(e) => setCourseDesc(e.target.value)}
-                    className="w-full bg-background border border-input rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none min-h-[100px] resize-y custom-scrollbar"
-                    placeholder="Описание курса..."
-                  />
+                  <h4 className="text-sm font-bold text-muted-foreground uppercase tracking-wider mb-4">Структура курса</h4>
+                  <div className="space-y-4">
+                    {parsedCourse?.sections?.map((sec: any, idx: number) => (
+                      <div key={idx} className="p-4 rounded-xl border border-glass-border bg-glass/20 transition-colors hover:bg-glass/30">
+                        <div className="font-bold text-foreground mb-4 flex items-center gap-3">
+                          <div className="w-7 h-7 rounded-lg bg-primary/20 text-primary flex items-center justify-center text-sm shadow-sm border border-primary/20 shrink-0">
+                            {idx + 1}
+                          </div>
+                          <span className="truncate leading-tight">{sec.title}</span>
+                        </div>
+                        <div className="space-y-2.5 pl-3 border-l-2 border-primary/20 ml-3.5 relative">
+                          {sec.tasks?.map((task: any, tIdx: number) => {
+                            const res = processedResults.find(r => r.taskData.title === task.title && r.taskData.description === task.description);
+                            
+                            let StatusIcon = Loader2;
+                            let statusColor = "text-muted-foreground";
+                            if (res) {
+                              if (res.status === 'success') { StatusIcon = CheckCircle2; statusColor = "text-success"; }
+                              else if (res.status === 'existing') { StatusIcon = BookOpen; statusColor = "text-primary"; }
+                              else if (res.status === 'missing_db') { StatusIcon = Database; statusColor = "text-destructive"; }
+                              else if (res.status === 'zero_rows') { StatusIcon = AlertTriangle; statusColor = "text-warning-text"; }
+                              else if (res.status === 'failed') { StatusIcon = AlertCircle; statusColor = "text-destructive"; }
+                            }
+
+                            return (
+                              <div key={tIdx} className="flex items-start gap-3 group relative before:absolute before:w-3 before:h-[2px] before:bg-primary/20 before:-left-3 before:top-[11px]">
+                                <div className={`shrink-0 mt-0.5 ${statusColor} bg-background rounded-full p-0.5 shadow-sm`}>
+                                  <StatusIcon size={14} className={!res ? "animate-spin" : ""} />
+                                </div>
+                                <div className="flex flex-col min-w-0 flex-1">
+                                  <span className="text-sm font-medium text-foreground truncate group-hover:text-primary transition-colors cursor-default">
+                                    {task.title || `Task ${tIdx + 1}`}
+                                  </span>
+                                  {res && res.status !== 'success' && res.status !== 'existing' && (
+                                    <span className="text-xs text-destructive-text/80 truncate mt-0.5">
+                                      {res.errorMessage || "Ошибка проверки"}
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
 
-              {/* Statistics */}
-              <div>
-                <div className="flex items-center justify-between mb-4">
+              {/* Right Column: Stats & Errors */}
+              <div className="flex flex-col gap-6 lg:pl-2 overflow-y-auto custom-scrollbar">
+                <div className="flex items-center justify-between">
                   <h3 className="text-lg font-bold text-foreground flex items-center gap-2">
                     <Database size={18} className="text-primary" />
-                    {t('import_courses.stats')}
+                    Результаты проверки
                   </h3>
                   {(missingDbTasks.length > 0 || zeroRowsTasks.length > 0 || failedTasks.length > 0) && (
                     <button
                       onClick={downloadLog}
-                      className="flex items-center gap-2 px-3 py-1.5 text-xs font-semibold bg-secondary hover:bg-hover text-secondary-foreground rounded-xl transition-colors focus:outline-none"
+                      className="flex items-center gap-2 px-3 py-1.5 text-xs font-semibold bg-secondary hover:bg-hover text-secondary-foreground rounded-xl transition-colors focus:outline-none shadow-sm"
                     >
                       <Download size={14} />
                       {t('import_courses.download_log')}
@@ -221,73 +281,107 @@ export const ImportCourseModal: React.FC<ImportCourseModalProps> = ({
                   )}
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="flex flex-col gap-4">
                   {/* Success */}
                   {successTasks.length > 0 && (
-                    <div className="p-4 rounded-xl border border-success/20 bg-success/5 flex flex-col gap-2">
-                      <div className="flex items-center gap-2 text-success font-bold text-lg">
-                        <CheckCircle2 size={20} />
-                        {successTasks.length} {t('import_courses.stat_success')}
+                    <div className="p-5 rounded-2xl border border-success/30 bg-success/10 flex items-start gap-4 shadow-sm hover:shadow-md transition-shadow">
+                      <div className="p-3 bg-success/20 rounded-xl text-success shrink-0">
+                        <CheckCircle2 size={24} />
                       </div>
-                      <p className="text-xs text-muted-foreground leading-relaxed">
-                        {t('import_courses.stat_success_desc')}
-                      </p>
+                      <div>
+                        <div className="text-success font-bold text-lg mb-1 leading-none">
+                          {successTasks.length} {t('import_courses.stat_success')}
+                        </div>
+                        <p className="text-sm text-success-text/80 leading-relaxed">
+                          {t('import_courses.stat_success_desc')}
+                        </p>
+                      </div>
                     </div>
                   )}
 
                   {/* Existing */}
                   {existingTasks.length > 0 && (
-                    <div className="p-4 rounded-xl border border-primary/20 bg-primary/5 flex flex-col gap-2">
-                      <div className="flex items-center gap-2 text-primary font-bold text-lg">
-                        <BookOpen size={20} />
-                        {existingTasks.length} {t('import_courses.stat_existing')}
+                    <div className="p-5 rounded-2xl border border-primary/30 bg-primary/10 flex items-start gap-4 shadow-sm hover:shadow-md transition-shadow">
+                      <div className="p-3 bg-primary/20 rounded-xl text-primary shrink-0">
+                        <BookOpen size={24} />
                       </div>
-                      <p className="text-xs text-muted-foreground leading-relaxed">
-                        {t('import_courses.stat_existing_desc')}
-                      </p>
+                      <div>
+                        <div className="text-primary font-bold text-lg mb-1 leading-none">
+                          {existingTasks.length} {t('import_courses.stat_existing')}
+                        </div>
+                        <p className="text-sm text-primary/80 leading-relaxed">
+                          {t('import_courses.stat_existing_desc')}
+                        </p>
+                      </div>
                     </div>
                   )}
 
                   {/* Missing DB */}
                   {missingDbTasks.length > 0 && (
-                    <div className="p-4 rounded-xl border border-destructive/20 bg-destructive/5 flex flex-col gap-2">
-                      <div className="flex items-center gap-2 text-destructive font-bold text-lg">
-                        <Database size={20} />
-                        {missingDbTasks.length} {t('import_courses.stat_missing_db')}
+                    <div className="p-5 rounded-2xl border border-destructive/30 bg-destructive/10 flex items-start gap-4 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
+                      <div className="absolute top-0 right-0 w-32 h-32 bg-destructive/5 rounded-bl-full -z-0"></div>
+                      <div className="p-3 bg-destructive/20 rounded-xl text-destructive shrink-0 relative z-10">
+                        <Database size={24} />
                       </div>
-                      <p className="text-xs text-destructive-text/80 leading-relaxed font-medium">
-                        {t('import_courses.stat_missing_db_desc')}
-                      </p>
+                      <div className="relative z-10 flex-1">
+                        <div className="text-destructive font-bold text-lg mb-1 leading-none">
+                          {missingDbTasks.length} {t('import_courses.stat_missing_db')}
+                        </div>
+                        <p className="text-sm text-destructive-text/90 leading-relaxed font-medium mb-3">
+                          {t('import_courses.stat_missing_db_desc')}
+                        </p>
+                        <div className="bg-destructive/10 rounded-xl p-3 border border-destructive/20">
+                          <p className="text-xs font-bold text-destructive uppercase tracking-wider mb-2">Отсутствующие БД:</p>
+                          <div className="flex flex-wrap gap-2">
+                            {Array.from(new Set(missingDbTasks.map(t => t.dbName).filter(Boolean))).map((db, i) => (
+                              <span key={i} className="px-2.5 py-1 rounded-md bg-background/50 border border-destructive/20 text-xs font-mono text-destructive-text/90 shadow-sm">
+                                {db}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   )}
 
                   {/* Zero Rows */}
                   {zeroRowsTasks.length > 0 && (
-                    <div className="p-4 rounded-xl border border-warning/30 bg-warning/10 flex flex-col gap-2">
-                      <div className="flex items-center gap-2 text-warning-text font-bold text-lg">
-                        <AlertTriangle size={20} />
-                        {zeroRowsTasks.length} {t('import_courses.stat_zero_rows')}
+                    <div className="p-5 rounded-2xl border border-warning/40 bg-warning/10 flex items-start gap-4 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
+                      <div className="absolute top-0 right-0 w-32 h-32 bg-warning/5 rounded-bl-full -z-0"></div>
+                      <div className="p-3 bg-warning/20 rounded-xl text-warning-text shrink-0 relative z-10">
+                        <AlertTriangle size={24} />
                       </div>
-                      <p className="text-xs text-warning-text/80 leading-relaxed font-medium">
-                        {t('import_courses.stat_zero_rows_desc')}
-                      </p>
+                      <div className="relative z-10">
+                        <div className="text-warning-text font-bold text-lg mb-1 leading-none">
+                          {zeroRowsTasks.length} {t('import_courses.stat_zero_rows')}
+                        </div>
+                        <p className="text-sm text-warning-text/90 leading-relaxed font-medium">
+                          {t('import_courses.stat_zero_rows_desc')}
+                        </p>
+                      </div>
                     </div>
                   )}
 
                   {/* Failed */}
                   {failedTasks.length > 0 && (
-                    <div className="p-4 rounded-xl border border-destructive/20 bg-destructive/5 flex flex-col gap-2 sm:col-span-2">
-                      <div className="flex items-center gap-2 text-destructive font-bold text-lg">
-                        <AlertCircle size={20} />
-                        {failedTasks.length} {t('import_courses.stat_failed')}
+                    <div className="p-5 rounded-2xl border border-destructive/30 bg-destructive/10 flex items-start gap-4 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
+                      <div className="absolute top-0 right-0 w-32 h-32 bg-destructive/5 rounded-bl-full -z-0"></div>
+                      <div className="p-3 bg-destructive/20 rounded-xl text-destructive shrink-0 relative z-10">
+                        <AlertCircle size={24} />
                       </div>
-                      <p className="text-xs text-destructive-text/80 leading-relaxed font-medium">
-                        {t('import_courses.stat_failed_desc')}
-                      </p>
+                      <div className="relative z-10">
+                        <div className="text-destructive font-bold text-lg mb-1 leading-none">
+                          {failedTasks.length} {t('import_courses.stat_failed')}
+                        </div>
+                        <p className="text-sm text-destructive-text/90 leading-relaxed font-medium">
+                          {t('import_courses.stat_failed_desc')}
+                        </p>
+                      </div>
                     </div>
                   )}
                 </div>
               </div>
+
             </div>
           )}
 
