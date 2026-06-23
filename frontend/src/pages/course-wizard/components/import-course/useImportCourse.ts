@@ -142,6 +142,7 @@ export const useImportCourse = (isOpen: boolean, onClose: () => void, onImportFi
 
       startProcessing(flatTasks);
     } catch (err: any) {
+      alert(err.message || "Unknown error");
       setUploadError(err.message || "Unknown error");
     }
   };
