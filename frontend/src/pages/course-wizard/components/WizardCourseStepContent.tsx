@@ -103,6 +103,7 @@ function TaskItem({ task, index, isFirst, isLast, onMoveUp, onMoveDown, onRemove
 // TASK LIST
 // ----------------------------------------------------------------------
 function TaskList({ tasks, onTasksChange, allSelectedIds, sectionLabel }: any) {
+  const { t } = useTranslation();
   const [pickerOpen, setPickerOpen] = useState(false);
 
   const moveTask = (from: number, to: number) => {
