@@ -197,7 +197,7 @@ export const useImportCourse = (isOpen: boolean, onClose: () => void, onImportFi
         const taskIds: number[] = [];
         if (Array.isArray(sec.tasks)) {
           sec.tasks.forEach((tData: any) => {
-            const match = processedResults.find(r => r.taskData === tData);
+            const match = processedResults.find(r => r.taskData.title === tData.title && r.taskData.description === tData.description);
             if (match) {
               if (match.status === 'existing' && match.taskId) {
                 taskIds.push(match.taskId);
