@@ -1,7 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { BookOpen, Database, Loader2, CheckCircle2, AlertTriangle, AlertCircle, Download } from 'lucide-react';
-import { CourseTaskResult } from './useImportCourse';
+import type { CourseTaskResult } from './useImportCourse';
 
 interface ImportReviewStepProps {
   courseTitle: string;
