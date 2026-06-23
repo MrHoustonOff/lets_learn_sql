@@ -196,7 +196,7 @@ export const ImportCourseModal: React.FC<ImportCourseModalProps> = ({
                       value={courseTitle}
                       onChange={(e) => setCourseTitle(e.target.value)}
                       className="w-full bg-background border border-input rounded-xl px-4 py-2.5 text-sm font-medium focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none shadow-sm"
-                      placeholder="Название курса..."
+                      placeholder={t('import_courses.course_title_placeholder')}
                     />
                   </div>
                   <div>
@@ -207,14 +207,14 @@ export const ImportCourseModal: React.FC<ImportCourseModalProps> = ({
                       value={courseDesc}
                       onChange={(e) => setCourseDesc(e.target.value)}
                       className="w-full bg-background border border-input rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none min-h-[100px] resize-y custom-scrollbar shadow-sm"
-                      placeholder="Описание курса..."
+                      placeholder={t('import_courses.course_desc_placeholder')}
                     />
                   </div>
                 </div>
 
                 {/* Course TOC Preview */}
                 <div>
-                  <h4 className="text-sm font-bold text-muted-foreground uppercase tracking-wider mb-4">Структура курса</h4>
+                  <h4 className="text-sm font-bold text-muted-foreground uppercase tracking-wider mb-4">{t('import_courses.course_structure')}</h4>
                   <div className="space-y-4">
                     {parsedCourse?.sections?.map((sec: any, idx: number) => (
                       <div key={idx} className="p-4 rounded-xl border border-glass-border bg-glass/20 transition-colors hover:bg-glass/30">
@@ -249,7 +249,7 @@ export const ImportCourseModal: React.FC<ImportCourseModalProps> = ({
                                   </span>
                                   {res && res.status !== 'success' && res.status !== 'existing' && (
                                     <span className="text-xs text-destructive-text/80 truncate mt-0.5">
-                                      {res.errorMessage || "Ошибка проверки"}
+                                      {res.errorMessage || t('import_courses.validation_error')}
                                     </span>
                                   )}
                                 </div>
@@ -268,7 +268,7 @@ export const ImportCourseModal: React.FC<ImportCourseModalProps> = ({
                 <div className="flex items-center justify-between">
                   <h3 className="text-lg font-bold text-foreground flex items-center gap-2">
                     <Database size={18} className="text-primary" />
-                    Результаты проверки
+                    {t('import_courses.validation_results')}
                   </h3>
                   {(missingDbTasks.length > 0 || zeroRowsTasks.length > 0 || failedTasks.length > 0) && (
                     <button
@@ -284,61 +284,54 @@ export const ImportCourseModal: React.FC<ImportCourseModalProps> = ({
                 <div className="flex flex-col gap-4">
                   {/* Success */}
                   {successTasks.length > 0 && (
-                    <div className="p-5 rounded-2xl border border-success/30 bg-success/10 flex items-start gap-4 shadow-sm hover:shadow-md transition-shadow">
-                      <div className="p-3 bg-success/20 rounded-xl text-success shrink-0">
-                        <CheckCircle2 size={24} />
-                      </div>
-                      <div>
-                        <div className="text-success font-bold text-lg mb-1 leading-none">
+                    <div className="p-4 rounded-xl border-l-4 border-l-success border-y border-r border-glass-border bg-card flex flex-col gap-2 shadow-sm hover:shadow-md transition-shadow">
+                      <div className="flex items-center gap-3">
+                        <CheckCircle2 size={18} className="text-success" />
+                        <div className="text-foreground font-bold text-base leading-none">
                           {successTasks.length} {t('import_courses.stat_success')}
                         </div>
-                        <p className="text-sm text-success-text/80 leading-relaxed">
-                          {t('import_courses.stat_success_desc')}
-                        </p>
                       </div>
+                      <p className="text-sm text-muted-foreground leading-relaxed pl-7">
+                        {t('import_courses.stat_success_desc')}
+                      </p>
                     </div>
                   )}
 
                   {/* Existing */}
                   {existingTasks.length > 0 && (
-                    <div className="p-5 rounded-2xl border border-primary/30 bg-primary/10 flex items-start gap-4 shadow-sm hover:shadow-md transition-shadow">
-                      <div className="p-3 bg-primary/20 rounded-xl text-primary shrink-0">
-                        <BookOpen size={24} />
-                      </div>
-                      <div>
-                        <div className="text-primary font-bold text-lg mb-1 leading-none">
+                    <div className="p-4 rounded-xl border-l-4 border-l-primary border-y border-r border-glass-border bg-card flex flex-col gap-2 shadow-sm hover:shadow-md transition-shadow">
+                      <div className="flex items-center gap-3">
+                        <BookOpen size={18} className="text-primary" />
+                        <div className="text-foreground font-bold text-base leading-none">
                           {existingTasks.length} {t('import_courses.stat_existing')}
                         </div>
-                        <p className="text-sm text-primary/80 leading-relaxed">
-                          {t('import_courses.stat_existing_desc')}
-                        </p>
                       </div>
+                      <p className="text-sm text-muted-foreground leading-relaxed pl-7">
+                        {t('import_courses.stat_existing_desc')}
+                      </p>
                     </div>
                   )}
 
                   {/* Missing DB */}
                   {missingDbTasks.length > 0 && (
-                    <div className="p-5 rounded-2xl border border-destructive/30 bg-destructive/10 flex items-start gap-4 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
-                      <div className="absolute top-0 right-0 w-32 h-32 bg-destructive/5 rounded-bl-full -z-0"></div>
-                      <div className="p-3 bg-destructive/20 rounded-xl text-destructive shrink-0 relative z-10">
-                        <Database size={24} />
-                      </div>
-                      <div className="relative z-10 flex-1">
-                        <div className="text-destructive font-bold text-lg mb-1 leading-none">
+                    <div className="p-4 rounded-xl border-l-4 border-l-destructive border-y border-r border-glass-border bg-card flex flex-col gap-3 shadow-sm hover:shadow-md transition-shadow">
+                      <div className="flex items-center gap-3">
+                        <Database size={18} className="text-destructive" />
+                        <div className="text-foreground font-bold text-base leading-none">
                           {missingDbTasks.length} {t('import_courses.stat_missing_db')}
                         </div>
-                        <p className="text-sm text-destructive-text/90 leading-relaxed font-medium mb-3">
-                          {t('import_courses.stat_missing_db_desc')}
-                        </p>
-                        <div className="bg-destructive/10 rounded-xl p-3 border border-destructive/20">
-                          <p className="text-xs font-bold text-destructive uppercase tracking-wider mb-2">Отсутствующие БД:</p>
-                          <div className="flex flex-wrap gap-2">
-                            {Array.from(new Set(missingDbTasks.map(t => t.dbName).filter(Boolean))).map((db, i) => (
-                              <span key={i} className="px-2.5 py-1 rounded-md bg-background/50 border border-destructive/20 text-xs font-mono text-destructive-text/90 shadow-sm">
-                                {db}
-                              </span>
-                            ))}
-                          </div>
+                      </div>
+                      <p className="text-sm text-muted-foreground leading-relaxed pl-7">
+                        {t('import_courses.stat_missing_db_desc')}
+                      </p>
+                      <div className="pl-7">
+                        <p className="text-xs font-semibold text-muted-foreground mb-2">{t('import_courses.missing_dbs_list')}</p>
+                        <div className="flex flex-wrap gap-2">
+                          {Array.from(new Set(missingDbTasks.map(t => t.dbName).filter(Boolean))).map((db, i) => (
+                            <span key={i} className="px-2 py-1 rounded border border-glass-border bg-muted/30 text-xs font-mono text-muted-foreground">
+                              {db}
+                            </span>
+                          ))}
                         </div>
                       </div>
                     </div>
@@ -346,37 +339,31 @@ export const ImportCourseModal: React.FC<ImportCourseModalProps> = ({
 
                   {/* Zero Rows */}
                   {zeroRowsTasks.length > 0 && (
-                    <div className="p-5 rounded-2xl border border-warning/40 bg-warning/10 flex items-start gap-4 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
-                      <div className="absolute top-0 right-0 w-32 h-32 bg-warning/5 rounded-bl-full -z-0"></div>
-                      <div className="p-3 bg-warning/20 rounded-xl text-warning-text shrink-0 relative z-10">
-                        <AlertTriangle size={24} />
-                      </div>
-                      <div className="relative z-10">
-                        <div className="text-warning-text font-bold text-lg mb-1 leading-none">
+                    <div className="p-4 rounded-xl border-l-4 border-l-warning-text border-y border-r border-glass-border bg-card flex flex-col gap-2 shadow-sm hover:shadow-md transition-shadow">
+                      <div className="flex items-center gap-3">
+                        <AlertTriangle size={18} className="text-warning-text" />
+                        <div className="text-foreground font-bold text-base leading-none">
                           {zeroRowsTasks.length} {t('import_courses.stat_zero_rows')}
                         </div>
-                        <p className="text-sm text-warning-text/90 leading-relaxed font-medium">
-                          {t('import_courses.stat_zero_rows_desc')}
-                        </p>
                       </div>
+                      <p className="text-sm text-muted-foreground leading-relaxed pl-7">
+                        {t('import_courses.stat_zero_rows_desc')}
+                      </p>
                     </div>
                   )}
 
                   {/* Failed */}
                   {failedTasks.length > 0 && (
-                    <div className="p-5 rounded-2xl border border-destructive/30 bg-destructive/10 flex items-start gap-4 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
-                      <div className="absolute top-0 right-0 w-32 h-32 bg-destructive/5 rounded-bl-full -z-0"></div>
-                      <div className="p-3 bg-destructive/20 rounded-xl text-destructive shrink-0 relative z-10">
-                        <AlertCircle size={24} />
-                      </div>
-                      <div className="relative z-10">
-                        <div className="text-destructive font-bold text-lg mb-1 leading-none">
+                    <div className="p-4 rounded-xl border-l-4 border-l-destructive border-y border-r border-glass-border bg-card flex flex-col gap-2 shadow-sm hover:shadow-md transition-shadow">
+                      <div className="flex items-center gap-3">
+                        <AlertCircle size={18} className="text-destructive" />
+                        <div className="text-foreground font-bold text-base leading-none">
                           {failedTasks.length} {t('import_courses.stat_failed')}
                         </div>
-                        <p className="text-sm text-destructive-text/90 leading-relaxed font-medium">
-                          {t('import_courses.stat_failed_desc')}
-                        </p>
                       </div>
+                      <p className="text-sm text-muted-foreground leading-relaxed pl-7">
+                        {t('import_courses.stat_failed_desc')}
+                      </p>
                     </div>
                   )}
                 </div>
