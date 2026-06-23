@@ -136,145 +136,30 @@ export const useImportCourse = (isOpen: boolean, onClose: () => void, onImportFi
     setProcessingTotal(flatTasks.length);
     setProcessingCurrent(0);
 
-    const results: CourseTaskResult[] = [];
-
-    for (let i = 0; i < flatTasks.length; i++) {
-      setProcessingCurrent(i + 1);
-      const { task: rawTask } = flatTasks[i];
-      
-      const dbName = rawTask.db_name || rawTask.database_technical_name || rawTask.database || 'northwind';
-      const resultItem: CourseTaskResult = {
-        taskData: rawTask,
-        status: 'failed',
-        taskId: null,
-        dbName
+    try {
+      const payload = {
+        tasks: flatTasks.map(f => f.task)
       };
 
-      try {
-        const taskTitle = (rawTask.title || '').trim();
-        const taskDesc = (rawTask.description || '').trim();
-        
-        let existingId: number | null = null;
-        if (taskTitle) {
-          const checkRes = await fetch(`/api/tasks?search=${encodeURIComponent(taskTitle)}&page_size=100`);
-          if (checkRes.ok) {
-            const checkData = await checkRes.json();
-            const matchingTasks = checkData.tasks.filter((t: any) => 
-              (t.title || '').trim().toLowerCase() === taskTitle.toLowerCase()
-            );
-            for (const match of matchingTasks) {
-              const detailRes = await fetch(`/api/tasks/${match.id}`);
-              if (detailRes.ok) {
-                const detailData = await detailRes.json();
-                if ((detailData.description || '').trim().toLowerCase() === taskDesc.toLowerCase()) {
-                  existingId = match.id;
-                  break;
-                }
-              }
-            }
-          }
-        }
+      const res = await fetch('/api/tasks/validate-bulk', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
 
-        if (existingId !== null) {
-          resultItem.status = 'existing';
-          resultItem.taskId = existingId;
-          results.push(resultItem);
-          continue;
-        }
-
-        const dbNameLower = dbName.toLowerCase();
-        const foundDb = allDatabases.find((d: any) => 
-          d.technical_name?.toLowerCase() === dbNameLower || 
-          d.display_name?.toLowerCase() === dbNameLower
-        );
-
-        if (!foundDb) {
-          resultItem.status = 'missing_db';
-          resultItem.errorMessage = t('import_tasks.errors.db_not_found', { name: dbName });
-          results.push(resultItem);
-          continue;
-        }
-
-        // Create Draft
-        const draftRes = await fetch('/api/tasks/draft', { method: 'POST' });
-        if (!draftRes.ok) throw new Error(t('import_tasks.errors.draft_create_failed'));
-        const draftId = (await draftRes.json()).id;
-        resultItem.taskId = draftId;
-
-        // Update Draft
-        const mappedRules = (rawTask.rules || []).map((r: any) => ({
-          category: r.category,
-          condition: r.condition,
-          params: r.params || {},
-          severity: r.severity || 'blocking',
-          message: r.message || ''
-        }));
-
-        let parsedDifficulty = 0;
-        if (typeof rawTask.difficulty === 'number') parsedDifficulty = rawTask.difficulty;
-
-        const updateRes = await fetch(`/api/tasks/${draftId}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            title: taskTitle,
-            description: taskDesc,
-            author_name: rawTask.author_name || '',
-            source_url: rawTask.source_url || '',
-            difficulty: parsedDifficulty,
-            database_id: foundDb.id,
-            reference_sql: rawTask.reference_sql,
-            order_matters: !!rawTask.order_matters,
-            tags: Array.isArray(rawTask.tags) ? rawTask.tags : [],
-            rules: mappedRules
-          })
-        });
-        if (!updateRes.ok) throw new Error(t('import_tasks.errors.draft_update_failed'));
-
-        // Execute Reference SQL
-        const sqlRes = await fetch(`/api/tasks/${draftId}/execute-reference`, { method: 'POST' });
-        if (!sqlRes.ok) {
-          const errData = await sqlRes.json().catch(() => null);
-          throw new Error(errData?.detail || t('import_tasks.errors.unknown_sql_error'));
-        }
-        const sqlData = await sqlRes.json();
-        resultItem.sqlResult = sqlData;
-
-        // Check Rules
-        if (mappedRules.length > 0) {
-          const rulesRes = await fetch(`/api/tasks/${draftId}/check_rules`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ rules: mappedRules })
-          });
-          if (!rulesRes.ok) {
-            throw new Error("Rules check failed");
-          }
-          const rulesData = await rulesRes.json();
-          const rulesArray = rulesData.rules || [];
-          const hasBlockingError = rulesArray.some((r: any) => !r.passed && r.severity === 'blocking');
-          if (hasBlockingError) {
-            throw new Error("Failed one or more blocking rules.");
-          }
-        }
-
-        if (sqlData.row_count === 0 || (sqlData.rows && sqlData.rows.length === 0)) {
-          resultItem.status = 'zero_rows';
-        } else {
-          resultItem.status = 'success';
-        }
-
-        results.push(resultItem);
-
-      } catch (err: any) {
-        resultItem.status = 'failed';
-        resultItem.errorMessage = err.message || t('import_tasks.errors.processing_failed');
-        results.push(resultItem);
+      if (!res.ok) {
+        throw new Error("Bulk validation failed");
       }
-    }
 
-    setProcessedResults(results);
-    setStep('review');
+      const data = await res.json();
+      setProcessedResults(data.results);
+      setProcessingCurrent(flatTasks.length);
+      setStep('review');
+
+    } catch (err: any) {
+      setUploadError(err.message || "Unknown error during validation");
+      setStep('upload');
+    }
   };
 
   const publishCourse = async () => {

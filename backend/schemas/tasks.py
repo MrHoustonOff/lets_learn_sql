@@ -126,4 +126,16 @@ class TaskImportResponse(BaseModel):
 class TaskExportRequest(BaseModel):
     task_ids: List[int]
 
+class BulkValidateTaskResult(BaseModel):
+    taskData: dict
+    status: str
+    taskId: Optional[int] = None
+    dbName: str
+    errorMessage: Optional[str] = None
+    sqlResult: Optional[dict] = None
 
+class BulkValidateResponse(BaseModel):
+    results: List[BulkValidateTaskResult]
+
+class BulkValidateRequest(BaseModel):
+    tasks: List[dict]
