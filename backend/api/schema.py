@@ -10,27 +10,11 @@ async def get_schema(database: str = "northwind"):
     if not validate_db_name(database):
         raise HTTPException(status_code=400, detail="Invalid database name")
 
-    conn = None
-    is_pooled = False
-
-    if database == settings.POSTGRES_DB:
-        if db_module.user_pool is None:
-            raise HTTPException(status_code=500, detail="Database pool not initialized")
-        conn = await db_module.user_pool.acquire()
-        is_pooled = True
-    else:
-        import asyncpg
-        try:
-            conn = await asyncpg.connect(
-                host=settings.POSTGRES_HOST,
-                port=settings.POSTGRES_PORT,
-                user=settings.POSTGRES_USER,
-                password=settings.POSTGRES_PASSWORD,
-                database=database,
-                timeout=5.0
-            )
-        except Exception as e:
-            raise HTTPException(status_code=404, detail=f"Database '{database}' not found or unreachable: {str(e)}")
+    try:
+        pool = await db_module.get_user_pool(database)
+        conn = await pool.acquire()
+    except Exception as e:
+        raise HTTPException(status_code=404, detail=f"Database '{database}' not found or pool unreachable: {str(e)}")
 
     try:
         # Таблицы и колонки
@@ -246,10 +230,7 @@ async def get_schema(database: str = "northwind"):
         return {"tables": list(tables.values())}
     finally:
         if conn:
-            if is_pooled:
-                await db_module.user_pool.release(conn)
-            else:
-                await conn.close()
+            await pool.release(conn)
 
 
 @router.get("/schema/copy-ai")
@@ -261,27 +242,11 @@ async def copy_schema_for_ai(database: str = "northwind"):
     if not validate_db_name(database):
         raise HTTPException(status_code=400, detail="Invalid database name")
 
-    conn = None
-    is_pooled = False
-
-    if database == settings.POSTGRES_DB:
-        if db_module.user_pool is None:
-            raise HTTPException(status_code=500, detail="Database pool not initialized")
-        conn = await db_module.user_pool.acquire()
-        is_pooled = True
-    else:
-        import asyncpg
-        try:
-            conn = await asyncpg.connect(
-                host=settings.POSTGRES_HOST,
-                port=settings.POSTGRES_PORT,
-                user=settings.POSTGRES_USER,
-                password=settings.POSTGRES_PASSWORD,
-                database=database,
-                timeout=5.0
-            )
-        except Exception as e:
-            raise HTTPException(status_code=404, detail=f"Database '{database}' not found or unreachable: {str(e)}")
+    try:
+        pool = await db_module.get_user_pool(database)
+        conn = await pool.acquire()
+    except Exception as e:
+        raise HTTPException(status_code=404, detail=f"Database '{database}' not found or pool unreachable: {str(e)}")
 
     try:
         # 1. Fetch tables list
@@ -446,9 +411,6 @@ async def copy_schema_for_ai(database: str = "northwind"):
 
     finally:
         if conn:
-            if is_pooled:
-                await db_module.user_pool.release(conn)
-            else:
-                await conn.close()
+            await pool.release(conn)
 
 

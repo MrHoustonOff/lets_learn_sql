@@ -20,6 +20,7 @@ import asyncpg.exceptions
 
 from core.config import settings
 from core.sql_checker import parse_sql, check_rule
+from core import database as db_module
 
 
 # ---------------------------------------------------------------------------
@@ -129,15 +130,6 @@ class GradeReport:
 # Helpers
 # ---------------------------------------------------------------------------
 
-async def _get_conn(db_name: str) -> asyncpg.Connection:
-    return await asyncpg.connect(
-        host=settings.POSTGRES_HOST,
-        port=settings.POSTGRES_PORT,
-        user=settings.POSTGRES_USER,
-        password=settings.POSTGRES_PASSWORD,
-        database=db_name,
-        timeout=5.0,
-    )
 
 
 def _records_to_rows(records: list[asyncpg.Record], limit: int | None = None) -> list[list]:
@@ -571,26 +563,27 @@ async def grade_submission(
             duration_ms=0, error="Empty SQL",
         )
 
-    conn = await _get_conn(db_name)
+    pool = await db_module.get_user_pool(db_name)
     try:
-        await conn.execute(f"SET statement_timeout = '{settings.QUERY_TIMEOUT_MS}ms'")
-
-        # Stage 1
-        stage1 = await run_stage1(conn, user_sql, reference_sql, order_matters)
-
-        # Stage 2: only if Stage 1 passed (per spec)
-        if stage1.passed and rules:
-            stage2 = await run_stage2(conn, user_sql, rules)
-        else:
-            stage2 = Stage2Report(ran=stage1.passed, rules=[], all_blocking_passed=True)
-
-        # Verdict formula per spec п. 2.7
-        verdict = (
-            stage1.passed
-            and stage2.all_blocking_passed
-            and (stage1.order_passed is not False)
-        )
-
+        async with pool.acquire() as conn:
+            await conn.execute(f"SET statement_timeout = '{settings.QUERY_TIMEOUT_MS}ms'")
+    
+            # Stage 1
+            stage1 = await run_stage1(conn, user_sql, reference_sql, order_matters)
+    
+            # Stage 2: only if Stage 1 passed (per spec)
+            if stage1.passed and rules:
+                stage2 = await run_stage2(conn, user_sql, rules)
+            else:
+                stage2 = Stage2Report(ran=stage1.passed, rules=[], all_blocking_passed=True)
+    
+            # Verdict formula per spec п. 2.7
+            verdict = (
+                stage1.passed
+                and stage2.all_blocking_passed
+                and (stage1.order_passed is not False)
+            )
+            
     except asyncpg.exceptions.QueryCanceledError:
         err_msg = "PREFLIGHT:TIMEOUT"
         dummy_s1 = Stage1Report(
@@ -618,8 +611,6 @@ async def grade_submission(
             duration_ms=round((time.monotonic() - start) * 1000, 2),
             error=str(e),
         )
-    finally:
-        await conn.close()
 
     duration_ms = round((time.monotonic() - start) * 1000, 2)
     return GradeReport(verdict=verdict, stage1=stage1, stage2=stage2, duration_ms=duration_ms)

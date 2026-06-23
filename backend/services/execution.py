@@ -3,7 +3,7 @@ import json
 from typing import Dict, Any, List
 from pydantic import BaseModel
 
-from core.grader import grade_submission, run_stage2, _get_conn
+from core.grader import grade_submission, run_stage2
 from core.security import validate_sql
 from db.repositories.tasks import TaskRepository
 from schemas.tasks import SolutionResponse
@@ -69,8 +69,8 @@ class TaskExecutionService:
         if not parsed_rules:
             return {"rules": []}
 
-        conn = await _get_conn(task_row["db_name"])
-        try:
+        pool = await db_module.get_user_pool(task_row["db_name"])
+        async with pool.acquire() as conn:
             stage2 = await run_stage2(conn, task_row["reference_sql"], parsed_rules)
             def _rule(r):
                 return {
@@ -81,8 +81,6 @@ class TaskExecutionService:
                     "detail_msg": getattr(r, "detail_msg", None)
                 }
             return {"rules": [_rule(r) for r in stage2.rules]}
-        finally:
-            await conn.close()
 
     async def get_solution(self, task_id: int) -> SolutionResponse:
         """Executes reference SQL in an isolated transaction to get expected output."""
@@ -93,9 +91,8 @@ class TaskExecutionService:
         solution_sql = row["reference_sql"]
         db_name = row["db_name"]
         
-        if db_module.user_pool is None:
-            raise RuntimeError("Database pool not initialized")
-            
+        pool = await db_module.get_user_pool(db_name)
+        
         start = time.monotonic()
         
         async def _run_with_rollback(conn):
@@ -107,16 +104,9 @@ class TaskExecutionService:
             except RollbackTransaction as e:
                 return e.args[0]
 
-        if db_name == settings.POSTGRES_DB:
-            async with db_module.user_pool.acquire() as conn:
-                records = await _run_with_rollback(conn)
-        else:
-            pool = db_module.get_tenant_pool(db_name)
-            if not pool:
-                raise LookupError(f"Database {db_name} not found or pool not created")
-            async with pool.acquire() as conn:
-                records = await _run_with_rollback(conn)
-                
+        async with pool.acquire() as conn:
+            records = await _run_with_rollback(conn)
+            
         duration_ms = (time.monotonic() - start) * 1000
         
         if not records:

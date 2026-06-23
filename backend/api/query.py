@@ -17,11 +17,8 @@ async def run_query(req: QueryRequest) -> QueryResponse:
     if not is_valid:
         raise HTTPException(status_code=400, detail=error)
 
-    # user_pool can be None if not initialized
-    if database.user_pool is None:
-        raise HTTPException(status_code=500, detail="Database pool not initialized")
-
-    async with database.user_pool.acquire() as conn:
+    pool = await database.get_user_pool(req.database)
+    async with pool.acquire() as conn:
         # statement_timeout — защита от бесконечных запросов
         await conn.execute(f"SET statement_timeout = '{settings.QUERY_TIMEOUT_MS}ms'")
 
