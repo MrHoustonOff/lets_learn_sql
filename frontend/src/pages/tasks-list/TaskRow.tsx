@@ -47,10 +47,10 @@ export const TaskRow: React.FC<TaskRowProps> = ({ task, onClick }) => {
         </div>
 
         {/* Title and Meta (Courses/Tags) */}
-        <div className="flex flex-col gap-1 w-[60%] shrink-0 min-w-0">
+        <div className="flex flex-col gap-1 flex-1 min-w-0">
           {/* Top: Title */}
           <span
-            className={`text-xs truncate transition-colors ${
+            className={`text-xs break-words leading-snug min-w-0 transition-colors ${
               task.is_solved ? 'text-muted-foreground line-through opacity-70 group-hover:opacity-100 group-hover:no-underline' : 'font-medium text-foreground'
             }`}
           >
@@ -58,14 +58,14 @@ export const TaskRow: React.FC<TaskRowProps> = ({ task, onClick }) => {
           </span>
           
           {/* Bottom: Courses & Tags */}
-          <div className="flex items-center gap-3 text-micro text-muted-foreground">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-micro text-muted-foreground min-w-0">
             {/* Courses */}
             {task.courses && task.courses.length > 0 && (
-              <div className="flex items-center gap-1.5">
-                <span>{t('row.courses', 'Курсы:')}</span>
-                <div className="flex items-center gap-1">
+              <div className="flex flex-wrap items-center gap-1.5 min-w-0">
+                <span className="shrink-0">{t('row.courses', 'Курсы:')}</span>
+                <div className="flex flex-wrap items-center gap-1 min-w-0">
                   {task.courses.map((c: any, idx: number) => (
-                    <Badge key={c?.id || idx} variant="outline" className="opacity-80 group-hover:opacity-100 transition-opacity">
+                    <Badge key={c?.id || idx} variant="outline" className="opacity-80 group-hover:opacity-100 transition-opacity break-words max-w-full h-auto whitespace-normal text-left leading-tight">
                       {c?.title || c}
                     </Badge>
                   ))}
@@ -75,11 +75,11 @@ export const TaskRow: React.FC<TaskRowProps> = ({ task, onClick }) => {
 
             {/* Tags */}
             {task.tags.length > 0 && (
-              <div className="flex items-center gap-1.5">
-                <span>{t('row.tags', 'Теги:')}</span>
-                <div className="flex items-center gap-1">
+              <div className="flex flex-wrap items-center gap-1.5 min-w-0">
+                <span className="shrink-0">{t('row.tags', 'Теги:')}</span>
+                <div className="flex flex-wrap items-center gap-1 min-w-0">
                   {task.tags.map((tag: any, idx: number) => (
-                    <Badge key={tag?.id || idx} variant="default" className="opacity-80 group-hover:opacity-100 transition-opacity">
+                    <Badge key={tag?.id || idx} variant="default" className="opacity-80 group-hover:opacity-100 transition-opacity break-words max-w-full h-auto whitespace-normal text-left leading-tight">
                       {tag?.name || tag}
                     </Badge>
                   ))}
