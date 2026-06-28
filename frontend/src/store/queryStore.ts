@@ -174,7 +174,7 @@ export const useQueryStore = create<QueryState>((set, get) => ({
 
     // Automatically execute explain if not present
     const explainStore = useExplainStore.getState();
-    if (!explainStore.explainData) {
+    if (!explainStore.slot1) {
       explainStore.fetchExplain(sql, database, isAdminMode);
     }
 

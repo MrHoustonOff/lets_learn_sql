@@ -4,10 +4,12 @@ import { useTranslation } from 'react-i18next';
 import { useUIStore, type SlotId } from '../../store/uiStore';
 import { useTaskStore } from '../../store/taskStore';
 import { useQueryStore } from '../../store/queryStore';
-import { Maximize2, Minimize2, Bookmark } from 'lucide-react';
+import { Maximize2, Minimize2, Bookmark, ArrowRight } from 'lucide-react';
+import { NavLink } from 'react-router-dom';
 import { MarkdownText } from '../ui/MarkdownText';
 import { DragHandle } from './DragHandle';
 import { SubmitReport } from './SubmitReport';
+import { useNextTask } from '../../hooks/useNextTask';
 
 interface TaskPaneProps {
   slotId: SlotId;
@@ -19,6 +21,7 @@ export const TaskPane: React.FC<TaskPaneProps> = ({ slotId }) => {
   const { activeTask, toggleBookmark, taskPaneTab, setTaskPaneTab } = useTaskStore();
   const { submitResult, isSubmitting, submitError, fetchHistory } = useQueryStore();
   const { maximizedPane, setMaximizedPane } = useUIStore();
+  const nextTaskId = useNextTask();
   const isMaximized = maximizedPane === 'task';
 
   // Reset tab and fetch history when task changes
@@ -64,7 +67,19 @@ export const TaskPane: React.FC<TaskPaneProps> = ({ slotId }) => {
           </button>
         </div>
         <div className="flex items-center gap-1 shrink min-w-0 ml-1">
-
+          {activeTask.isSolved && nextTaskId && (
+            <>
+              <NavLink
+                to={`/tasks/${nextTaskId}`}
+                className="flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md transition-all min-w-0 bg-success/10 text-success border border-transparent hover:bg-success hover:text-success-foreground shadow-sm group"
+                title={t('task_pane:next_task_tooltip', 'Перейти к следующей задаче курса')}
+              >
+                <span className="truncate hidden sm:inline">{t('task_pane:next_task', 'След. задача')}</span>
+                <ArrowRight size={14} className="shrink-0 transition-transform group-hover:translate-x-0.5" />
+              </NavLink>
+              <div className="w-[1px] h-4 bg-glass-border mx-1"></div>
+            </>
+          )}
 
           <button 
             onClick={toggleBookmark}
@@ -97,7 +112,7 @@ export const TaskPane: React.FC<TaskPaneProps> = ({ slotId }) => {
       <div className="flex-1 p-5 overflow-y-auto prose dark:prose-invert max-w-none text-sm custom-scrollbar min-h-0">
         {taskPaneTab === 'task' ? (
           <div className="animate-in fade-in duration-300">
-            <h3 className="mt-0 mb-4 text-lg font-bold">
+            <h3 className="mt-0 mb-4 text-lg font-bold break-words leading-tight">
               <MarkdownText inline text={activeTask.title} />
             </h3>
             <div className="leading-relaxed">
