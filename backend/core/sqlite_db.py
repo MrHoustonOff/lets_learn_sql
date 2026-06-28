@@ -27,6 +27,15 @@ async def init_sqlite():
     
     await seed_initial_data()
     await verify_and_sync_databases()
+    await ensure_init_dumps()
+
+async def ensure_init_dumps():
+    from services.dumps import DumpsService
+    # Currently only ensuring northwind has an init dump
+    try:
+        await DumpsService.create_dump("northwind", is_init=True)
+    except Exception as e:
+        print(f"Warning: Failed to create init dump for northwind: {e}")
 
 async def seed_initial_data():
     # 1. Seed user if empty
