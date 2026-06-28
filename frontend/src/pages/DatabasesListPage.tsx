@@ -1,29 +1,34 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Database, Plus } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { DatabaseDetailsModal } from '../components/workspace/DatabaseDetailsModal';
 
 export interface DatabaseMock {
-  id: string;
   technicalName: string;
   name: string;
-  description?: string;
   isDefault?: boolean;
 }
-
-const mockDatabases: DatabaseMock[] = [
-  {
-    id: 'db-northwind',
-    technicalName: 'northwind',
-    name: 'Northwind Sales',
-    description: 'Полная база продаж для курса по PostgreSQL. Содержит таблицы: customers, orders, products, employees и другие. Используется для всех основных задач по DML и DQL.',
-    isDefault: true
-  }
-];
 
 export const DatabasesListPage: React.FC = () => {
   const { t } = useTranslation();
   const [selectedDb, setSelectedDb] = useState<DatabaseMock | null>(null);
+  const [databases, setDatabases] = useState<DatabaseMock[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch('/api/databases')
+      .then((res) => res.json())
+      .then((data) => {
+        const dbs: DatabaseMock[] = data.map((db: any) => ({
+          technicalName: db.technical_name,
+          name: db.display_name,
+          isDefault: db.is_builtin === 1 || db.is_builtin === true
+        }));
+        setDatabases(dbs);
+      })
+      .catch((err) => console.error("Failed to fetch databases", err))
+      .finally(() => setLoading(false));
+  }, []);
 
   return (
     <div className="flex-1 h-full w-full overflow-y-auto p-8 max-w-5xl mx-auto animate-in fade-in duration-300 custom-scrollbar">
@@ -36,46 +41,39 @@ export const DatabasesListPage: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-        {mockDatabases.map((db) => (
-          <div 
-            key={db.id}
-            onClick={() => setSelectedDb(db)}
-            className="group relative bg-glass backdrop-blur-md border border-glass-border rounded-2xl p-6 shadow-sm hover:shadow-md transition-all cursor-pointer overflow-hidden flex flex-col h-full hover:border-primary/50"
-          >
-            {/* Hover Background Glow */}
-            <div className="absolute inset-0 bg-primary/0 group-hover:bg-primary/5 transition-colors pointer-events-none" />
-            
-            <div className="flex items-start gap-4 mb-4 relative z-layout">
-              <div className="p-3 rounded-xl bg-primary/10 text-primary">
-                <Database size={24} />
-              </div>
-              <div className="flex-1 min-w-0">
-                <h3 className="font-semibold text-foreground truncate text-lg">
-                  {db.name}
-                </h3>
-                <div className="text-xs text-muted-foreground font-mono truncate mt-1 flex items-center gap-2">
-                  <span>{db.technicalName}</span>
-                  {db.isDefault && (
-                    <span className="px-1.5 py-0.5 rounded-md bg-primary/20 text-primary text-2xs uppercase font-bold tracking-wider">
-                      Default
-                    </span>
-                  )}
+        {loading ? (
+          <div className="col-span-full text-center py-8 text-muted-foreground">Загрузка...</div>
+        ) : (
+          databases.map((db) => (
+            <div 
+              key={db.technicalName}
+              onClick={() => setSelectedDb(db)}
+              className="group relative bg-glass backdrop-blur-md border border-glass-border rounded-2xl p-6 shadow-sm hover:shadow-md transition-all cursor-pointer overflow-hidden flex flex-col h-full hover:border-primary/50"
+            >
+              {/* Hover Background Glow */}
+              <div className="absolute inset-0 bg-primary/0 group-hover:bg-primary/5 transition-colors pointer-events-none" />
+              
+              <div className="flex items-start gap-4 relative z-layout">
+                <div className="p-3 rounded-xl bg-primary/10 text-primary">
+                  <Database size={24} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-semibold text-foreground truncate text-lg">
+                    {db.name}
+                  </h3>
+                  <div className="text-xs text-muted-foreground font-mono truncate mt-1 flex items-center gap-2">
+                    <span>{db.technicalName}</span>
+                    {db.isDefault && (
+                      <span className="px-1.5 py-0.5 rounded-md bg-primary/20 text-primary text-2xs uppercase font-bold tracking-wider">
+                        Default
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
-            
-            {db.description ? (
-              <p className="text-sm text-muted-foreground line-clamp-3 relative z-layout mt-auto">
-                {db.description}
-              </p>
-            ) : (
-              <p className="text-sm text-muted-foreground/50 italic relative z-layout mt-auto">
-                {t('db_list:no_description')}
-              </p>
-            )}
-
-          </div>
-        ))}
+          ))
+        )}
       </div>
 
       <DatabaseDetailsModal 
