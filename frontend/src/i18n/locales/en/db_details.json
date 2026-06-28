@@ -22,5 +22,8 @@
   "dump_time": "Time: {{time}}",
   "restore_btn": "Restore",
   "saving": "Saving...",
-  "restoring": "Restoring..."
+  "saved_success": "Saved!",
+  "restoring": "Restoring...",
+  "restored_success": "Success!",
+  "restore_error": "Error"
 }

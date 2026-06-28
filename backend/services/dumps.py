@@ -92,32 +92,43 @@ class DumpsService:
         if not filepath.exists():
             raise HTTPException(404, "Dump file not found")
             
-        def read_dump():
-            with open(filepath, 'r', encoding='utf-8') as f:
-                return f.read()
-                
-        sql_content = await asyncio.to_thread(read_dump)
-        
         pool = await get_admin_pool(db_name)
+        
+        # 1. Nuke schema
         async with pool.acquire() as conn:
-            # Execute all changes in a single transaction
-            async with conn.transaction():
-                # 1. Nuke schema
-                await conn.execute("""
-                    DROP SCHEMA public CASCADE;
-                    CREATE SCHEMA public;
-                    GRANT ALL ON SCHEMA public TO postgres;
-                    GRANT ALL ON SCHEMA public TO public;
-                """)
-                
-                # 2. Restore data
-                await conn.execute(sql_content)
-                
-                # 3. Re-grant privileges to the application user
-                # We dynamically construct this using the actual username from settings
-                grant_sql = f"""
-                    GRANT USAGE ON SCHEMA public TO {settings.POSTGRES_USER};
-                    GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO {settings.POSTGRES_USER};
-                    GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO {settings.POSTGRES_USER};
-                """
-                await conn.execute(grant_sql)
+            await conn.execute("""
+                DROP SCHEMA public CASCADE;
+                CREATE SCHEMA public;
+                GRANT ALL ON SCHEMA public TO postgres;
+                GRANT ALL ON SCHEMA public TO public;
+            """)
+            
+        # 2. Restore data using psql to handle \. and COPY commands correctly
+        env = os.environ.copy()
+        env["PGPASSWORD"] = settings.POSTGRES_ADMIN_PASSWORD
+        
+        process = await asyncio.create_subprocess_exec(
+            "psql",
+            "-h", settings.POSTGRES_HOST,
+            "-p", str(settings.POSTGRES_PORT),
+            "-U", settings.POSTGRES_ADMIN_USER,
+            "-d", db_name,
+            "-f", str(filepath),
+            env=env,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
+        )
+        
+        stdout, stderr = await process.communicate()
+        
+        if process.returncode != 0:
+            raise HTTPException(500, f"psql restore failed: {stderr.decode()}")
+            
+        # 3. Re-grant privileges to the application user
+        async with pool.acquire() as conn:
+            grant_sql = f"""
+                GRANT USAGE ON SCHEMA public TO {settings.POSTGRES_USER};
+                GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO {settings.POSTGRES_USER};
+                GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO {settings.POSTGRES_USER};
+            """
+            await conn.execute(grant_sql)

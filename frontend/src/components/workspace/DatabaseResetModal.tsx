@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, RotateCcw, AlertTriangle } from 'lucide-react';
+import { X, RotateCcw, AlertTriangle, Check, XCircle, Loader2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 export interface DumpInfo {
@@ -20,7 +20,10 @@ export const DatabaseResetModal: React.FC<DatabaseResetModalProps> = ({ isOpen, 
   const { t } = useTranslation();
   const [dumps, setDumps] = useState<DumpInfo[]>([]);
   const [loading, setLoading] = useState(true);
-  const [restoring, setRestoring] = useState(false);
+  
+  const [restoringFile, setRestoringFile] = useState<string | null>(null);
+  const [successFile, setSuccessFile] = useState<string | null>(null);
+  const [errorFile, setErrorFile] = useState<string | null>(null);
 
   useEffect(() => {
     if (isOpen && databaseName) {
@@ -34,12 +37,20 @@ export const DatabaseResetModal: React.FC<DatabaseResetModalProps> = ({ isOpen, 
   }, [isOpen, databaseName]);
 
   const handleRestore = async (filename: string) => {
-    setRestoring(true);
+    setRestoringFile(filename);
+    setErrorFile(null);
     try {
       await onRestore(filename);
-      onClose();
+      setSuccessFile(filename);
+      setTimeout(() => {
+        onClose();
+        setSuccessFile(null); // clean up for next time
+      }, 1500);
+    } catch (e) {
+      setErrorFile(filename);
+      setTimeout(() => setErrorFile(null), 2000);
     } finally {
-      setRestoring(false);
+      setRestoringFile(null);
     }
   };
 
@@ -61,7 +72,7 @@ export const DatabaseResetModal: React.FC<DatabaseResetModalProps> = ({ isOpen, 
             </h2>
             <button 
               onClick={onClose}
-              disabled={restoring}
+              disabled={restoringFile !== null}
               className="p-2 rounded-xl hover:bg-hover transition-colors text-muted-foreground hover:text-foreground disabled:opacity-50"
             >
               <X size={20} />
@@ -79,34 +90,52 @@ export const DatabaseResetModal: React.FC<DatabaseResetModalProps> = ({ isOpen, 
           ) : dumps.length === 0 ? (
             <div className="text-center text-muted-foreground py-8">No dumps found</div>
           ) : (
-            dumps.map((dump) => (
-              <div 
-                key={dump.filename} 
-                className="p-4 rounded-xl border border-glass-border bg-background hover:border-primary/50 transition-colors flex flex-col gap-3 group"
-              >
-                <div className="flex items-start justify-between">
-                  <div className="font-medium text-foreground flex items-center gap-2">
-                    {dump.is_init ? t('db_details:dump_init') : dump.filename}
-                    {dump.is_init && (
-                      <span className="px-1.5 py-0.5 rounded-md bg-primary/20 text-primary text-2xs uppercase font-bold tracking-wider">
-                        {t('db_details:dump_init_tag')}
-                      </span>
-                    )}
+            dumps.map((dump) => {
+              const isRestoring = restoringFile === dump.filename;
+              const isSuccess = successFile === dump.filename;
+              const isError = errorFile === dump.filename;
+              const isDisabled = restoringFile !== null || successFile !== null;
+
+              return (
+                <div 
+                  key={dump.filename} 
+                  className="p-4 rounded-xl border border-glass-border bg-background hover:border-primary/50 transition-colors flex flex-col gap-3 group"
+                >
+                  <div className="flex items-start justify-between">
+                    <div className="font-medium text-foreground flex items-center gap-2">
+                      {dump.is_init ? t('db_details:dump_init') : dump.filename}
+                      {dump.is_init && (
+                        <span className="px-1.5 py-0.5 rounded-md bg-primary/20 text-primary text-2xs uppercase font-bold tracking-wider">
+                          {t('db_details:dump_init_tag')}
+                        </span>
+                      )}
+                    </div>
+                    <button
+                      onClick={() => handleRestore(dump.filename)}
+                      disabled={isDisabled}
+                      className={`px-3 py-1.5 rounded-lg font-medium text-xs transition-all duration-300 disabled:opacity-80 flex items-center gap-1.5 ${
+                        isSuccess ? 'bg-green-500/20 text-green-500 border border-green-500/50 scale-[0.98]' :
+                        isError ? 'bg-destructive/20 text-destructive border border-destructive/50' :
+                        'bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground border border-transparent'
+                      }`}
+                    >
+                      {isSuccess && <Check size={14} className="animate-in zoom-in" />}
+                      {isError && <XCircle size={14} className="animate-in zoom-in" />}
+                      {isRestoring && <Loader2 size={14} className="animate-spin" />}
+                      
+                      {isRestoring ? t('db_details:restoring') : 
+                       isSuccess ? t('db_details:restored_success') : 
+                       isError ? t('db_details:restore_error') : 
+                       t('db_details:restore_btn')}
+                    </button>
                   </div>
-                  <button
-                    onClick={() => handleRestore(dump.filename)}
-                    disabled={restoring}
-                    className="px-3 py-1.5 rounded-lg bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground font-medium text-xs transition-colors disabled:opacity-50"
-                  >
-                    {restoring ? t('db_details:restoring') : t('db_details:restore_btn')}
-                  </button>
+                  <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                    <span>{t('db_details:dump_size', { size: Math.round(dump.size / 1024) })}</span>
+                    <span>{t('db_details:dump_time', { time: formatTime(dump.created_at) })}</span>
+                  </div>
                 </div>
-                <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                  <span>{t('db_details:dump_size', { size: Math.round(dump.size / 1024) })}</span>
-                  <span>{t('db_details:dump_time', { time: formatTime(dump.created_at) })}</span>
-                </div>
-              </div>
-            ))
+              );
+            })
           )}
         </div>
 

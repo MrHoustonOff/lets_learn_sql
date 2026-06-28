@@ -22,5 +22,8 @@
   "dump_time": "Время: {{time}}",
   "restore_btn": "Восстановить",
   "saving": "Сохранение...",
-  "restoring": "Восстановление..."
+  "saved_success": "Сохранено!",
+  "restoring": "Восстановление...",
+  "restored_success": "Успешно!",
+  "restore_error": "Ошибка"
 }
