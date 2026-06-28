@@ -5,11 +5,13 @@ from typing import List, Any
 class ExplainRequest(BaseModel):
     sql: str
     database: str = "northwind"   # TODO: MVP+ — мультибд
+    admin_commit: bool = False
 
 # From query.py
 class QueryRequest(BaseModel):
     sql: str
     database: str = "northwind"   # TODO: MVP+ — мультибд
+    admin_commit: bool = False
 
 class QueryResponse(BaseModel):
     columns: List[str]

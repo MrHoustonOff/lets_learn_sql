@@ -51,7 +51,7 @@ interface ExplainState {
   error: string | null;
 
   // Actions
-  fetchExplain: (sql: string, database?: string) => Promise<void>;
+  fetchExplain: (sql: string, database?: string, isAdminMode?: boolean) => Promise<void>;
 }
 
 export const useExplainStore = create<ExplainState>((set) => ({
@@ -67,7 +67,7 @@ export const useExplainStore = create<ExplainState>((set) => ({
   isLoading: false,
   error: null,
 
-  fetchExplain: async (sql, database = 'northwind') => {
+  fetchExplain: async (sql, database = 'northwind', isAdminMode = false) => {
     if (!sql.trim()) return;
 
     set({ isLoading: true, error: null });
@@ -76,7 +76,7 @@ export const useExplainStore = create<ExplainState>((set) => ({
       const response = await fetch('/api/explain', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sql, database }),
+        body: JSON.stringify({ sql, database, admin_commit: isAdminMode }),
       });
 
       if (!response.ok) {
