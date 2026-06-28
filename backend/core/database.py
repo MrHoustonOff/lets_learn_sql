@@ -55,3 +55,13 @@ async def close_pools():
             await pool.close()
         _admin_pools.clear()
         _user_pools.clear()
+
+async def close_pools_for_db(db_name: str):
+    """Закрывает пулы соединений для конкретной БД (например, перед удалением)."""
+    async with _pool_lock:
+        if db_name in _admin_pools:
+            await _admin_pools[db_name].close()
+            del _admin_pools[db_name]
+        if db_name in _user_pools:
+            await _user_pools[db_name].close()
+            del _user_pools[db_name]

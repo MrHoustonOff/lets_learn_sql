@@ -6,6 +6,7 @@ import { DBVisualizer } from '../../modules/db-visualizer';
 import { SqlEditorPane } from './SqlEditorPane';
 import { ResultsPane } from './ResultsPane';
 import { DatabaseResetModal } from './DatabaseResetModal';
+import { DatabaseDeleteModal } from './DatabaseDeleteModal';
 import type { DatabaseMock } from '../../pages/DatabasesListPage';
 
 import { useQueryStore } from '../../store/queryStore';
@@ -14,9 +15,10 @@ interface DatabaseDetailsModalProps {
   isOpen: boolean;
   onClose: () => void;
   database: DatabaseMock | null;
+  onDeleted?: () => void;
 }
 
-export const DatabaseDetailsModal: React.FC<DatabaseDetailsModalProps> = ({ isOpen, onClose, database }) => {
+export const DatabaseDetailsModal: React.FC<DatabaseDetailsModalProps> = ({ isOpen, onClose, database, onDeleted }) => {
   const { t } = useTranslation();
   const { resetQueryState } = useQueryStore();
   const [activeTab, setActiveTab] = useState<'schema' | 'editor'>('schema');
@@ -25,6 +27,7 @@ export const DatabaseDetailsModal: React.FC<DatabaseDetailsModalProps> = ({ isOp
   const [maximizedPane, setMaximizedPane] = useState<'schema' | 'editor' | 'results' | null>(null);
 
   const [isResetModalOpen, setResetModalOpen] = useState(false);
+  const [isDeleteModalOpen, setDeleteModalOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
   const handleSaveState = async () => {
@@ -174,7 +177,10 @@ export const DatabaseDetailsModal: React.FC<DatabaseDetailsModalProps> = ({ isOp
 
                     {!database.isDefault && (
                       <div className="group relative">
-                        <button className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl font-medium text-sm transition-colors border border-destructive/20 bg-destructive/10 text-destructive hover:bg-destructive hover:text-destructive-foreground">
+                        <button 
+                          onClick={() => setDeleteModalOpen(true)}
+                          className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl font-medium text-sm transition-colors border border-destructive/20 bg-destructive/10 text-destructive hover:bg-destructive hover:text-destructive-foreground"
+                        >
                           <Trash2 size={16} />
                           {t('db_details:delete_db')}
                         </button>
@@ -263,6 +269,17 @@ export const DatabaseDetailsModal: React.FC<DatabaseDetailsModalProps> = ({ isOp
         databaseName={database.technicalName}
         onRestore={handleRestoreDump}
       />
+      
+      <DatabaseDeleteModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setDeleteModalOpen(false)}
+        database={database}
+        onDeleted={() => {
+          onClose(); // Close details modal when deleted
+          if (onDeleted) onDeleted();
+        }}
+      />
     </div>
   );
 };
+

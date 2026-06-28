@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Database, Plus } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { DatabaseDetailsModal } from '../components/workspace/DatabaseDetailsModal';
+import { CreateDatabaseModal } from '../components/workspace/CreateDatabaseModal';
 
 export interface DatabaseMock {
   technicalName: string;
@@ -14,8 +15,10 @@ export const DatabasesListPage: React.FC = () => {
   const [selectedDb, setSelectedDb] = useState<DatabaseMock | null>(null);
   const [databases, setDatabases] = useState<DatabaseMock[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isCreateModalOpen, setCreateModalOpen] = useState(false);
 
-  useEffect(() => {
+  const fetchDatabases = useCallback(() => {
+    setLoading(true);
     fetch('/api/databases')
       .then((res) => res.json())
       .then((data) => {
@@ -30,11 +33,26 @@ export const DatabasesListPage: React.FC = () => {
       .finally(() => setLoading(false));
   }, []);
 
+  useEffect(() => {
+    fetchDatabases();
+  }, [fetchDatabases]);
+
+  const handleCreated = (technicalName: string) => {
+    fetchDatabases();
+    // Open the newly created DB details after refresh
+    setTimeout(() => {
+      setSelectedDb(prev => prev || { technicalName, name: technicalName });
+    }, 500);
+  };
+
   return (
     <div className="flex-1 h-full w-full overflow-y-auto p-8 max-w-5xl mx-auto animate-in fade-in duration-300 custom-scrollbar">
       <div className="flex items-center justify-between mb-8">
         <h1 className="text-3xl font-bold">{t('databases')}</h1>
-        <button className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl transition-colors font-medium shadow-sm">
+        <button
+          onClick={() => setCreateModalOpen(true)}
+          className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl transition-colors font-medium shadow-sm"
+        >
           <Plus size={18} />
           {t('db_list:connect_db')}
         </button>
@@ -79,7 +97,14 @@ export const DatabasesListPage: React.FC = () => {
       <DatabaseDetailsModal 
         isOpen={!!selectedDb} 
         onClose={() => setSelectedDb(null)} 
-        database={selectedDb} 
+        database={selectedDb}
+        onDeleted={fetchDatabases}
+      />
+
+      <CreateDatabaseModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setCreateModalOpen(false)}
+        onCreated={handleCreated}
       />
     </div>
   );
