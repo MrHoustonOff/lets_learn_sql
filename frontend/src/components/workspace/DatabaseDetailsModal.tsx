@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Panel, Group as PanelGroup, Separator as PanelResizeHandle } from 'react-resizable-panels';
-import { X, Trash2, Download, GripHorizontal, GripVertical, Database, Code2 } from 'lucide-react';
+import { X, Trash2, Download, GripHorizontal, GripVertical, Database, Code2, Save, RotateCcw } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { DBVisualizer } from '../../modules/db-visualizer';
 import { SqlEditorPane } from './SqlEditorPane';
 import { ResultsPane } from './ResultsPane';
+import { DatabaseResetModal } from './DatabaseResetModal';
+import { DatabaseDeleteModal } from './DatabaseDeleteModal';
 import type { DatabaseMock } from '../../pages/DatabasesListPage';
 
 import { useQueryStore } from '../../store/queryStore';
@@ -13,15 +15,39 @@ interface DatabaseDetailsModalProps {
   isOpen: boolean;
   onClose: () => void;
   database: DatabaseMock | null;
+  onDeleted?: () => void;
 }
 
-export const DatabaseDetailsModal: React.FC<DatabaseDetailsModalProps> = ({ isOpen, onClose, database }) => {
+export const DatabaseDetailsModal: React.FC<DatabaseDetailsModalProps> = ({ isOpen, onClose, database, onDeleted }) => {
   const { t } = useTranslation();
   const { resetQueryState } = useQueryStore();
   const [activeTab, setActiveTab] = useState<'schema' | 'editor'>('schema');
   
   // Local state for maximizing panes within the modal
   const [maximizedPane, setMaximizedPane] = useState<'schema' | 'editor' | 'results' | null>(null);
+
+  const [isResetModalOpen, setResetModalOpen] = useState(false);
+  const [isDeleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+
+  const handleSaveState = async () => {
+    if (!database) return;
+    setIsSaving(true);
+    try {
+      await fetch(`/api/databases/${database.technicalName}/dumps`, { method: 'POST' });
+    } catch (err) {
+      console.error('Failed to save state:', err);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleRestoreDump = async (filename: string) => {
+    if (!database) return;
+    await fetch(`/api/databases/${database.technicalName}/reset?dump_filename=${filename}`, {
+      method: 'POST'
+    });
+  };
 
   // Reset query state when modal opens
   useEffect(() => {
@@ -105,24 +131,67 @@ export const DatabaseDetailsModal: React.FC<DatabaseDetailsModalProps> = ({ isOp
                       </div>
                     )}
                   </div>
-
                   <div className="space-y-4 mt-auto">
                     <h3 className="text-lg font-semibold border-b border-glass-border pb-2">{t('db_details:actions')}</h3>
-                    <button className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl font-medium text-sm transition-colors border border-glass-border bg-glass hover:bg-hover text-foreground">
-                      <Download size={16} />
-                      {t('db_details:download_dump')}
-                    </button>
+                    
                     <div className="group relative">
-                      <button className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl font-medium text-sm transition-colors border border-destructive/20 bg-destructive/10 text-destructive hover:bg-destructive hover:text-destructive-foreground">
-                        <Trash2 size={16} />
-                        {t('db_details:delete_db')}
+                      <button 
+                        onClick={handleSaveState}
+                        disabled={isSaving}
+                        className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl font-medium text-sm transition-colors border border-glass-border bg-glass hover:bg-hover text-foreground disabled:opacity-50"
+                      >
+                        <Save size={16} />
+                        {isSaving ? t('db_details:saving') : t('db_details:save_state')}
                       </button>
                       <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 w-48 p-2 bg-popover text-popover-foreground text-xs rounded-lg border border-border shadow-lg opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-tooltip text-center">
-                        {t('db_details:delete_db_warning')}
+                        {t('db_details:save_state_tip')}
                       </div>
                     </div>
+
+                    <div className="group relative">
+                      <button 
+                        onClick={() => setResetModalOpen(true)}
+                        className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl font-medium text-sm transition-colors border border-primary/20 bg-primary/10 hover:bg-primary hover:text-primary-foreground text-primary"
+                      >
+                        <RotateCcw size={16} />
+                        {t('db_details:reset_db')}
+                      </button>
+                      <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 w-48 p-2 bg-popover text-popover-foreground text-xs rounded-lg border border-border shadow-lg opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-tooltip text-center">
+                        {t('db_details:reset_db_tip')}
+                      </div>
+                    </div>
+
+                    <div className="group relative">
+                      <a 
+                        href={`/api/databases/${database.technicalName}/dumps/init.sql/download`}
+                        download
+                        className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl font-medium text-sm transition-colors border border-glass-border bg-glass hover:bg-hover text-foreground"
+                      >
+                        <Download size={16} />
+                        {t('db_details:download_dump')}
+                      </a>
+                      <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 w-48 p-2 bg-popover text-popover-foreground text-xs rounded-lg border border-border shadow-lg opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-tooltip text-center">
+                        {t('db_details:download_dump_tip')}
+                      </div>
+                    </div>
+
+                    {!database.isDefault && (
+                      <div className="group relative">
+                        <button 
+                          onClick={() => setDeleteModalOpen(true)}
+                          className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl font-medium text-sm transition-colors border border-destructive/20 bg-destructive/10 text-destructive hover:bg-destructive hover:text-destructive-foreground"
+                        >
+                          <Trash2 size={16} />
+                          {t('db_details:delete_db')}
+                        </button>
+                        <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 w-48 p-2 bg-popover text-popover-foreground text-xs rounded-lg border border-border shadow-lg opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-tooltip text-center">
+                          {t('db_details:delete_db_warning')}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </Panel>
+
 
                 <PanelResizeHandle className="w-[2px] bg-glass-border hover:bg-primary/50 transition-colors relative flex items-center justify-center group !cursor-grab active:!cursor-grabbing z-resize outline-none">
                   <div className="absolute inset-y-0 -inset-x-3 z-resize"></div>
@@ -193,6 +262,24 @@ export const DatabaseDetailsModal: React.FC<DatabaseDetailsModalProps> = ({ isOp
           </PanelGroup>
         </div>
       </div>
+
+      <DatabaseResetModal
+        isOpen={isResetModalOpen}
+        onClose={() => setResetModalOpen(false)}
+        databaseName={database.technicalName}
+        onRestore={handleRestoreDump}
+      />
+      
+      <DatabaseDeleteModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setDeleteModalOpen(false)}
+        database={database}
+        onDeleted={() => {
+          onClose(); // Close details modal when deleted
+          if (onDeleted) onDeleted();
+        }}
+      />
     </div>
   );
 };
+

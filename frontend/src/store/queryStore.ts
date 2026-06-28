@@ -1,4 +1,7 @@
 import { create } from 'zustand';
+import { useExplainStore } from './explainStore';
+import { useTaskStore } from './taskStore';
+import { useUIStore } from './uiStore';
 
 export interface QueryResponse {
   columns: string[];
@@ -91,9 +94,10 @@ interface QueryState {
   deleteAttempt: (taskId: number, attemptId: number) => Promise<void>;
   deleteAllAttempts: (taskId: number, type: 'all' | 'correct' | 'incorrect') => Promise<void>;
   resetQueryState: () => void;
+  
+  isAdminMode: boolean;
+  setAdminMode: (val: boolean) => void;
 }
-
-import { useExplainStore } from './explainStore';
 
 export const useQueryStore = create<QueryState>((set, get) => ({
   sql: "SELECT * FROM customers\nWHERE country = 'UK';",
@@ -158,32 +162,45 @@ export const useQueryStore = create<QueryState>((set, get) => ({
   }),
 
   setSql: (sql) => set({ sql }),
+  
+  isAdminMode: false,
+  setAdminMode: (val: boolean) => set({ isAdminMode: val }),
 
   executeQuery: async (database = 'northwind') => {
-    const { sql } = get();
+    const { sql, isAdminMode } = get();
     if (!sql.trim()) return;
+    
+    set({ isLoading: true, error: null, submitResult: null, submitError: null });
 
-    set({ isLoading: true, error: null, result: null });
-
-    // Параллельно запускаем explain
-    useExplainStore.getState().fetchExplain(sql, database);
+    // Automatically execute explain if not present
+    const explainStore = useExplainStore.getState();
+    if (!explainStore.slot1) {
+      explainStore.fetchExplain(sql, database, isAdminMode);
+    }
 
     try {
-      const response = await fetch('/api/query', {
+      const res = await fetch('/api/query', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sql, database }),
+        body: JSON.stringify({ sql, database, admin_commit: isAdminMode }),
       });
 
-      if (!response.ok) {
-        const errData = await response.json();
-        throw new Error(errData.detail || 'Failed to execute query');
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.detail || 'Failed to execute query');
       }
 
-      const result = await response.json();
-      set({ result, isLoading: false });
-    } catch (error: any) {
-      set({ error: error.message || 'An unknown error occurred', isLoading: false });
+      const data = await res.json();
+      set({ result: data, isAdminMode: false }); // disable admin mode after execution
+      
+      // Если это был админский запрос (возможно DDL), обновляем схему
+      if (isAdminMode) {
+        useUIStore.getState().refreshSchema();
+      }
+    } catch (err: any) {
+      set({ error: err.message, result: null, isAdminMode: false });
+    } finally {
+      set({ isLoading: false });
     }
   },
 

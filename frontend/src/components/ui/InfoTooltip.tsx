@@ -12,9 +12,10 @@ export const InfoTooltip = ({ text, className = "ml-1" }: { text: string, classN
     const rect = e.currentTarget.getBoundingClientRect();
     const tooltipWidth = 288; // w-72 = 18rem = 288px
     
-    // Проверяем, есть ли место сверху (предполагаем, что тултип может быть до 200px в высоту)
+    // Проверяем, где больше места — сверху или снизу
     const spaceAbove = rect.top;
-    const isDown = spaceAbove < 200;
+    const spaceBelow = window.innerHeight - rect.bottom;
+    const isDown = spaceBelow > spaceAbove;
 
     // Центрируем тултип относительно иконки
     let left = rect.left + rect.width / 2 - tooltipWidth / 2;
@@ -22,19 +23,26 @@ export const InfoTooltip = ({ text, className = "ml-1" }: { text: string, classN
     // Если тултип вылезает за экран слева или справа — прижимаем его к краю
     left = Math.max(10, Math.min(left, window.innerWidth - tooltipWidth - 10));
 
+    // Ограничиваем максимальную высоту тем местом, которое есть (минус отступы)
+    const maxHeight = isDown ? Math.max(100, spaceBelow - 20) : Math.max(100, spaceAbove - 20);
+
     if (isDown) {
-      // Мало места сверху — показываем СНИЗУ от иконки
+      // Больше места снизу — показываем СНИЗУ от иконки
       setStyle({
         top: `${rect.bottom + 8}px`,
         left: `${left}px`,
-        transformOrigin: 'top center'
+        transformOrigin: 'top center',
+        maxHeight: `${maxHeight}px`,
+        overflowY: 'auto'
       });
     } else {
-      // Места сверху достаточно — показываем СВЕРХУ от иконки
+      // Больше места сверху — показываем СВЕРХУ от иконки
       setStyle({
         bottom: `${window.innerHeight - rect.top + 8}px`,
         left: `${left}px`,
-        transformOrigin: 'bottom center'
+        transformOrigin: 'bottom center',
+        maxHeight: `${maxHeight}px`,
+        overflowY: 'auto'
       });
     }
     setIsOpen(true);

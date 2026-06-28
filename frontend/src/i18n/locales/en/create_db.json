@@ -1,0 +1,59 @@
+{
+  "step_name_title": "Create Database",
+  "step_name_subtitle": "Choose a name for the new database",
+  "step_sql_title": "Initialization SQL script",
+  "step_sql_subtitle": "Optional: paste a script or upload a .sql file",
+  "step_progress_title": "Creating database...",
+  "step_done_title": "Database created!",
+  "step_done_subtitle": "All done. The new database is now available in the list.",
+  "step_error_title": "An error occurred",
+  "step_error_subtitle": "Failed to create the database. All changes have been rolled back.",
+
+  "breadcrumb_name": "DB Name",
+  "breadcrumb_sql": "SQL Script",
+
+  "field_technical_name": "Technical name",
+  "field_technical_name_hint": "Lowercase letters, digits and '_' only. Starts with a letter. E.g.: northwind, shop_db",
+  "field_display_name": "Display name",
+  "field_display_name_hint": "Cosmetic label in the interface — does not affect tasks or technical settings.",
+  "optional": "(optional)",
+
+  "name_checking": "Checking...",
+  "name_available": "Name is available ✓",
+  "name_conflict_title": "This technical name is already taken",
+  "name_conflict_hint": "Choose another name. If the required DB already exists — open it in the database list.",
+
+  "name_importance_warning": "It is highly recommended to use the exact technical name provided by the database author. This determines whether course tasks will properly link to this DB.",
+
+  "tip_technical_name": "The technical name is the database identifier in PostgreSQL.\n\n⚠️ Critically Important:\nThe name directly affects whether course tasks will be linked! Task authors bind them to a specific DB name. Use the name specified by the database author.\n\nRequirements:\n• Only lowercase letters a–z, digits 0–9, and the _ symbol\n• Starts with a letter\n• Maximum 63 characters\n• Must be unique — such database must not already exist\n\nExamples: northwind, shop_db, my_catalog_2024",
+  "tip_display_name": "The display name is just a beautiful label for the interface.\n\nIt does not affect anything technically — only how the database is called in the list. You can leave it empty — then the technical name will be shown.",
+  "tip_sql_script": "The initialization SQL script is executed once immediately after the database is created.\n\nWhat you can do:\n• CREATE TABLE — create tables\n• INSERT INTO — populate with data\n• CREATE INDEX, CREATE VIEW, and other DDL\n• Full pg_dump dump without CREATE DATABASE\n\nWhat you SHOULD NOT include:\n• CREATE DATABASE — the database is already created\n• CREATE ROLE / DROP ROLE — permissions are managed by the system\n\nThe script can be empty — then an empty database will be created.",
+
+  "tab_editor": "SQL Editor",
+  "tab_file": "Upload file",
+  "file_drop_hint": "Drag and drop a .sql file here or click to choose",
+  "file_clear": "Remove",
+  "sql_empty_ok": "Everything is fine — the script is optional. An empty database will be created.",
+  "sql_empty_warning": "No SQL script provided. An empty database will be created.",
+
+  "summary_title": "Will be created:",
+  "summary_database": "Database",
+  "summary_file_executed": "File executed: {{name}}",
+  "summary_sql_executed": "SQL script executed ({{count}} lines)",
+  "summary_init_dump": "A non-deletable initial snapshot (init dump) is created",
+
+  "btn_next": "Next",
+  "btn_back": "Back",
+  "btn_create": "Create database",
+  "btn_done": "Done",
+  "btn_open_db": "Open database",
+  "btn_retry": "Try again",
+  "btn_close": "Close",
+
+  "progress_check_name": "Validating name",
+  "progress_create_db": "Creating database in Postgres",
+  "progress_run_sql": "Running SQL script",
+  "progress_grant": "Configuring access rights",
+  "progress_register": "Registering in system",
+  "progress_dump": "Creating initial snapshot"
+}

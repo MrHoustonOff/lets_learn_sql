@@ -20,13 +20,13 @@ def validate_db_name(name: str) -> bool:
         return False
     return bool(re.match(r"^[a-z][a-z0-9_]*$", name))
 
-def validate_sql(sql: str) -> tuple[bool, str | None]:
+def validate_sql(sql: str, is_admin: bool = False) -> tuple[bool, str | None]:
     """
     Возвращает (is_valid, error_message)
     """
     sql_lower = sql.lower().strip()
 
-    if len(sql) > settings.MAX_SQL_LENGTH:
+    if not is_admin and len(sql) > settings.MAX_SQL_LENGTH:
         return False, f"SQL слишком длинный (макс {settings.MAX_SQL_LENGTH} символов)"
 
     for cmd in FORBIDDEN_COMMANDS:

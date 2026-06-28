@@ -4,5 +4,9 @@
   "submit": "Submit",
   "explain": "Explain",
   "collapse": "Collapse",
-  "expand": "Expand"
+  "expand": "Expand",
+  "admin_mode_title": "Warning: Admin Mode",
+  "admin_mode_desc": "You are about to enable Admin Mode. The next query executed will be committed to the database permanently! This allows populating the DB with new data, but can also destroy the structure.",
+  "admin_mode_cancel": "Cancel",
+  "admin_mode_confirm": "I understand the risks, enable"
 }

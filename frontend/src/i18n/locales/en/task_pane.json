@@ -10,5 +10,7 @@
   "mock_hint_title": "Hint:",
   "mock_hint_text": "Use the <code>*</code> symbol to select all columns.",
   "mock_solution_title": "Solution",
-  "mock_solution_description": "It opens after you make at least one attempt to solve."
+  "mock_solution_description": "It opens after you make at least one attempt to solve.",
+  "next_task": "Next Task",
+  "next_task_tooltip": "Go to next task in course"
 }

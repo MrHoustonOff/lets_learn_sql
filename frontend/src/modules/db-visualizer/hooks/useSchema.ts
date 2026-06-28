@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import type { DatabaseSchema } from '../types';
+import { useUIStore } from '../../../store/uiStore';
 
 const USE_MOCK = import.meta.env.VITE_USE_MOCK === 'true';
 
@@ -7,6 +8,7 @@ export function useSchema(database: string = 'northwind') {
   const [schema, setSchema] = useState<DatabaseSchema | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const schemaVersion = useUIStore(state => state.schemaVersion);
 
   useEffect(() => {
     let isMounted = true;
@@ -49,7 +51,7 @@ export function useSchema(database: string = 'northwind') {
     return () => {
       isMounted = false;
     };
-  }, [database]);
+  }, [database, schemaVersion]);
 
   return { schema, loading, error };
 }

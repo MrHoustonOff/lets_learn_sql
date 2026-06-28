@@ -14,14 +14,15 @@ router = APIRouter()
 
 @router.post("/explain")
 async def explain_query(req: ExplainRequest):
-    is_valid, error = validate_sql(req.sql)
+    is_valid, error = validate_sql(req.sql, is_admin=req.admin_commit)
     if not is_valid:
         raise HTTPException(status_code=400, detail=error)
 
-    if database.user_pool is None:
-        raise HTTPException(status_code=500, detail="Database pool not initialized")
-
-    async with database.user_pool.acquire() as conn:
+    if req.admin_commit:
+        pool = await database.get_admin_pool(req.database)
+    else:
+        pool = await database.get_user_pool(req.database)
+    async with pool.acquire() as conn:
         try:
             async with conn.transaction():
                 result = await conn.fetchval(

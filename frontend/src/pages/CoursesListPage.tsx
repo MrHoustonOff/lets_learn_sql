@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Database, Import, Plus } from 'lucide-react';
+import { Database, Import, Plus, Loader2 } from 'lucide-react';
 import { ImportCourseModal } from './course-wizard/components/import-course/ImportCourseModal';
 
 interface CourseListItem {
@@ -42,6 +42,44 @@ export const CoursesListPage: React.FC = () => {
   React.useEffect(() => {
     fetchCourses();
   }, []);
+
+  const [actionLoadingId, setActionLoadingId] = React.useState<number | null>(null);
+
+  const handleCourseAction = async (course: CourseListItem) => {
+    if (course.progress === 100) {
+      navigate(`/courses/${course.id}`);
+      return;
+    }
+
+    try {
+      setActionLoadingId(course.id);
+      const res = await fetch(`/api/courses/${course.id}`);
+      if (!res.ok) throw new Error('Failed to fetch course details');
+      const data = await res.json();
+      
+      let nextTaskId = null;
+      for (const section of data.sections || []) {
+        for (const task of section.tasks || []) {
+          if (task.status !== 'done') {
+            nextTaskId = task.id;
+            break;
+          }
+        }
+        if (nextTaskId) break;
+      }
+      
+      if (nextTaskId) {
+        navigate(`/tasks/${nextTaskId}`);
+      } else {
+        navigate(`/courses/${course.id}`);
+      }
+    } catch (err) {
+      console.error(err);
+      navigate(`/courses/${course.id}`);
+    } finally {
+      setActionLoadingId(null);
+    }
+  };
 
   const getButtonConfig = (progress: number) => {
     if (progress === 0) {
@@ -110,15 +148,15 @@ export const CoursesListPage: React.FC = () => {
                   <span className="truncate">{course.dbNames.join(', ')}</span>
                 </div>
                 <button 
-                  onClick={() => {
-                    navigate(`/courses/${course.id}`);
-                  }}
-                  className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
+                  onClick={() => handleCourseAction(course)}
+                  disabled={actionLoadingId === course.id}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
                     btn.variant === 'primary' 
                       ? 'bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm' 
                       : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
-                  }`}
+                  } ${actionLoadingId === course.id ? 'opacity-70 cursor-not-allowed' : ''}`}
                 >
+                  {actionLoadingId === course.id && <Loader2 size={16} className="animate-spin shrink-0" />}
                   {btn.text}
                 </button>
               </div>

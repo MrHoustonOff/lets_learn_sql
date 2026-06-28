@@ -1,31 +1,67 @@
 import asyncpg
+import asyncio
 from core.config import settings
 
-# Два пула — главное правило проекта
-admin_pool: asyncpg.Pool = None  # llpg_admin — управление
-user_pool: asyncpg.Pool = None   # llpg_user  — запросы пользователя
+# Динамические пулы соединений для разных баз данных (мультиарендность)
+_admin_pools: dict[str, asyncpg.Pool] = {}
+_user_pools: dict[str, asyncpg.Pool] = {}
+_pool_lock = asyncio.Lock()
+
+async def get_admin_pool(db_name: str | None = None) -> asyncpg.Pool:
+    """Возвращает пул соединений для роли llpg_admin (управление, DDL)."""
+    db = db_name or settings.POSTGRES_DB
+    if db not in _admin_pools:
+        async with _pool_lock:
+            if db not in _admin_pools:
+                _admin_pools[db] = await asyncpg.create_pool(
+                    host=settings.POSTGRES_HOST,
+                    port=settings.POSTGRES_PORT,
+                    database=db,
+                    user=settings.POSTGRES_ADMIN_USER,
+                    password=settings.POSTGRES_ADMIN_PASSWORD,
+                    min_size=1,
+                    max_size=5,
+                )
+    return _admin_pools[db]
+
+async def get_user_pool(db_name: str | None = None) -> asyncpg.Pool:
+    """Возвращает пул соединений для роли llpg_user (изолированные запросы пользователей)."""
+    db = db_name or settings.POSTGRES_DB
+    if db not in _user_pools:
+        async with _pool_lock:
+            if db not in _user_pools:
+                _user_pools[db] = await asyncpg.create_pool(
+                    host=settings.POSTGRES_HOST,
+                    port=settings.POSTGRES_PORT,
+                    database=db,
+                    user=settings.POSTGRES_USER,
+                    password=settings.POSTGRES_PASSWORD,
+                    min_size=2,
+                    max_size=10,
+                )
+    return _user_pools[db]
 
 async def init_pools():
-    global admin_pool, user_pool
-
-    admin_pool = await asyncpg.create_pool(
-        host=settings.POSTGRES_HOST,
-        database=settings.POSTGRES_DB,
-        user=settings.POSTGRES_ADMIN_USER,
-        password=settings.POSTGRES_ADMIN_PASSWORD,
-        min_size=1,
-        max_size=5,
-    )
-
-    user_pool = await asyncpg.create_pool(
-        host=settings.POSTGRES_HOST,
-        database=settings.POSTGRES_DB,
-        user=settings.POSTGRES_USER,
-        password=settings.POSTGRES_PASSWORD,
-        min_size=2,
-        max_size=10,
-    )
+    """Прогрев пулов для главной базы данных при старте приложения."""
+    await get_admin_pool(settings.POSTGRES_DB)
+    await get_user_pool(settings.POSTGRES_DB)
 
 async def close_pools():
-    await admin_pool.close()
-    await user_pool.close()
+    """Закрывает все активные пулы при остановке сервера."""
+    async with _pool_lock:
+        for pool in _admin_pools.values():
+            await pool.close()
+        for pool in _user_pools.values():
+            await pool.close()
+        _admin_pools.clear()
+        _user_pools.clear()
+
+async def close_pools_for_db(db_name: str):
+    """Закрывает пулы соединений для конкретной БД (например, перед удалением)."""
+    async with _pool_lock:
+        if db_name in _admin_pools:
+            await _admin_pools[db_name].close()
+            del _admin_pools[db_name]
+        if db_name in _user_pools:
+            await _user_pools[db_name].close()
+            del _user_pools[db_name]

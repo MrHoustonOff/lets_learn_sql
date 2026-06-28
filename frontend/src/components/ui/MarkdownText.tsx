@@ -30,7 +30,7 @@ export const MarkdownText: React.FC<MarkdownTextProps> = ({ text, inline = false
 
   // Full block-level markdown rendering
   return (
-    <div className={`prose prose-sm dark:prose-invert max-w-none text-foreground/90 ${className}`}>
+    <div className={`prose prose-sm dark:prose-invert max-w-none text-foreground/90 break-words ${className}`}>
       <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]}>
         {text}
       </ReactMarkdown>
