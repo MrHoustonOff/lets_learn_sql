@@ -59,41 +59,128 @@ export const ImportCourseModal: React.FC<ImportCourseModalProps> = ({
   const failedTasks = processedResults.filter(r => r.status === 'failed');
 
   const downloadLog = () => {
+    const SEP = '─'.repeat(72);
+    const THICK = '═'.repeat(72);
     const logs: string[] = [];
-    logs.push("=== COURSE IMPORT ERROR LOG ===");
-    logs.push(`Course: ${courseTitle}`);
-    logs.push(`Date: ${new Date().toLocaleString()}\n`);
 
+    const truncSQL = (sql: string, maxLen = 800) => {
+      const clean = sql.trim().replace(/\r\n/g, '\n');
+      return clean.length > maxLen ? clean.slice(0, maxLen) + '\n... [truncated]' : clean;
+    };
+
+    logs.push(THICK);
+    logs.push('  COURSE IMPORT ERROR LOG');
+    logs.push(THICK);
+    logs.push(`  Course : ${courseTitle || '(no title)'}`);
+    logs.push(`  Date   : ${new Date().toLocaleString()}`);
+    logs.push(`  Total tasks processed : ${processedResults.length}`);
+    logs.push(`  ✅ Success   : ${successTasks.length}`);
+    logs.push(`  🔁 Existing  : ${existingTasks.length}`);
+    logs.push(`  🟡 Zero rows : ${zeroRowsTasks.length}`);
+    logs.push(`  ❌ Failed    : ${failedTasks.length + missingDbTasks.length}`);
+    logs.push(THICK);
+    logs.push('');
+
+    // ── MISSING DATABASES ──────────────────────────────────────────────────
     if (missingDbTasks.length > 0) {
-      logs.push("--- MISSING DATABASES ---");
-      missingDbTasks.forEach(r => {
-        logs.push(`Task: ${r.taskData.title}`);
-        logs.push(`DB: ${r.dbName}`);
-        logs.push(`Error: ${r.errorMessage}\n`);
+      logs.push('╔══ ❌ MISSING DATABASES (' + missingDbTasks.length + ')');
+      missingDbTasks.forEach((r, i) => {
+        logs.push(`║`);
+        logs.push(`║  [${i + 1}] ${r.taskData.title || '(no title)'}`);
+        logs.push(`║      DB    : ${r.dbName}`);
+        logs.push(`║      Error : ${r.errorMessage}`);
       });
+      logs.push('╚' + SEP);
+      logs.push('');
     }
 
+    // ── ZERO ROWS ──────────────────────────────────────────────────────────
     if (zeroRowsTasks.length > 0) {
-      logs.push("--- ZERO ROWS RETURNED ---");
-      zeroRowsTasks.forEach(r => {
-        logs.push(`Task: ${r.taskData.title}`);
-        logs.push(`DB: ${r.dbName}\n`);
+      logs.push('╔══ 🟡 ZERO ROWS RETURNED (' + zeroRowsTasks.length + ')');
+      logs.push('║  The reference SQL executed successfully but returned 0 rows.');
+      logs.push('║  This usually means the SQL is correct but the dataset has no');
+      logs.push('║  matching data. Review the query against the actual DB contents.');
+      zeroRowsTasks.forEach((r, i) => {
+        const sql: string = r.taskData.reference_sql || '';
+        logs.push(`║`);
+        logs.push(`║  [${i + 1}] ${r.taskData.title || '(no title)'}`);
+        logs.push(`║      DB : ${r.dbName}`);
+        if (sql) {
+          logs.push(`║      ┌─ reference_sql`);
+          truncSQL(sql).split('\n').forEach(line => logs.push(`║      │ ${line}`));
+          logs.push(`║      └─ end sql`);
+        }
       });
+      logs.push('╚' + SEP);
+      logs.push('');
     }
 
+    // ── FAILED TASKS ───────────────────────────────────────────────────────
     if (failedTasks.length > 0) {
-      logs.push("--- FAILED TESTS ---");
-      failedTasks.forEach(r => {
-        logs.push(`Task: ${r.taskData.title}`);
-        logs.push(`Error: ${r.errorMessage}\n`);
+      logs.push('╔══ ❌ FAILED TASKS (' + failedTasks.length + ')');
+      failedTasks.forEach((r, i) => {
+        const sql: string = r.taskData.reference_sql || '';
+        const rules: any[] = (r as any).rulesResult || [];
+
+        logs.push(`║`);
+        logs.push(`║  ┌─ [${i + 1}] ${r.taskData.title || '(no title)'}`);
+        logs.push(`║  │  DB         : ${r.dbName}`);
+        if (r.taskData.difficulty !== undefined) {
+          logs.push(`║  │  Difficulty : ${r.taskData.difficulty}`);
+        }
+
+        // ── SQL ──
+        if (sql) {
+          logs.push(`║  │`);
+          logs.push(`║  │  ┌─ reference_sql`);
+          truncSQL(sql).split('\n').forEach(line => logs.push(`║  │  │ ${line}`));
+          logs.push(`║  │  └─ end sql`);
+        }
+
+        // ── Rule breakdown ──
+        if (rules.length > 0) {
+          logs.push(`║  │`);
+          logs.push(`║  │  ┌─ RULES REPORT  (${rules.filter((rr: any) => !rr.passed).length} failed / ${rules.length} total)`);
+          rules.forEach((rr: any, ri: number) => {
+            const icon = rr.passed ? '✅' : (rr.severity === 'blocking' ? '❌' : '⚠️');
+            logs.push(`║  │  │`);
+            logs.push(`║  │  │  [${ri + 1}] ${icon} [${(rr.severity || 'blocking').toUpperCase()}] ${rr.category} / ${rr.condition}`);
+            if (rr.message) {
+              logs.push(`║  │  │       message      : ${rr.message}`);
+            }
+            if (!rr.passed) {
+              if (rr.detail_msg) {
+                logs.push(`║  │  │       detail        : ${rr.detail_msg}`);
+              }
+              if (rr.actual_value !== null && rr.actual_value !== undefined) {
+                logs.push(`║  │  │       actual_value  : ${JSON.stringify(rr.actual_value)}`);
+              }
+            }
+          });
+          logs.push(`║  │  └─ end rules`);
+        } else if (r.errorMessage) {
+          // Non-rule error (SQL execution error etc.)
+          logs.push(`║  │`);
+          logs.push(`║  │  ┌─ ERROR`);
+          r.errorMessage.split('\n').forEach((line: string) => logs.push(`║  │  │ ${line}`));
+          logs.push(`║  │  └─ end error`);
+        }
+
+        logs.push(`║  └─ end task [${i + 1}]`);
       });
+      logs.push('╚' + SEP);
+      logs.push('');
     }
 
-    const blob = new Blob([logs.join('\n')], { type: 'text/plain' });
+    logs.push(THICK);
+    logs.push('  END OF LOG');
+    logs.push(THICK);
+
+    const blob = new Blob([logs.join('\n')], { type: 'text/plain; charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `import_errors_${new Date().getTime()}.txt`;
+    a.download = `import_errors_${courseTitle.replace(/\s+/g, '_')}_${new Date().getTime()}.txt`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);

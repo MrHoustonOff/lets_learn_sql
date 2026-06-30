@@ -126,6 +126,16 @@ class TaskImportResponse(BaseModel):
 class TaskExportRequest(BaseModel):
     task_ids: List[int]
 
+class RuleCheckDetail(BaseModel):
+    rule_id: int
+    category: str
+    condition: str
+    severity: str
+    message: str
+    passed: bool
+    actual_value: Any = None
+    detail_msg: Optional[str] = None
+
 class BulkValidateTaskResult(BaseModel):
     taskData: dict
     status: str
@@ -133,6 +143,7 @@ class BulkValidateTaskResult(BaseModel):
     dbName: str
     errorMessage: Optional[str] = None
     sqlResult: Optional[dict] = None
+    rulesResult: Optional[List[RuleCheckDetail]] = None  # Full per-rule detail for error log
 
 class BulkValidateResponse(BaseModel):
     results: List[BulkValidateTaskResult]

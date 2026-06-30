@@ -1,9 +1,9 @@
-﻿import json
+import json
 from fastapi import APIRouter, HTTPException, Request
 
 from core.sqlite_db import get_sqlite_conn
 from db.repositories.tasks import TaskRepository
-from schemas.tasks import DraftUpdateInput, CheckDuplicateRequest, BulkValidateRequest, BulkValidateResponse, BulkValidateTaskResult, RuleInput
+from schemas.tasks import DraftUpdateInput, CheckDuplicateRequest, BulkValidateRequest, BulkValidateResponse, BulkValidateTaskResult, RuleCheckDetail, RuleInput
 from services.execution import TaskExecutionService
 
 router = APIRouter()
@@ -86,7 +86,8 @@ async def validate_bulk_tasks(payload: BulkValidateRequest, request: Request):
             "taskId": None,
             "dbName": dbName,
             "errorMessage": None,
-            "sqlResult": None
+            "sqlResult": None,
+            "rulesResult": None
         }
         
         try:
@@ -152,13 +153,42 @@ async def validate_bulk_tasks(payload: BulkValidateRequest, request: Request):
             sql_dict = sql_data.model_dump()
             result_item["sqlResult"] = sql_dict
             
-            # Check rules
+            # Check rules — always check ALL rules, never stop at first failure
             if mappedRulesModels:
                 rules_res = await exec_svc.check_rules(draft_id, mappedRulesModels)
                 rules_array = rules_res.get("rules", [])
-                has_blocking_error = any(not r.get("passed") and r.get("severity") == "blocking" for r in rules_array)
-                if has_blocking_error:
-                    raise ValueError("Failed one or more blocking rules.")
+                
+                # Build detailed per-rule result list
+                rule_details = [
+                    RuleCheckDetail(
+                        rule_id=r.get("rule_id", idx),
+                        category=r.get("category", ""),
+                        condition=r.get("condition", ""),
+                        severity=r.get("severity", "blocking"),
+                        message=r.get("message", ""),
+                        passed=bool(r.get("passed")),
+                        actual_value=r.get("actual_value"),
+                        detail_msg=r.get("detail_msg"),
+                    )
+                    for idx, r in enumerate(rules_array)
+                ]
+                result_item["rulesResult"] = [rd.model_dump() for rd in rule_details]
+                
+                # Collect all blocking failures
+                failed_blocking = [rd for rd in rule_details if not rd.passed and rd.severity == "blocking"]
+                if failed_blocking:
+                    # Build a rich multi-line error message
+                    lines = [f"Failed {len(failed_blocking)} blocking rule(s) out of {len(rule_details)}:"]
+                    for rd in failed_blocking:
+                        lines.append(f"  [{rd.category.upper()} / {rd.condition}] {rd.message}")
+                        if rd.detail_msg:
+                            lines.append(f"    → {rd.detail_msg}")
+                        if rd.actual_value is not None:
+                            lines.append(f"    actual_value={rd.actual_value}")
+                    result_item["errorMessage"] = "\n".join(lines)
+                    result_item["status"] = "failed"
+                    results.append(result_item)
+                    continue
                     
             if sql_data.row_count == 0 or not sql_data.rows:
                 result_item["status"] = "zero_rows"
